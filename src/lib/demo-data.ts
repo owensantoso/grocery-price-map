@@ -1,4 +1,13 @@
-import type { CompareEntry, ItemRecord, LogDetail, PriceLogRecord, StoreRecord } from "@/lib/models";
+import type {
+  CompareEntry,
+  ItemRecord,
+  LogDetail,
+  PriceLogListEntry,
+  PriceLogRecord,
+  PriceLogVoteRecord,
+  StoreRecord,
+  VoteSummary,
+} from "@/lib/models";
 import { normalizePriceForItem } from "@/lib/measurements";
 import { excludedFromIncluded } from "@/lib/pricing";
 import { createGoogleMapsQueryUrl } from "@/lib/urls";
@@ -242,6 +251,84 @@ export const demoPriceLogs: PriceLogRecord[] = [
   }),
 ];
 
+export const demoPriceLogVotes: PriceLogVoteRecord[] = [
+  {
+    created_at: "2026-03-21T01:00:00.000Z",
+    log_id: "log-chicken-hanamasa",
+    user_id: DEMO_USER_ID,
+    value: 1,
+  },
+  {
+    created_at: "2026-03-21T02:00:00.000Z",
+    log_id: "log-chicken-hanamasa",
+    user_id: "demo-friend-a",
+    value: 1,
+  },
+  {
+    created_at: "2026-03-21T03:00:00.000Z",
+    log_id: "log-chicken-summit",
+    user_id: "demo-friend-b",
+    value: -1,
+  },
+  {
+    created_at: "2026-03-21T04:00:00.000Z",
+    log_id: "log-eggs-hanamasa",
+    user_id: "demo-friend-a",
+    value: 1,
+  },
+  {
+    created_at: "2026-03-21T05:00:00.000Z",
+    log_id: "log-pork-rakuten",
+    user_id: "demo-friend-c",
+    value: 1,
+  },
+];
+
+function getDemoVoteSummary(logId: string, viewerId: string | null): VoteSummary {
+  const votes = demoPriceLogVotes.filter((vote) => vote.log_id === logId);
+  const upvotes = votes.filter((vote) => vote.value === 1).length;
+  const downvotes = votes.filter((vote) => vote.value === -1).length;
+  const viewerVote = (viewerId
+    ? (votes.find((vote) => vote.user_id === viewerId)?.value ?? 0)
+    : 0) as VoteSummary["viewerVote"];
+
+  return {
+    downvotes,
+    score: upvotes - downvotes,
+    upvotes,
+    viewerVote,
+  };
+}
+
+export function getDemoLogsFeed(viewerId: string | null = null): PriceLogListEntry[] {
+  return [...demoPriceLogs]
+    .sort((left, right) => {
+      if (left.observed_at === right.observed_at) {
+        return right.created_at.localeCompare(left.created_at);
+      }
+
+      return right.observed_at.localeCompare(left.observed_at);
+    })
+    .flatMap((log) => {
+      const item = demoItems.find((candidate) => candidate.id === log.item_id);
+      const store = demoStores.find((candidate) => candidate.id === log.store_id);
+
+      if (!item || !store) {
+        return [];
+      }
+
+      return [
+        {
+          canEdit: viewerId === log.submitted_by,
+          item,
+          log,
+          store,
+          voteSummary: getDemoVoteSummary(log.id, viewerId),
+        } satisfies PriceLogListEntry,
+      ];
+    });
+}
+
 export function getDemoCompareEntries(itemId: string) {
   const selectedItem = demoItems.find((item) => item.id === itemId) ?? demoItems[0];
 
@@ -303,9 +390,11 @@ export function getDemoLogDetail(logId: string): LogDetail | null {
   }
 
   return {
+    canEdit: false,
     item,
     latestAcrossStores: getDemoCompareEntries(item.id),
     log,
+    recentItemLogs: getDemoLogsFeed(null).filter((entry) => entry.item.id === item.id),
     sameStoreHistory: demoPriceLogs
       .filter(
         (candidate) =>
@@ -313,5 +402,6 @@ export function getDemoLogDetail(logId: string): LogDetail | null {
       )
       .sort((left, right) => right.observed_at.localeCompare(left.observed_at)),
     store,
+    voteSummary: getDemoVoteSummary(log.id, null),
   };
 }

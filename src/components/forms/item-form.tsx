@@ -39,34 +39,44 @@ export function ItemForm({ disabled }: { disabled?: boolean }) {
             placeholder="Protein, Produce, Dairy"
           />
         </label>
-        <label className="form-field">
-          <span>Normalization unit</span>
-          <select className="select" defaultValue="count" disabled={disabled} name="comparisonUnit">
-            {CANONICAL_ITEM_UNITS.map((unit) => (
-              <option key={unit} value={unit}>
-                {MEASUREMENT_LABELS[unit]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="form-field">
-          <span>Normalization amount</span>
-          <input
-            className="input"
-            defaultValue="1"
-            disabled={disabled}
-            min="0.01"
-            name="comparisonBasisAmount"
-            required
-            step="0.01"
-            type="number"
-          />
+        <div className="form-field form-field--wide">
+          <span>Normalization basis</span>
+          <div className="item-basis-grid">
+            <label className="form-field">
+              <span>Amount</span>
+              <input
+                className="input"
+                defaultValue="1"
+                disabled={disabled}
+                min="0.01"
+                name="comparisonBasisAmount"
+                required
+                step="0.01"
+                type="number"
+              />
+            </label>
+            <label className="form-field">
+              <span>Unit</span>
+              <select
+                className="select"
+                defaultValue="count"
+                disabled={disabled}
+                name="comparisonUnit"
+              >
+                {CANONICAL_ITEM_UNITS.map((unit) => (
+                  <option key={unit} value={unit}>
+                    {MEASUREMENT_LABELS[unit]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           {state.fieldErrors?.comparisonBasisAmount?.[0] ? (
             <span className="field-error">
               {state.fieldErrors.comparisonBasisAmount[0]}
             </span>
           ) : null}
-        </label>
+        </div>
       </div>
       <SubmitButton block>Add item</SubmitButton>
     </form>

@@ -1,17 +1,21 @@
 import type { User } from "@supabase/supabase-js";
 import {
   demoItems,
-  demoStores,
   getDemoCompareEntries,
   getDemoLogDetail,
+  getDemoLogsFeed,
+  demoStores,
 } from "@/lib/demo-data";
 import type {
   CompareEntry,
   ItemRecord,
   LogDetail,
+  PriceLogListEntry,
   PriceLogRecord,
+  PriceLogVoteRecord,
   StoreRecord,
   Viewer,
+  VoteSummary,
 } from "@/lib/models";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -24,10 +28,19 @@ type ComparisonSnapshot = {
   viewer: Viewer | null;
 };
 
+type PriceLogsSnapshot = {
+  allLogs: PriceLogListEntry[];
+  isConfigured: boolean;
+  isDemo: boolean;
+  ownLogs: PriceLogListEntry[];
+  viewer: Viewer | null;
+};
+
 type PriceLogWithRelations = {
   created_at: string;
   id: string;
   item_id: string;
+  items: ItemRecord | null;
   listing_url: string | null;
   normalized_price_yen: number;
   notes: string | null;
@@ -41,9 +54,7 @@ type PriceLogWithRelations = {
   total_price_yen: number;
 };
 
-type PriceLogDetailRow = PriceLogWithRelations & {
-  items: ItemRecord | null;
-};
+type PriceLogDetailRow = PriceLogWithRelations;
 
 function toViewer(user: User | null): Viewer | null {
   if (!user?.email) {
@@ -74,17 +85,55 @@ function stripRelations(log: PriceLogWithRelations): PriceLogRecord {
   };
 }
 
+function sortLogsByRecency(left: PriceLogWithRelations, right: PriceLogWithRelations) {
+  if (left.observed_at === right.observed_at) {
+    return right.created_at.localeCompare(left.created_at);
+  }
+
+  return right.observed_at.localeCompare(left.observed_at);
+}
+
+function createEmptyVoteSummary(): VoteSummary {
+  return {
+    downvotes: 0,
+    score: 0,
+    upvotes: 0,
+    viewerVote: 0,
+  };
+}
+
+function summarizeVotes(
+  voteRows: PriceLogVoteRecord[],
+  viewerId: string | null,
+): Map<string, VoteSummary> {
+  const summaries = new Map<string, VoteSummary>();
+
+  for (const vote of voteRows) {
+    const existing = summaries.get(vote.log_id) ?? createEmptyVoteSummary();
+
+    if (vote.value === 1) {
+      existing.upvotes += 1;
+    }
+
+    if (vote.value === -1) {
+      existing.downvotes += 1;
+    }
+
+    if (viewerId && vote.user_id === viewerId) {
+      existing.viewerVote = vote.value as VoteSummary["viewerVote"];
+    }
+
+    existing.score = existing.upvotes - existing.downvotes;
+    summaries.set(vote.log_id, existing);
+  }
+
+  return summaries;
+}
+
 function buildCompareEntries(logs: PriceLogWithRelations[], selectedItem: ItemRecord) {
   const seenStores = new Set<string>();
   const entries: CompareEntry[] = [];
-
-  const sortedLogs = [...logs].sort((left, right) => {
-    if (left.observed_at === right.observed_at) {
-      return right.created_at.localeCompare(left.created_at);
-    }
-
-    return right.observed_at.localeCompare(left.observed_at);
-  });
+  const sortedLogs = [...logs].sort(sortLogsByRecency);
 
   for (const log of sortedLogs) {
     if (seenStores.has(log.store_id) || !log.stores) {
@@ -110,6 +159,53 @@ function buildCompareEntries(logs: PriceLogWithRelations[], selectedItem: ItemRe
 
     return left.latestLog.normalized_price_yen - right.latestLog.normalized_price_yen;
   });
+}
+
+function buildLogFeedEntries(
+  logs: PriceLogWithRelations[],
+  voteSummaries: Map<string, VoteSummary>,
+  viewerId: string | null,
+) {
+  return [...logs].sort(sortLogsByRecency).flatMap((log) => {
+    if (!log.items || !log.stores) {
+      return [];
+    }
+
+    return [
+      {
+        canEdit: viewerId === log.submitted_by,
+        item: log.items,
+        log: stripRelations(log),
+        store: log.stores,
+        voteSummary: voteSummaries.get(log.id) ?? createEmptyVoteSummary(),
+      } satisfies PriceLogListEntry,
+    ];
+  });
+}
+
+async function getVoteRowsForLogs(
+  logIds: string[],
+): Promise<PriceLogVoteRecord[]> {
+  if (logIds.length === 0) {
+    return [];
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("price_log_votes")
+    .select("log_id, user_id, value, created_at")
+    .in("log_id", logIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as PriceLogVoteRecord[];
 }
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -138,7 +234,7 @@ export async function getItems(): Promise<ItemRecord[]> {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return [] satisfies ItemRecord[];
+    return [];
   }
 
   const { data, error } = await supabase
@@ -165,7 +261,7 @@ export async function getStores(): Promise<StoreRecord[]> {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return [] satisfies StoreRecord[];
+    return [];
   }
 
   const { data, error } = await supabase
@@ -189,7 +285,7 @@ export async function getComparisonSnapshot(
     const selectedItem = demoItems.find((item) => item.id === itemId) ?? demoItems[0] ?? null;
 
     return {
-      entries: selectedItem ? getDemoCompareEntries(selectedItem.id) : ([] as CompareEntry[]),
+      entries: selectedItem ? getDemoCompareEntries(selectedItem.id) : [],
       isConfigured: false,
       isDemo: true,
       items: demoItems,
@@ -205,10 +301,10 @@ export async function getComparisonSnapshot(
 
   if (!viewer) {
     return {
-      entries: [] as CompareEntry[],
+      entries: [],
       isConfigured: true,
       isDemo: false,
-      items: [] as ItemRecord[],
+      items: [],
       selectedItem: null,
       viewer: null,
     };
@@ -219,7 +315,7 @@ export async function getComparisonSnapshot(
 
   if (!selectedItem) {
     return {
-      entries: [] as CompareEntry[],
+      entries: [],
       isConfigured: true,
       isDemo: false,
       items,
@@ -316,6 +412,161 @@ export async function getPriceEntrySnapshot(): Promise<{
   };
 }
 
+export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      allLogs: getDemoLogsFeed(null),
+      isConfigured: false,
+      isDemo: true,
+      ownLogs: [],
+      viewer: null,
+    };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const viewer = toViewer(user);
+
+  if (!viewer) {
+    return {
+      allLogs: [],
+      isConfigured: true,
+      isDemo: false,
+      ownLogs: [],
+      viewer: null,
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("price_logs")
+    .select(
+      `
+        id,
+        store_id,
+        item_id,
+        submitted_by,
+        package_amount,
+        package_unit,
+        total_price_yen,
+        price_tax_excluded_yen,
+        normalized_price_yen,
+        observed_at,
+        notes,
+        listing_url,
+        created_at,
+        items (
+          id,
+          name,
+          category,
+          comparison_unit,
+          comparison_basis_amount,
+          created_at,
+          created_by
+        ),
+        stores (
+          id,
+          name,
+          chain_name,
+          store_kind,
+          store_url,
+          address_text,
+          latitude,
+          longitude,
+          notes,
+          created_at,
+          created_by
+        )
+      `,
+    );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const logs = (data ?? []) as unknown as PriceLogWithRelations[];
+  const votes = await getVoteRowsForLogs(logs.map((log) => log.id));
+  const voteSummaries = summarizeVotes(votes, viewer.id);
+  const allLogs = buildLogFeedEntries(logs, voteSummaries, viewer.id);
+
+  return {
+    allLogs,
+    isConfigured: true,
+    isDemo: false,
+    ownLogs: allLogs.filter((entry) => entry.log.submitted_by === viewer.id),
+    viewer,
+  };
+}
+
+export async function getEditablePriceLogSnapshot(logId: string): Promise<{
+  items: ItemRecord[];
+  log: PriceLogRecord | null;
+  stores: StoreRecord[];
+  viewer: Viewer | null;
+}> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      items: demoItems,
+      log: null,
+      stores: demoStores,
+      viewer: null,
+    };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const viewer = toViewer(user);
+
+  if (!viewer) {
+    return {
+      items: [],
+      log: null,
+      stores: [],
+      viewer: null,
+    };
+  }
+
+  const [items, stores] = await Promise.all([getItems(), getStores()]);
+  const { data, error } = await supabase
+    .from("price_logs")
+    .select(
+      `
+        id,
+        store_id,
+        item_id,
+        submitted_by,
+        package_amount,
+        package_unit,
+        total_price_yen,
+        price_tax_excluded_yen,
+        normalized_price_yen,
+        observed_at,
+        notes,
+        listing_url,
+        created_at
+      `,
+    )
+    .eq("id", logId)
+    .eq("submitted_by", viewer.id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    items,
+    log: (data ?? null) as PriceLogRecord | null,
+    stores,
+    viewer,
+  };
+}
+
 export async function getPriceLogDetail(logId: string): Promise<LogDetail | null> {
   const supabase = await createSupabaseServerClient();
 
@@ -326,8 +577,9 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const viewer = toViewer(user);
 
-  if (!user) {
+  if (!viewer) {
     return null;
   }
 
@@ -402,6 +654,15 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
         notes,
         listing_url,
         created_at,
+        items (
+          id,
+          name,
+          category,
+          comparison_unit,
+          comparison_basis_amount,
+          created_at,
+          created_by
+        ),
         stores (
           id,
           name,
@@ -417,22 +678,30 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
         )
       `,
     )
-    .eq("item_id", log.item_id)
-    .eq("store_id", log.store_id);
+    .eq("item_id", log.item_id);
 
   if (historyError) {
     throw new Error(historyError.message);
   }
 
+  const itemLogs = (historyData ?? []) as unknown as PriceLogWithRelations[];
+  const voteRows = await getVoteRowsForLogs(itemLogs.map((entry) => entry.id));
+  const voteSummaries = summarizeVotes(voteRows, viewer.id);
+  const sameStoreHistory = itemLogs
+    .filter((candidate) => candidate.store_id === log.store_id)
+    .sort(sortLogsByRecency)
+    .map(stripRelations);
+
   return {
+    canEdit: viewer.id === log.submitted_by,
     item: log.items,
     latestAcrossStores: await getComparisonSnapshot(log.item_id).then(
       (snapshot) => snapshot.entries,
     ),
     log: stripRelations(log),
-    sameStoreHistory: ((historyData ?? []) as unknown as PriceLogWithRelations[])
-      .sort((left, right) => right.observed_at.localeCompare(left.observed_at))
-      .map(stripRelations),
+    recentItemLogs: buildLogFeedEntries(itemLogs, voteSummaries, viewer.id),
+    sameStoreHistory,
     store: log.stores,
+    voteSummary: voteSummaries.get(log.id) ?? createEmptyVoteSummary(),
   };
 }

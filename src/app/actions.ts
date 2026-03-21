@@ -14,6 +14,11 @@ export type ActionState = {
   status: "error" | "idle";
 };
 
+type VoteActionState = {
+  message: string;
+  status: "error" | "idle";
+};
+
 function toActionState(error: unknown, fieldErrors?: Record<string, string[] | undefined>) {
   return {
     fieldErrors,
@@ -81,6 +86,7 @@ export async function createItemAction(
     }
 
     revalidatePath("/");
+    revalidatePath("/logs");
     revalidatePath("/items");
     revalidatePath("/prices/new");
     redirect("/items");
@@ -166,6 +172,7 @@ export async function createStoreAction(
     }
 
     revalidatePath("/");
+    revalidatePath("/logs");
     revalidatePath("/stores");
     revalidatePath("/prices/new");
     redirect("/stores");
@@ -254,11 +261,152 @@ export async function createPriceLogAction(
     }
 
     revalidatePath("/");
+    revalidatePath("/logs");
     revalidatePath("/prices/new");
     revalidatePath(`/logs/${insertedLog.id}`);
     redirect(`/logs/${insertedLog.id}`);
   } catch (error) {
     return toActionState(error);
+  }
+}
+
+export async function updatePriceLogAction(
+  logId: string,
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = priceLogSchema.safeParse({
+    itemId: formData.get("itemId"),
+    listingUrl: formData.get("listingUrl"),
+    notes: formData.get("notes"),
+    observedAt: formData.get("observedAt"),
+    packageAmount: formData.get("packageAmount"),
+    priceTaxExcludedYen: formData.get("priceTaxExcludedYen"),
+    storeId: formData.get("storeId"),
+    totalPriceYen: formData.get("totalPriceYen"),
+  });
+
+  if (!parsed.success) {
+    return toActionState(
+      new Error("Fix the price log fields and try again."),
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  try {
+    const { supabase, user } = await requireAuthedClient();
+    const { data: item, error: itemError } = await supabase
+      .from("items")
+      .select("comparison_basis_amount, comparison_unit")
+      .eq("id", parsed.data.itemId)
+      .single();
+
+    if (itemError || !item) {
+      throw new Error("Select a valid item before saving this log.");
+    }
+
+    const normalizedPrice = normalizePriceForItem({
+      comparisonBasisAmount: item.comparison_basis_amount,
+      comparisonUnit: item.comparison_unit as MeasurementUnit,
+      packageAmount: parsed.data.packageAmount,
+      packageUnit: item.comparison_unit as MeasurementUnit,
+      totalPriceYen: parsed.data.totalPriceYen,
+    });
+
+    const { data: existing, error: existingError } = await supabase
+      .from("price_logs")
+      .select("submitted_by")
+      .eq("id", logId)
+      .single();
+
+    if (existingError || !existing) {
+      throw new Error("This log no longer exists.");
+    }
+
+    if (existing.submitted_by !== user.id) {
+      throw new Error("Only the original submitter can edit this log.");
+    }
+
+    const { error } = await supabase
+      .from("price_logs")
+      .update({
+        item_id: parsed.data.itemId,
+        listing_url: parsed.data.listingUrl
+          ? normalizeExternalUrl(parsed.data.listingUrl)
+          : null,
+        normalized_price_yen: normalizedPrice,
+        notes: parsed.data.notes || null,
+        observed_at: parsed.data.observedAt,
+        package_amount: parsed.data.packageAmount,
+        package_unit: item.comparison_unit,
+        price_tax_excluded_yen: parsed.data.priceTaxExcludedYen,
+        store_id: parsed.data.storeId,
+        total_price_yen: parsed.data.totalPriceYen,
+      })
+      .eq("id", logId)
+      .eq("submitted_by", user.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/logs");
+    revalidatePath(`/logs/${logId}`);
+    revalidatePath(`/logs/${logId}/edit`);
+    revalidatePath("/prices/new");
+    redirect(`/logs/${logId}`);
+  } catch (error) {
+    return toActionState(error);
+  }
+}
+
+export async function voteOnPriceLogAction(
+  logId: string,
+  value: -1 | 0 | 1,
+): Promise<VoteActionState> {
+  try {
+    const { supabase, user } = await requireAuthedClient();
+    if (value === 0) {
+      const { error: deleteError } = await supabase
+        .from("price_log_votes")
+        .delete()
+        .eq("log_id", logId)
+        .eq("user_id", user.id);
+
+      if (deleteError) {
+        throw new Error(deleteError.message);
+      }
+    } else {
+      const { error: upsertError } = await supabase.from("price_log_votes").upsert(
+        {
+          log_id: logId,
+          user_id: user.id,
+          value,
+        },
+        {
+          onConflict: "log_id,user_id",
+        },
+      );
+
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath("/logs");
+    revalidatePath(`/logs/${logId}`);
+
+    return {
+      message: "",
+      status: "idle",
+    };
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : "Could not update vote.",
+      status: "error",
+    };
   }
 }
 

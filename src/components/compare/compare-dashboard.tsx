@@ -5,6 +5,10 @@ import Link from "next/link";
 import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AutocompleteField,
+  type AutocompleteOption,
+} from "@/components/forms/autocomplete-field";
+import {
   formatCurrency,
   formatDate,
   formatPackage,
@@ -28,20 +32,6 @@ type CompareDashboardProps = {
   selectedItemId: string | null;
 };
 
-function resolveItemByQuery(items: ItemRecord[], query: string) {
-  const trimmedQuery = query.trim().toLowerCase();
-
-  if (!trimmedQuery) {
-    return null;
-  }
-
-  return (
-    items.find((item) => item.name.toLowerCase() === trimmedQuery) ??
-    items.find((item) => item.name.toLowerCase().includes(trimmedQuery)) ??
-    null
-  );
-}
-
 export function CompareDashboard({
   entries,
   initialStoreId,
@@ -53,13 +43,29 @@ export function CompareDashboard({
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(
     initialStoreId ?? entries[0]?.store.id ?? null,
   );
-  const [itemQuery, setItemQuery] = useState(
-    itemOptions.find((item) => item.id === selectedItemId)?.name ?? "",
-  );
+  const [selectedSearchItemId, setSelectedSearchItemId] = useState(selectedItemId ?? "");
+  const selectedSearchItem =
+    itemOptions.find((item) => item.id === selectedSearchItemId) ??
+    itemOptions.find((item) => item.id === selectedItemId) ??
+    null;
+  const searchOptions: AutocompleteOption[] = itemOptions.map((item) => ({
+    hint:
+      item.category && item.category.trim().length > 0
+        ? `${item.category} • ${item.comparison_basis_amount}${item.comparison_unit}`
+        : `${item.comparison_basis_amount}${item.comparison_unit}`,
+    id: item.id,
+    label: item.name,
+  }));
 
   const featuredEntry = entries[0] ?? null;
   const selectedEntry =
     entries.find((entry) => entry.store.id === selectedStoreId) ?? featuredEntry;
+
+  function navigateToItem(itemId: string) {
+    startTransition(() => {
+      router.replace(`/?item=${itemId}`);
+    });
+  }
 
   return (
     <div className="stack-lg">
@@ -67,17 +73,16 @@ export function CompareDashboard({
         <div className="stack-md">
           <div className="stack-xs">
             <p className="eyebrow">{isDemo ? "Demo compare view" : "Live compare view"}</p>
-            <h1 className="hero-title">What&apos;s the cheapest recent price?</h1>
+            <h1 className="hero-title">Where is the cheapest...</h1>
             <p className="hero-copy">
-              Search one item, get the best current normalized result, then check the
-              map or drill into a specific log.
+              Choose one canonical item and jump straight to the best recent log.
             </p>
           </div>
           <form
             className="compare-search"
             onSubmit={(event) => {
               event.preventDefault();
-              const match = resolveItemByQuery(itemOptions, itemQuery);
+              const match = itemOptions.find((item) => item.id === selectedSearchItemId);
 
               if (!match) {
                 return;
@@ -88,19 +93,17 @@ export function CompareDashboard({
               });
             }}
           >
-            <input
-              className="input compare-search__input"
-              list="item-options"
-              onChange={(event) => setItemQuery(event.target.value)}
-              placeholder="Search items like eggs, chicken breast, pork mince"
-              type="search"
-              value={itemQuery}
-            />
-            <datalist id="item-options">
-              {itemOptions.map((item) => (
-                <option key={item.id} value={item.name} />
-              ))}
-            </datalist>
+            <div className="compare-search__field">
+              <AutocompleteField
+                defaultOptionId={selectedItemId ?? undefined}
+                label="Item"
+                name="itemId"
+                onCommit={(option) => navigateToItem(option.id)}
+                onSelect={(option) => setSelectedSearchItemId(option?.id ?? "")}
+                options={searchOptions}
+                placeholder="Eggs, chicken breast, pork mince..."
+              />
+            </div>
             <button className="button button-primary" type="submit">
               Search
             </button>
@@ -140,9 +143,12 @@ export function CompareDashboard({
             <section className="panel map-panel stack-sm">
               <div className="split-header">
                 <div className="stack-xs">
-                  <h2 className="section-title">Store map</h2>
+                  <h2 className="section-title">
+                    {selectedSearchItem?.name ?? "Store"} Price Map
+                  </h2>
                   <p className="muted">
-                    Click a price marker to inspect the corresponding latest log.
+                    Click a store marker to inspect the corresponding latest log. Your
+                    location can appear here too if you allow browser geolocation.
                   </p>
                 </div>
               </div>
@@ -211,7 +217,9 @@ export function CompareDashboard({
                       <span className="muted">{entry.store.address_text}</span>
                     </div>
                     <Link className="price-pill" href={`/logs/${entry.latestLog.id}`}>
-                      {formatCurrency(entry.latestLog.normalized_price_yen)}
+                      {formatCurrency(entry.latestLog.normalized_price_yen)} /{" "}
+                      {entry.item.comparison_basis_amount}
+                      {entry.item.comparison_unit}
                     </Link>
                   </div>
                   <div className="meta-row">

@@ -150,6 +150,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      price_log_votes: {
+        Row: {
+          created_at: string;
+          log_id: string;
+          user_id: string;
+          value: number;
+        };
+        Insert: {
+          created_at?: string;
+          log_id: string;
+          user_id: string;
+          value: number;
+        };
+        Update: {
+          created_at?: string;
+          log_id?: string;
+          user_id?: string;
+          value?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

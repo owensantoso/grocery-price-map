@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: Tokyo Grocery Ledger
+          - generic [ref=e7]: Grocery Price Map
+          - generic [ref=e8]: Store-specific prices, normalized and kept as history.
+        - navigation "Primary" [ref=e9]:
+          - link "Compare" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e11]: Compare
+          - link "Stores" [ref=e12] [cursor=pointer]:
+            - /url: /stores
+            - generic [ref=e13]: Stores
+          - link "Items" [ref=e14] [cursor=pointer]:
+            - /url: /items
+            - generic [ref=e15]: Items
+          - link "Logs" [ref=e16] [cursor=pointer]:
+            - /url: /logs
+            - generic [ref=e17]: Logs
+          - link "+ Add Price" [ref=e18] [cursor=pointer]:
+            - /url: /prices/new
+            - generic [ref=e19]: +
+            - generic [ref=e20]: Add Price
+        - link "Setup required" [ref=e22] [cursor=pointer]:
+          - /url: /auth/sign-in
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e26]:
+          - paragraph [ref=e27]: Demo Mode
+          - heading "Supabase is not configured yet." [level=2] [ref=e28]
+          - paragraph [ref=e29]: The compare screen is using seeded demo data so you can inspect the UI. Add your Supabase URL and anon key to start reading and writing live data.
+          - code [ref=e30]: NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - heading "Log a price observation" [level=2] [ref=e33]
+            - paragraph [ref=e34]: Enter either tax-included or tax-excluded price. The other field updates using a 10% tax assumption.
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - generic [ref=e37]: Store
+              - combobox "Store" [disabled] [ref=e39]: Summit Nishi-Eifuku
+            - generic [ref=e40]:
+              - generic [ref=e41]: Item
+              - combobox "Item" [disabled] [ref=e43]: Eggs
+            - generic [ref=e44]:
+              - generic [ref=e45]: Package amount (count)
+              - spinbutton "Package amount (count)" [disabled] [ref=e46]: "1"
+            - generic [ref=e47]:
+              - generic [ref=e48]: Observed date
+              - textbox "Observed date" [disabled] [ref=e49]: 2026-03-21
+            - generic [ref=e50]:
+              - generic [ref=e51]: Tax included price (JPY)
+              - generic [ref=e52]:
+                - generic: ¥
+                - spinbutton "Tax included price (JPY) ¥" [disabled] [ref=e53]
+            - generic [ref=e54]:
+              - generic [ref=e55]: Tax excluded price (JPY)
+              - generic [ref=e56]:
+                - generic: ¥
+                - spinbutton "Tax excluded price (JPY) ¥" [disabled] [ref=e57]
+            - generic [ref=e58]:
+              - generic [ref=e59]: Item listing URL (optional)
+              - textbox "Item listing URL (optional)" [disabled] [ref=e60]:
+                - /placeholder: Useful for online stores or recurring product pages
+            - generic [ref=e61]:
+              - generic [ref=e62]: Notes
+              - textbox "Notes" [disabled] [ref=e63]:
+                - /placeholder: Quality notes, promo sticker, carton size, section of the store
+          - generic [ref=e64]:
+            - text: "Normalizing against Eggs:"
+            - strong [ref=e65]: 1count
+          - paragraph [ref=e66]: Selected store link will be attached to this log. Add an item listing URL too if this is an online listing.
+          - button "Add log" [ref=e67] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e73] [cursor=pointer]:
+    - img [ref=e74]
+  - alert [ref=e77]

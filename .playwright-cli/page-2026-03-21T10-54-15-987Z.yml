@@ -1,0 +1,224 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: Tokyo Grocery Ledger
+          - generic [ref=e7]: Grocery Price Map
+          - generic [ref=e8]: Store-specific prices, normalized and kept as history.
+        - navigation "Primary" [ref=e9]:
+          - link "Compare" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e11]: Compare
+          - link "Stores" [ref=e12] [cursor=pointer]:
+            - /url: /stores
+            - generic [ref=e13]: Stores
+          - link "Items" [ref=e14] [cursor=pointer]:
+            - /url: /items
+            - generic [ref=e15]: Items
+          - link "Logs" [ref=e16] [cursor=pointer]:
+            - /url: /logs
+            - generic [ref=e17]: Logs
+          - link "+ Add Price" [ref=e18] [cursor=pointer]:
+            - /url: /prices/new
+            - generic [ref=e19]: +
+            - generic [ref=e20]: Add Price
+        - link "Setup required" [ref=e22] [cursor=pointer]:
+          - /url: /auth/sign-in
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e26]:
+          - paragraph [ref=e27]: Demo Mode
+          - heading "Supabase is not configured yet." [level=2] [ref=e28]
+          - paragraph [ref=e29]: The compare screen is using seeded demo data so you can inspect the UI. Add your Supabase URL and anon key to start reading and writing live data.
+          - code [ref=e30]: NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - paragraph [ref=e33]: Demo logs
+            - heading "All recent grocery logs" [level=1] [ref=e34]
+            - paragraph [ref=e35]: Browse every submitted observation by recency, then jump into the full log or open the store directly.
+          - generic [ref=e36]:
+            - paragraph [ref=e37]: Your activity
+            - strong [ref=e38]: "0"
+            - paragraph [ref=e39]: logs submitted by you
+            - link "Add another log" [ref=e40] [cursor=pointer]:
+              - /url: /prices/new
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - heading "All logs" [level=2] [ref=e44]
+              - paragraph [ref=e45]: Sorted by observed date, newest first.
+            - generic [ref=e46]:
+              - article [ref=e47]:
+                - generic [ref=e48]:
+                  - generic [ref=e49]:
+                    - link "Pork mince" [ref=e50] [cursor=pointer]:
+                      - /url: /logs/log-pork-rakuten
+                    - link "Rakuten Online Grocery" [ref=e51] [cursor=pointer]:
+                      - /url: https://www.rakuten.co.jp/
+                  - link "￥99 / 100g" [ref=e52] [cursor=pointer]:
+                    - /url: /logs/log-pork-rakuten
+                - generic [ref=e53]:
+                  - generic [ref=e54]: 1200 g
+                  - generic [ref=e55]: paid ￥1,188
+                  - generic [ref=e56]: ex tax ￥1,080
+                  - generic [ref=e57]: observed Mar 21, 2026
+                  - generic [ref=e58]: score 1
+                - paragraph [ref=e59]: Online-only bulk offer.
+                - generic [ref=e60]:
+                  - link "Open full log" [ref=e61] [cursor=pointer]:
+                    - /url: /logs/log-pork-rakuten
+                  - link "Item listing" [ref=e62] [cursor=pointer]:
+                    - /url: https://www.rakuten.co.jp/search/pork-mince
+              - article [ref=e63]:
+                - generic [ref=e64]:
+                  - generic [ref=e65]:
+                    - link "Chicken breast" [ref=e66] [cursor=pointer]:
+                      - /url: /logs/log-chicken-hanamasa
+                    - link "Hanamasa Honancho" [ref=e67] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Niku%20no%20Hanamasa%20Honancho%2035.6839%2C139.6571
+                  - link "￥90 / 100g" [ref=e68] [cursor=pointer]:
+                    - /url: /logs/log-chicken-hanamasa
+                - generic [ref=e69]:
+                  - generic [ref=e70]: 2000 g
+                  - generic [ref=e71]: paid ￥1,800
+                  - generic [ref=e72]: ex tax ￥1,636
+                  - generic [ref=e73]: observed Mar 21, 2026
+                  - generic [ref=e74]: score 2
+                - paragraph [ref=e75]: Fresh pack near the back cooler.
+                - link "Open full log" [ref=e77] [cursor=pointer]:
+                  - /url: /logs/log-chicken-hanamasa
+              - article [ref=e78]:
+                - generic [ref=e79]:
+                  - generic [ref=e80]:
+                    - link "Chicken breast" [ref=e81] [cursor=pointer]:
+                      - /url: /logs/log-chicken-summit
+                    - link "Summit Nishi-Eifuku" [ref=e82] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Summit%20Nishi-Eifuku%2035.6732%2C139.6375
+                  - link "￥160 / 100g" [ref=e83] [cursor=pointer]:
+                    - /url: /logs/log-chicken-summit
+                - generic [ref=e84]:
+                  - generic [ref=e85]: 500 g
+                  - generic [ref=e86]: paid ￥800
+                  - generic [ref=e87]: ex tax ￥727
+                  - generic [ref=e88]: observed Mar 21, 2026
+                  - generic [ref=e89]: score -1
+                - paragraph [ref=e90]: Smaller tray, still competitive.
+                - link "Open full log" [ref=e92] [cursor=pointer]:
+                  - /url: /logs/log-chicken-summit
+              - article [ref=e93]:
+                - generic [ref=e94]:
+                  - generic [ref=e95]:
+                    - link "Eggs" [ref=e96] [cursor=pointer]:
+                      - /url: /logs/log-eggs-summit-latest
+                    - link "Summit Nishi-Eifuku" [ref=e97] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Summit%20Nishi-Eifuku%2035.6732%2C139.6375
+                  - link "￥30 / 1count" [ref=e98] [cursor=pointer]:
+                    - /url: /logs/log-eggs-summit-latest
+                - generic [ref=e99]:
+                  - generic [ref=e100]: 10 count
+                  - generic [ref=e101]: paid ￥298
+                  - generic [ref=e102]: ex tax ￥271
+                  - generic [ref=e103]: observed Mar 20, 2026
+                  - generic [ref=e104]: score 0
+                - paragraph [ref=e105]: Large eggs, regular shelf price.
+                - link "Open full log" [ref=e107] [cursor=pointer]:
+                  - /url: /logs/log-eggs-summit-latest
+              - article [ref=e108]:
+                - generic [ref=e109]:
+                  - generic [ref=e110]:
+                    - link "Pork mince" [ref=e111] [cursor=pointer]:
+                      - /url: /logs/log-pork-summit
+                    - link "Summit Nishi-Eifuku" [ref=e112] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Summit%20Nishi-Eifuku%2035.6732%2C139.6375
+                  - link "￥130 / 100g" [ref=e113] [cursor=pointer]:
+                    - /url: /logs/log-pork-summit
+                - generic [ref=e114]:
+                  - generic [ref=e115]: 450 g
+                  - generic [ref=e116]: paid ￥585
+                  - generic [ref=e117]: ex tax ￥532
+                  - generic [ref=e118]: observed Mar 20, 2026
+                  - generic [ref=e119]: score 0
+                - paragraph [ref=e120]: Fine mince.
+                - link "Open full log" [ref=e122] [cursor=pointer]:
+                  - /url: /logs/log-pork-summit
+              - article [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]:
+                    - link "Pork mince" [ref=e126] [cursor=pointer]:
+                      - /url: /logs/log-pork-hanamasa
+                    - link "Hanamasa Honancho" [ref=e127] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Niku%20no%20Hanamasa%20Honancho%2035.6839%2C139.6571
+                  - link "￥110 / 100g" [ref=e128] [cursor=pointer]:
+                    - /url: /logs/log-pork-hanamasa
+                - generic [ref=e129]:
+                  - generic [ref=e130]: 1000 g
+                  - generic [ref=e131]: paid ￥1,098
+                  - generic [ref=e132]: ex tax ￥998
+                  - generic [ref=e133]: observed Mar 20, 2026
+                  - generic [ref=e134]: score 0
+                - paragraph [ref=e135]: Larger family pack.
+                - link "Open full log" [ref=e137] [cursor=pointer]:
+                  - /url: /logs/log-pork-hanamasa
+              - article [ref=e138]:
+                - generic [ref=e139]:
+                  - generic [ref=e140]:
+                    - link "Eggs" [ref=e141] [cursor=pointer]:
+                      - /url: /logs/log-eggs-hanamasa
+                    - link "Hanamasa Honancho" [ref=e142] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Niku%20no%20Hanamasa%20Honancho%2035.6839%2C139.6571
+                  - link "￥27 / 1count" [ref=e143] [cursor=pointer]:
+                    - /url: /logs/log-eggs-hanamasa
+                - generic [ref=e144]:
+                  - generic [ref=e145]: 10 count
+                  - generic [ref=e146]: paid ￥272
+                  - generic [ref=e147]: ex tax ￥247
+                  - generic [ref=e148]: observed Mar 19, 2026
+                  - generic [ref=e149]: score 1
+                - paragraph [ref=e150]: Smaller carton, very steady price.
+                - link "Open full log" [ref=e152] [cursor=pointer]:
+                  - /url: /logs/log-eggs-hanamasa
+              - article [ref=e153]:
+                - generic [ref=e154]:
+                  - generic [ref=e155]:
+                    - link "Eggs" [ref=e156] [cursor=pointer]:
+                      - /url: /logs/log-eggs-gyomu
+                    - link "Gyomu Super Nakano" [ref=e157] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Gyomu%20Super%20Nakano%2035.7061%2C139.6659
+                  - link "￥28 / 1count" [ref=e158] [cursor=pointer]:
+                    - /url: /logs/log-eggs-gyomu
+                - generic [ref=e159]:
+                  - generic [ref=e160]: 12 count
+                  - generic [ref=e161]: paid ￥336
+                  - generic [ref=e162]: ex tax ￥305
+                  - generic [ref=e163]: observed Mar 18, 2026
+                  - generic [ref=e164]: score 0
+                - paragraph [ref=e165]: Bulk box by the refrigerated wall.
+                - link "Open full log" [ref=e167] [cursor=pointer]:
+                  - /url: /logs/log-eggs-gyomu
+              - article [ref=e168]:
+                - generic [ref=e169]:
+                  - generic [ref=e170]:
+                    - link "Eggs" [ref=e171] [cursor=pointer]:
+                      - /url: /logs/log-eggs-summit-old
+                    - link "Summit Nishi-Eifuku" [ref=e172] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Summit%20Nishi-Eifuku%2035.6732%2C139.6375
+                  - link "￥32 / 1count" [ref=e173] [cursor=pointer]:
+                    - /url: /logs/log-eggs-summit-old
+                - generic [ref=e174]:
+                  - generic [ref=e175]: 10 count
+                  - generic [ref=e176]: paid ￥318
+                  - generic [ref=e177]: ex tax ￥289
+                  - generic [ref=e178]: observed Mar 12, 2026
+                  - generic [ref=e179]: score 0
+                - paragraph [ref=e180]: Previous week.
+                - link "Open full log" [ref=e182] [cursor=pointer]:
+                  - /url: /logs/log-eggs-summit-old
+          - complementary [ref=e183]:
+            - generic [ref=e184]:
+              - heading "Your logs" [level=2] [ref=e185]
+              - paragraph [ref=e186]: Owner-only editing lives here and on each log page.
+            - generic [ref=e187]: You have not submitted any logs yet.
+  - button "Open Next.js Dev Tools" [ref=e193] [cursor=pointer]:
+    - img [ref=e194]
+  - alert [ref=e197]

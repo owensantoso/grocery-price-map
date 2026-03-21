@@ -9,9 +9,10 @@ const NAV_ITEMS: Array<{
   primary?: boolean;
 }> = [
   { href: "/", label: "Compare" },
-  { href: "/prices/new", label: "Add Price", primary: true },
   { href: "/stores", label: "Stores" },
   { href: "/items", label: "Items" },
+  { href: "/logs", label: "Logs" },
+  { href: "/prices/new", label: "Add Price", primary: true },
 ];
 
 export function PrimaryNav() {

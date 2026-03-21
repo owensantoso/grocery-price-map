@@ -1,0 +1,151 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: Tokyo Grocery Ledger
+          - generic [ref=e7]: Grocery Price Map
+          - generic [ref=e8]: Store-specific prices, normalized and kept as history.
+        - navigation "Primary" [ref=e9]:
+          - link "Compare" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e11]: Compare
+          - link "Stores" [ref=e12] [cursor=pointer]:
+            - /url: /stores
+            - generic [ref=e13]: Stores
+          - link "Items" [ref=e14] [cursor=pointer]:
+            - /url: /items
+            - generic [ref=e15]: Items
+          - link "Logs" [ref=e16] [cursor=pointer]:
+            - /url: /logs
+            - generic [ref=e17]: Logs
+          - link "+ Add Price" [ref=e18] [cursor=pointer]:
+            - /url: /prices/new
+            - generic [ref=e19]: +
+            - generic [ref=e20]: Add Price
+        - link "Setup required" [ref=e22] [cursor=pointer]:
+          - /url: /auth/sign-in
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e26]:
+          - paragraph [ref=e27]: Demo Mode
+          - heading "Supabase is not configured yet." [level=2] [ref=e28]
+          - paragraph [ref=e29]: The compare screen is using seeded demo data so you can inspect the UI. Add your Supabase URL and anon key to start reading and writing live data.
+          - code [ref=e30]: NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - generic [ref=e34]:
+                - paragraph [ref=e35]: Demo compare view
+                - heading "Where is the cheapest..." [level=1] [ref=e36]
+                - paragraph [ref=e37]: Choose one canonical item and jump straight to the best recent log.
+              - generic [ref=e38]:
+                - generic [ref=e40]:
+                  - generic [ref=e41]: Item
+                  - combobox "Item" [ref=e43]: Eggs
+                - button "Search" [ref=e44] [cursor=pointer]
+            - article [ref=e45]:
+              - paragraph [ref=e46]: Best current result
+              - link "￥27 / 1count" [ref=e47] [cursor=pointer]:
+                - /url: /logs/log-eggs-hanamasa
+              - link "at Hanamasa Honancho" [ref=e48] [cursor=pointer]:
+                - /url: https://www.google.com/maps/search/?api=1&query=Niku%20no%20Hanamasa%20Honancho%2035.6839%2C139.6571
+              - paragraph [ref=e49]: Honancho, Suginami-ku • observed Mar 19, 2026
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - generic [ref=e54]:
+                  - heading "Store map" [level=2] [ref=e55]
+                  - paragraph [ref=e56]: Click a store marker to inspect the corresponding latest log.
+                - generic [ref=e58]:
+                  - generic:
+                    - generic:
+                      - img
+                    - generic:
+                      - tooltip "Hanamasa Honancho ￥27 / 1count":
+                        - generic:
+                          - strong: Hanamasa Honancho
+                          - generic: ￥27 / 1count
+                      - tooltip "Gyomu Super Nakano ￥28 / 1count":
+                        - generic:
+                          - strong: Gyomu Super Nakano
+                          - generic: ￥28 / 1count
+                      - tooltip "Summit Nishi-Eifuku ￥30 / 1count":
+                        - generic:
+                          - strong: Summit Nishi-Eifuku
+                          - generic: ￥30 / 1count
+                  - generic:
+                    - generic [ref=e62]:
+                      - button "Zoom in" [ref=e63] [cursor=pointer]: +
+                      - button "Zoom out" [ref=e64] [cursor=pointer]: −
+                    - generic [ref=e65]:
+                      - link "Leaflet" [ref=e66] [cursor=pointer]:
+                        - /url: https://leafletjs.com
+                        - img [ref=e67]
+                        - text: Leaflet
+                      - text: "| ©"
+                      - link "OpenStreetMap" [ref=e71] [cursor=pointer]:
+                        - /url: https://www.openstreetmap.org/copyright
+              - generic [ref=e72]:
+                - generic [ref=e73]:
+                  - paragraph [ref=e74]: Selected store history
+                  - heading "Hanamasa Honancho" [level=2] [ref=e75]
+                  - paragraph [ref=e76]: Direct log links for this store and item combination.
+                - generic [ref=e78]:
+                  - generic [ref=e79]:
+                    - link "￥27 / 1count" [ref=e80] [cursor=pointer]:
+                      - /url: /logs/log-eggs-hanamasa
+                    - generic [ref=e81]: paid ￥272 • ex tax ￥247
+                  - generic [ref=e82]:
+                    - generic [ref=e83]: 10 count
+                    - generic [ref=e84]: Mar 19, 2026
+            - complementary [ref=e85]:
+              - generic [ref=e86]:
+                - heading "Latest prices by store" [level=2] [ref=e87]
+                - paragraph [ref=e88]: 3 stores in comparison
+              - generic [ref=e89]:
+                - article [ref=e90]:
+                  - generic [ref=e91]:
+                    - generic [ref=e92]:
+                      - link "1. Hanamasa Honancho" [ref=e93] [cursor=pointer]:
+                        - /url: https://www.google.com/maps/search/?api=1&query=Niku%20no%20Hanamasa%20Honancho%2035.6839%2C139.6571
+                      - generic [ref=e94]: Honancho, Suginami-ku
+                    - link "￥27 / 1count" [ref=e95] [cursor=pointer]:
+                      - /url: /logs/log-eggs-hanamasa
+                  - generic [ref=e96]:
+                    - generic [ref=e97]: paid ￥272
+                    - generic [ref=e98]: ex tax ￥247
+                    - generic [ref=e99]: 10 count
+                    - generic [ref=e100]: observed Mar 19, 2026
+                  - button "Show on map" [ref=e102] [cursor=pointer]
+                - article [ref=e103]:
+                  - generic [ref=e104]:
+                    - generic [ref=e105]:
+                      - link "2. Gyomu Super Nakano" [ref=e106] [cursor=pointer]:
+                        - /url: https://www.google.com/maps/search/?api=1&query=Gyomu%20Super%20Nakano%2035.7061%2C139.6659
+                      - generic [ref=e107]: Nakano, Nakano-ku
+                    - link "￥28 / 1count" [ref=e108] [cursor=pointer]:
+                      - /url: /logs/log-eggs-gyomu
+                  - generic [ref=e109]:
+                    - generic [ref=e110]: paid ￥336
+                    - generic [ref=e111]: ex tax ￥305
+                    - generic [ref=e112]: 12 count
+                    - generic [ref=e113]: observed Mar 18, 2026
+                  - button "Show on map" [ref=e115] [cursor=pointer]
+                - article [ref=e116]:
+                  - generic [ref=e117]:
+                    - generic [ref=e118]:
+                      - link "3. Summit Nishi-Eifuku" [ref=e119] [cursor=pointer]:
+                        - /url: https://www.google.com/maps/search/?api=1&query=Summit%20Nishi-Eifuku%2035.6732%2C139.6375
+                      - generic [ref=e120]: Nishi-Eifuku, Suginami-ku
+                    - link "￥30 / 1count" [ref=e121] [cursor=pointer]:
+                      - /url: /logs/log-eggs-summit-latest
+                  - generic [ref=e122]:
+                    - generic [ref=e123]: paid ￥298
+                    - generic [ref=e124]: ex tax ￥271
+                    - generic [ref=e125]: 10 count
+                    - generic [ref=e126]: observed Mar 20, 2026
+                  - button "Show on map" [ref=e128] [cursor=pointer]
+  - button "Open Next.js Dev Tools" [ref=e135] [cursor=pointer]:
+    - img [ref=e136]
+  - alert [ref=e129]
