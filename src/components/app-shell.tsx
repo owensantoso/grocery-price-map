@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOutAction } from "@/app/actions";
+import { PrimaryNav } from "@/components/navigation/primary-nav";
 import type { Viewer } from "@/lib/models";
 
 type AppShellProps = {
@@ -20,12 +21,7 @@ export function AppShell({ children, configured, viewer }: AppShellProps) {
               Store-specific prices, normalized and kept as history.
             </span>
           </div>
-          <nav className="main-nav" aria-label="Primary">
-            <Link href="/">Compare</Link>
-            <Link href="/prices/new">Add Price</Link>
-            <Link href="/stores">Stores</Link>
-            <Link href="/items">Items</Link>
-          </nav>
+          <PrimaryNav />
           <div className="header-actions">
             {configured && viewer ? (
               <>

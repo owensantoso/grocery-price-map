@@ -42,14 +42,6 @@ export default async function NewPricePage() {
             items={snapshot.items}
             stores={snapshot.stores}
           />
-          <section className="panel stack-sm">
-            <p className="eyebrow">Logging guidance</p>
-            <h2 className="section-title">Keep the package details literal.</h2>
-            <p className="muted">
-              Enter the real shelf pack size and price exactly as observed. The app
-              will convert it to the item’s comparison basis automatically.
-            </p>
-          </section>
         </>
       )}
     </div>

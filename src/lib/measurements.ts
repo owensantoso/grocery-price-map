@@ -26,6 +26,8 @@ export const MEASUREMENT_UNITS: MeasurementUnit[] = [
   "l",
 ];
 
+export const CANONICAL_ITEM_UNITS: MeasurementUnit[] = ["count", "g", "ml"];
+
 export const MEASUREMENT_LABELS: Record<MeasurementUnit, string> = {
   count: "count",
   piece: "piece",

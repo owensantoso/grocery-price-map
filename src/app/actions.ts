@@ -4,8 +4,9 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { normalizePriceForItem } from "@/lib/measurements";
+import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { normalizeExternalUrl } from "@/lib/urls";
 
 export type ActionState = {
   fieldErrors?: Record<string, string[] | undefined>;
@@ -42,7 +43,7 @@ async function requireAuthedClient() {
 const itemSchema = z.object({
   category: z.string().trim().optional(),
   comparisonBasisAmount: z.coerce.number().positive(),
-  comparisonUnit: z.enum(["count", "piece", "g", "kg", "ml", "l"]),
+  comparisonUnit: z.enum(["count", "g", "ml"]),
   name: z.string().trim().min(1, "Name is required."),
 });
 
@@ -88,14 +89,29 @@ export async function createItemAction(
   }
 }
 
-const storeSchema = z.object({
-  addressText: z.string().trim().min(1, "Address or landmark is required."),
-  chainName: z.string().trim().optional(),
-  latitude: z.coerce.number(),
-  longitude: z.coerce.number(),
-  name: z.string().trim().min(1, "Store name is required."),
-  notes: z.string().trim().optional(),
-});
+const storeSchema = z
+  .object({
+    addressText: z.string().trim().min(1, "Address or descriptor is required."),
+    chainName: z.string().trim().optional(),
+    latitude: z.coerce.number().nullable(),
+    longitude: z.coerce.number().nullable(),
+    name: z.string().trim().min(1, "Store name is required."),
+    notes: z.string().trim().optional(),
+    storeKind: z.enum(["physical", "online"]),
+    storeUrl: z.string().trim().url("Store link must be a valid URL."),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.storeKind === "physical" &&
+      (value.latitude === null || value.longitude === null)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Physical stores need a map pin.",
+        path: ["latitude"],
+      });
+    }
+  });
 
 export async function createStoreAction(
   _previousState: ActionState,
@@ -104,10 +120,12 @@ export async function createStoreAction(
   const parsed = storeSchema.safeParse({
     addressText: formData.get("addressText"),
     chainName: formData.get("chainName"),
-    latitude: formData.get("latitude"),
-    longitude: formData.get("longitude"),
+    latitude: formData.get("latitude") ? Number(formData.get("latitude")) : null,
+    longitude: formData.get("longitude") ? Number(formData.get("longitude")) : null,
     name: formData.get("name"),
     notes: formData.get("notes"),
+    storeKind: formData.get("storeKind"),
+    storeUrl: formData.get("storeUrl"),
   });
 
   if (!parsed.success) {
@@ -119,15 +137,28 @@ export async function createStoreAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    const normalizedStoreUrl = normalizeExternalUrl(parsed.data.storeUrl);
+
+    const { data: duplicateStore } = await supabase
+      .from("stores")
+      .select("id, name")
+      .eq("store_url", normalizedStoreUrl)
+      .maybeSingle();
+
+    if (duplicateStore) {
+      throw new Error(`A store with this link already exists: ${duplicateStore.name}`);
+    }
 
     const { error } = await supabase.from("stores").insert({
       address_text: parsed.data.addressText,
       chain_name: parsed.data.chainName || null,
       created_by: user.id,
-      latitude: parsed.data.latitude,
-      longitude: parsed.data.longitude,
+      latitude: parsed.data.storeKind === "physical" ? parsed.data.latitude : null,
+      longitude: parsed.data.storeKind === "physical" ? parsed.data.longitude : null,
       name: parsed.data.name,
       notes: parsed.data.notes || null,
+      store_kind: parsed.data.storeKind,
+      store_url: normalizedStoreUrl,
     });
 
     if (error) {
@@ -145,10 +176,13 @@ export async function createStoreAction(
 
 const priceLogSchema = z.object({
   itemId: z.string().min(1),
+  listingUrl: z
+    .union([z.string().trim().url("Item listing URL must be a valid URL."), z.literal("")])
+    .optional(),
   notes: z.string().trim().optional(),
   observedAt: z.string().trim().min(1, "Observed date is required."),
   packageAmount: z.coerce.number().positive(),
-  packageUnit: z.enum(["count", "piece", "g", "kg", "ml", "l"]),
+  priceTaxExcludedYen: z.coerce.number().positive(),
   storeId: z.string().min(1),
   totalPriceYen: z.coerce.number().positive(),
 });
@@ -159,10 +193,11 @@ export async function createPriceLogAction(
 ): Promise<ActionState> {
   const parsed = priceLogSchema.safeParse({
     itemId: formData.get("itemId"),
+    listingUrl: formData.get("listingUrl"),
     notes: formData.get("notes"),
     observedAt: formData.get("observedAt"),
     packageAmount: formData.get("packageAmount"),
-    packageUnit: formData.get("packageUnit"),
+    priceTaxExcludedYen: formData.get("priceTaxExcludedYen"),
     storeId: formData.get("storeId"),
     totalPriceYen: formData.get("totalPriceYen"),
   });
@@ -188,31 +223,40 @@ export async function createPriceLogAction(
 
     const normalizedPrice = normalizePriceForItem({
       comparisonBasisAmount: item.comparison_basis_amount,
-      comparisonUnit: item.comparison_unit,
+      comparisonUnit: item.comparison_unit as MeasurementUnit,
       packageAmount: parsed.data.packageAmount,
-      packageUnit: parsed.data.packageUnit,
+      packageUnit: item.comparison_unit as MeasurementUnit,
       totalPriceYen: parsed.data.totalPriceYen,
     });
 
-    const { error } = await supabase.from("price_logs").insert({
-      item_id: parsed.data.itemId,
-      normalized_price_yen: normalizedPrice,
-      notes: parsed.data.notes || null,
-      observed_at: parsed.data.observedAt,
-      package_amount: parsed.data.packageAmount,
-      package_unit: parsed.data.packageUnit,
-      store_id: parsed.data.storeId,
-      submitted_by: user.id,
-      total_price_yen: parsed.data.totalPriceYen,
-    });
+    const { data: insertedLog, error } = await supabase
+      .from("price_logs")
+      .insert({
+        item_id: parsed.data.itemId,
+        listing_url: parsed.data.listingUrl
+          ? normalizeExternalUrl(parsed.data.listingUrl)
+          : null,
+        normalized_price_yen: normalizedPrice,
+        notes: parsed.data.notes || null,
+        observed_at: parsed.data.observedAt,
+        package_amount: parsed.data.packageAmount,
+        package_unit: item.comparison_unit,
+        price_tax_excluded_yen: parsed.data.priceTaxExcludedYen,
+        store_id: parsed.data.storeId,
+        submitted_by: user.id,
+        total_price_yen: parsed.data.totalPriceYen,
+      })
+      .select("id")
+      .single();
 
-    if (error) {
-      throw new Error(error.message);
+    if (error || !insertedLog) {
+      throw new Error(error?.message ?? "Failed to create the price log.");
     }
 
     revalidatePath("/");
     revalidatePath("/prices/new");
-    redirect(`/?item=${parsed.data.itemId}`);
+    revalidatePath(`/logs/${insertedLog.id}`);
+    redirect(`/logs/${insertedLog.id}`);
   } catch (error) {
     return toActionState(error);
   }

@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { createItemAction, type ActionState } from "@/app/actions";
 import { SubmitButton } from "@/components/forms/submit-button";
-import { MEASUREMENT_LABELS, MEASUREMENT_UNITS } from "@/lib/measurements";
+import { CANONICAL_ITEM_UNITS, MEASUREMENT_LABELS } from "@/lib/measurements";
 
 const initialState: ActionState = {
   message: "",
@@ -15,14 +15,11 @@ export function ItemForm({ disabled }: { disabled?: boolean }) {
 
   return (
     <form action={formAction} className="panel panel-muted stack-md">
-      <div className="split-header">
-        <div className="stack-xs">
-          <h2 className="section-title">Add a canonical item</h2>
-          <p className="muted">
-            Items define how prices are normalized, so treat them as shared schema.
-          </p>
-        </div>
-        <SubmitButton>Add item</SubmitButton>
+      <div className="stack-xs">
+        <h2 className="section-title">Add a canonical item</h2>
+        <p className="muted">
+          Keep units simple in v1. New items normalize by `count`, `g`, or `ml`.
+        </p>
       </div>
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
       <div className="form-grid">
@@ -43,9 +40,9 @@ export function ItemForm({ disabled }: { disabled?: boolean }) {
           />
         </label>
         <label className="form-field">
-          <span>Comparison unit</span>
+          <span>Normalization unit</span>
           <select className="select" defaultValue="count" disabled={disabled} name="comparisonUnit">
-            {MEASUREMENT_UNITS.map((unit) => (
+            {CANONICAL_ITEM_UNITS.map((unit) => (
               <option key={unit} value={unit}>
                 {MEASUREMENT_LABELS[unit]}
               </option>
@@ -53,7 +50,7 @@ export function ItemForm({ disabled }: { disabled?: boolean }) {
           </select>
         </label>
         <label className="form-field">
-          <span>Basis amount</span>
+          <span>Normalization amount</span>
           <input
             className="input"
             defaultValue="1"
@@ -71,6 +68,7 @@ export function ItemForm({ disabled }: { disabled?: boolean }) {
           ) : null}
         </label>
       </div>
+      <SubmitButton block>Add item</SubmitButton>
     </form>
   );
 }

@@ -1,5 +1,7 @@
-import type { CompareEntry, ItemRecord, PriceLogRecord, StoreRecord } from "@/lib/models";
+import type { CompareEntry, ItemRecord, LogDetail, PriceLogRecord, StoreRecord } from "@/lib/models";
 import { normalizePriceForItem } from "@/lib/measurements";
+import { excludedFromIncluded } from "@/lib/pricing";
+import { createGoogleMapsQueryUrl } from "@/lib/urls";
 
 const DEMO_USER_ID = "demo-user";
 
@@ -38,6 +40,12 @@ export const demoStores: StoreRecord[] = [
     id: "store-summit-nishi-eifuku",
     name: "Summit Nishi-Eifuku",
     chain_name: "Summit",
+    store_kind: "physical",
+    store_url: createGoogleMapsQueryUrl({
+      label: "Summit Nishi-Eifuku",
+      latitude: 35.6732,
+      longitude: 139.6375,
+    }),
     address_text: "Nishi-Eifuku, Suginami-ku",
     latitude: 35.6732,
     longitude: 139.6375,
@@ -47,8 +55,14 @@ export const demoStores: StoreRecord[] = [
   },
   {
     id: "store-hanamasa-honancho",
-    name: "Niku no Hanamasa Honancho",
+    name: "Hanamasa Honancho",
     chain_name: "Niku no Hanamasa",
+    store_kind: "physical",
+    store_url: createGoogleMapsQueryUrl({
+      label: "Niku no Hanamasa Honancho",
+      latitude: 35.6839,
+      longitude: 139.6571,
+    }),
     address_text: "Honancho, Suginami-ku",
     latitude: 35.6839,
     longitude: 139.6571,
@@ -60,6 +74,12 @@ export const demoStores: StoreRecord[] = [
     id: "store-gyomu-nakano",
     name: "Gyomu Super Nakano",
     chain_name: "Gyomu Super",
+    store_kind: "physical",
+    store_url: createGoogleMapsQueryUrl({
+      label: "Gyomu Super Nakano",
+      latitude: 35.7061,
+      longitude: 139.6659,
+    }),
     address_text: "Nakano, Nakano-ku",
     latitude: 35.7061,
     longitude: 139.6659,
@@ -67,9 +87,25 @@ export const demoStores: StoreRecord[] = [
     created_at: "2026-03-21T00:00:00.000Z",
     created_by: DEMO_USER_ID,
   },
+  {
+    id: "store-rakuten-online",
+    name: "Rakuten Online Grocery",
+    chain_name: "Rakuten",
+    store_kind: "online",
+    store_url: "https://www.rakuten.co.jp/",
+    address_text: "Online store",
+    latitude: null,
+    longitude: null,
+    notes: "Use for shelf-comparable online offers.",
+    created_at: "2026-03-21T00:00:00.000Z",
+    created_by: DEMO_USER_ID,
+  },
 ];
 
-function createLog(input: Omit<PriceLogRecord, "created_at" | "normalized_price_yen"> & {
+function createLog(input: Omit<
+  PriceLogRecord,
+  "created_at" | "normalized_price_yen" | "price_tax_excluded_yen"
+> & {
   item: ItemRecord;
 }) {
   return {
@@ -82,6 +118,7 @@ function createLog(input: Omit<PriceLogRecord, "created_at" | "normalized_price_
       packageUnit: input.package_unit,
       totalPriceYen: input.total_price_yen,
     }),
+    price_tax_excluded_yen: excludedFromIncluded(input.total_price_yen),
   } satisfies PriceLogRecord;
 }
 
@@ -97,6 +134,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     store_id: demoStores[0].id,
     submitted_by: DEMO_USER_ID,
     total_price_yen: 298,
+    listing_url: null,
   }),
   createLog({
     id: "log-eggs-summit-old",
@@ -109,6 +147,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     store_id: demoStores[0].id,
     submitted_by: DEMO_USER_ID,
     total_price_yen: 318,
+    listing_url: null,
   }),
   createLog({
     id: "log-eggs-hanamasa",
@@ -121,6 +160,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     store_id: demoStores[1].id,
     submitted_by: DEMO_USER_ID,
     total_price_yen: 272,
+    listing_url: null,
   }),
   createLog({
     id: "log-eggs-gyomu",
@@ -133,6 +173,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     store_id: demoStores[2].id,
     submitted_by: DEMO_USER_ID,
     total_price_yen: 336,
+    listing_url: null,
   }),
   createLog({
     id: "log-pork-summit",
@@ -145,6 +186,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     store_id: demoStores[0].id,
     submitted_by: DEMO_USER_ID,
     total_price_yen: 585,
+    listing_url: null,
   }),
   createLog({
     id: "log-pork-hanamasa",
@@ -157,18 +199,46 @@ export const demoPriceLogs: PriceLogRecord[] = [
     store_id: demoStores[1].id,
     submitted_by: DEMO_USER_ID,
     total_price_yen: 1098,
+    listing_url: null,
   }),
   createLog({
-    id: "log-pork-gyomu",
+    id: "log-pork-rakuten",
     item: demoItems[1],
     item_id: demoItems[1].id,
-    notes: "Frozen section.",
-    observed_at: "2026-03-17",
+    notes: "Online-only bulk offer.",
+    observed_at: "2026-03-21",
+    package_amount: 1200,
+    package_unit: "g",
+    store_id: demoStores[3].id,
+    submitted_by: DEMO_USER_ID,
+    total_price_yen: 1188,
+    listing_url: "https://www.rakuten.co.jp/search/pork-mince",
+  }),
+  createLog({
+    id: "log-chicken-hanamasa",
+    item: demoItems[2],
+    item_id: demoItems[2].id,
+    notes: "Fresh pack near the back cooler.",
+    observed_at: "2026-03-21",
+    package_amount: 2000,
+    package_unit: "g",
+    store_id: demoStores[1].id,
+    submitted_by: DEMO_USER_ID,
+    total_price_yen: 1800,
+    listing_url: null,
+  }),
+  createLog({
+    id: "log-chicken-summit",
+    item: demoItems[2],
+    item_id: demoItems[2].id,
+    notes: "Smaller tray, still competitive.",
+    observed_at: "2026-03-21",
     package_amount: 500,
     package_unit: "g",
-    store_id: demoStores[2].id,
+    store_id: demoStores[0].id,
     submitted_by: DEMO_USER_ID,
-    total_price_yen: 548,
+    total_price_yen: 800,
+    listing_url: null,
   }),
 ];
 
@@ -216,4 +286,32 @@ export function getDemoCompareEntries(itemId: string) {
 
     return left.latestLog.normalized_price_yen - right.latestLog.normalized_price_yen;
   });
+}
+
+export function getDemoLogDetail(logId: string): LogDetail | null {
+  const log = demoPriceLogs.find((candidate) => candidate.id === logId);
+
+  if (!log) {
+    return null;
+  }
+
+  const item = demoItems.find((candidate) => candidate.id === log.item_id);
+  const store = demoStores.find((candidate) => candidate.id === log.store_id);
+
+  if (!item || !store) {
+    return null;
+  }
+
+  return {
+    item,
+    latestAcrossStores: getDemoCompareEntries(item.id),
+    log,
+    sameStoreHistory: demoPriceLogs
+      .filter(
+        (candidate) =>
+          candidate.item_id === log.item_id && candidate.store_id === log.store_id,
+      )
+      .sort((left, right) => right.observed_at.localeCompare(left.observed_at)),
+    store,
+  };
 }

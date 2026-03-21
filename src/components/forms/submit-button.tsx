@@ -3,11 +3,13 @@
 import { useFormStatus } from "react-dom";
 
 type SubmitButtonProps = {
+  block?: boolean;
   children: React.ReactNode;
   variant?: "primary" | "secondary";
 };
 
 export function SubmitButton({
+  block = false,
   children,
   variant = "primary",
 }: SubmitButtonProps) {
@@ -15,7 +17,9 @@ export function SubmitButton({
 
   return (
     <button
-      className={`button ${variant === "primary" ? "button-primary" : "button-secondary"}`}
+      className={`button ${variant === "primary" ? "button-primary" : "button-secondary"} ${
+        block ? "button-block" : ""
+      }`}
       disabled={pending}
       type="submit"
     >

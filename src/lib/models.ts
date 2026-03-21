@@ -15,3 +15,11 @@ export type CompareEntry = {
   latestLog: PriceLogRecord;
   store: StoreRecord;
 };
+
+export type LogDetail = {
+  item: ItemRecord;
+  latestAcrossStores: CompareEntry[];
+  log: PriceLogRecord;
+  sameStoreHistory: PriceLogRecord[];
+  store: StoreRecord;
+};

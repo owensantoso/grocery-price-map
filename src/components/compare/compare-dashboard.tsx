@@ -1,8 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
-import { formatCurrency, formatDate, formatPackage, formatUnitValue } from "@/lib/format";
+import Link from "next/link";
+import { startTransition, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  formatCurrency,
+  formatDate,
+  formatPackage,
+} from "@/lib/format";
 import type { CompareEntry, ItemRecord } from "@/lib/models";
 
 const DynamicComparisonMap = dynamic(
@@ -22,6 +28,20 @@ type CompareDashboardProps = {
   selectedItemId: string | null;
 };
 
+function resolveItemByQuery(items: ItemRecord[], query: string) {
+  const trimmedQuery = query.trim().toLowerCase();
+
+  if (!trimmedQuery) {
+    return null;
+  }
+
+  return (
+    items.find((item) => item.name.toLowerCase() === trimmedQuery) ??
+    items.find((item) => item.name.toLowerCase().includes(trimmedQuery)) ??
+    null
+  );
+}
+
 export function CompareDashboard({
   entries,
   initialStoreId,
@@ -29,12 +49,17 @@ export function CompareDashboard({
   itemOptions,
   selectedItemId,
 }: CompareDashboardProps) {
+  const router = useRouter();
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(
     initialStoreId ?? entries[0]?.store.id ?? null,
   );
+  const [itemQuery, setItemQuery] = useState(
+    itemOptions.find((item) => item.id === selectedItemId)?.name ?? "",
+  );
 
+  const featuredEntry = entries[0] ?? null;
   const selectedEntry =
-    entries.find((entry) => entry.store.id === selectedStoreId) ?? entries[0] ?? null;
+    entries.find((entry) => entry.store.id === selectedStoreId) ?? featuredEntry;
 
   return (
     <div className="stack-lg">
@@ -42,54 +67,67 @@ export function CompareDashboard({
         <div className="stack-md">
           <div className="stack-xs">
             <p className="eyebrow">{isDemo ? "Demo compare view" : "Live compare view"}</p>
-            <h1 className="hero-title">Find the cheapest recent price by exact store.</h1>
+            <h1 className="hero-title">What&apos;s the cheapest recent price?</h1>
             <p className="hero-copy">
-              Compare one canonical item at a time, keep the original package
-              sizes visible, and use the latest observation per store without losing
-              price history.
+              Search one item, get the best current normalized result, then check the
+              map or drill into a specific log.
             </p>
           </div>
-          <form className="inline-actions" method="get">
-            <label className="form-field">
-              <span className="visually-hidden">Choose item</span>
-              <select
-                className="select"
-                defaultValue={selectedItemId ?? ""}
-                name="item"
-                onChange={(event) => event.currentTarget.form?.requestSubmit()}
-              >
-                {itemOptions.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <form
+            className="compare-search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const match = resolveItemByQuery(itemOptions, itemQuery);
+
+              if (!match) {
+                return;
+              }
+
+              startTransition(() => {
+                router.replace(`/?item=${match.id}`);
+              });
+            }}
+          >
+            <input
+              className="input compare-search__input"
+              list="item-options"
+              onChange={(event) => setItemQuery(event.target.value)}
+              placeholder="Search items like eggs, chicken breast, pork mince"
+              type="search"
+              value={itemQuery}
+            />
+            <datalist id="item-options">
+              {itemOptions.map((item) => (
+                <option key={item.id} value={item.name} />
+              ))}
+            </datalist>
+            <button className="button button-primary" type="submit">
+              Search
+            </button>
           </form>
         </div>
-        <div className="hero-grid">
-          <div className="stat-tile">
-            <strong>{entries.length}</strong>
-            <span className="muted">stores in the current comparison</span>
-          </div>
-          <div className="stat-tile">
-            <strong>
-              {selectedEntry ? formatCurrency(selectedEntry.latestLog.normalized_price_yen) : "--"}
-            </strong>
-            <span className="muted">best normalized price right now</span>
-          </div>
-          <div className="stat-tile">
-            <strong>
-              {selectedEntry
-                ? formatUnitValue(
-                    selectedEntry.item.comparison_basis_amount,
-                    selectedEntry.item.comparison_unit,
-                  )
-                : "--"}
-            </strong>
-            <span className="muted">normalization basis for ranking</span>
-          </div>
-        </div>
+        {featuredEntry ? (
+          <article className="featured-result panel panel-muted">
+            <p className="eyebrow">Best current result</p>
+            <Link className="featured-result__price" href={`/logs/${featuredEntry.latestLog.id}`}>
+              {formatCurrency(featuredEntry.latestLog.normalized_price_yen)} /{" "}
+              {featuredEntry.item.comparison_basis_amount}
+              {featuredEntry.item.comparison_unit}
+            </Link>
+            <a
+              className="featured-result__store"
+              href={featuredEntry.store.store_url}
+              rel="noreferrer"
+              target="_blank"
+            >
+              at {featuredEntry.store.name}
+            </a>
+            <p className="muted">
+              {featuredEntry.store.address_text} • observed{" "}
+              {formatDate(featuredEntry.latestLog.observed_at)}
+            </p>
+          </article>
+        ) : null}
       </section>
 
       {entries.length === 0 ? (
@@ -97,60 +135,16 @@ export function CompareDashboard({
           No observations yet for this item. Add a price log once items and stores exist.
         </section>
       ) : (
-        <section className="shell-grid">
-          <div className="panel stack-md">
-            <div className="split-header">
-              <div className="stack-xs">
-                <h2 className="section-title">Latest prices by store</h2>
-                <p className="muted">
-                  Ranked by normalized price, then by most recent observation.
-                </p>
-              </div>
-            </div>
-            <div className="list-rows">
-              {entries.map((entry, index) => (
-                <button
-                  key={entry.store.id}
-                  className={`result-card ${
-                    entry.store.id === selectedStoreId ? "is-selected" : ""
-                  }`}
-                  onClick={() => setSelectedStoreId(entry.store.id)}
-                  type="button"
-                >
-                  <div className="result-card__top">
-                    <div className="stack-xs">
-                      <strong>
-                        {index + 1}. {entry.store.name}
-                      </strong>
-                      <span className="muted">{entry.store.address_text}</span>
-                    </div>
-                    <span className="price-pill">
-                      {formatCurrency(entry.latestLog.normalized_price_yen)}
-                    </span>
-                  </div>
-                  <div className="meta-row">
-                    <span className="tag">
-                      shelf {formatCurrency(entry.latestLog.total_price_yen)}
-                    </span>
-                    <span className="tag">
-                      pack {formatPackage(entry.latestLog.package_amount, entry.latestLog.package_unit)}
-                    </span>
-                    <span className="tag">
-                      observed {formatDate(entry.latestLog.observed_at)}
-                    </span>
-                  </div>
-                  {entry.latestLog.notes ? <p className="muted">{entry.latestLog.notes}</p> : null}
-                </button>
-              ))}
-            </div>
-          </div>
+        <section className="compare-layout">
           <div className="stack-md">
             <section className="panel map-panel stack-sm">
-              <div className="stack-xs">
-                <h2 className="section-title">Store map</h2>
-                <p className="muted">
-                  Click a store card or map pin to inspect the same observation.
-                </p>
+              <div className="split-header">
+                <div className="stack-xs">
+                  <h2 className="section-title">Store map</h2>
+                  <p className="muted">
+                    Click a price marker to inspect the corresponding latest log.
+                  </p>
+                </div>
               </div>
               <DynamicComparisonMap
                 entries={entries}
@@ -164,23 +158,25 @@ export function CompareDashboard({
                   <p className="eyebrow">Selected store history</p>
                   <h2 className="section-title">{selectedEntry.store.name}</h2>
                   <p className="muted">
-                    Latest price plus earlier observations for the currently selected
-                    item.
+                    Direct log links for this store and item combination.
                   </p>
                 </div>
                 <div className="history-list">
                   {selectedEntry.history.map((log) => (
                     <div className="history-row" key={log.id}>
                       <div className="stack-xs">
-                        <strong>{formatCurrency(log.total_price_yen)}</strong>
+                        <Link className="store-link" href={`/logs/${log.id}`}>
+                          {formatCurrency(log.normalized_price_yen)} /{" "}
+                          {selectedEntry.item.comparison_basis_amount}
+                          {selectedEntry.item.comparison_unit}
+                        </Link>
                         <span className="muted">
-                          {formatPackage(log.package_amount, log.package_unit)}
+                          paid {formatCurrency(log.total_price_yen)} • ex tax{" "}
+                          {formatCurrency(log.price_tax_excluded_yen)}
                         </span>
                       </div>
                       <div className="stack-xs" style={{ alignItems: "flex-end" }}>
-                        <span className="price-pill price-pill--neutral">
-                          {formatCurrency(log.normalized_price_yen)}
-                        </span>
+                        <span className="tag">{formatPackage(log.package_amount, log.package_unit)}</span>
                         <span className="muted">{formatDate(log.observed_at)}</span>
                       </div>
                     </div>
@@ -189,6 +185,68 @@ export function CompareDashboard({
               </section>
             ) : null}
           </div>
+          <aside className="panel stack-md">
+            <div className="stack-xs">
+              <h2 className="section-title">Latest prices by store</h2>
+              <p className="list-summary">{entries.length} stores in comparison</p>
+            </div>
+            <div className="list-rows">
+              {entries.map((entry, index) => (
+                <article
+                  className={`result-card ${
+                    entry.store.id === selectedStoreId ? "is-selected" : ""
+                  }`}
+                  key={entry.store.id}
+                >
+                  <div className="result-card__top">
+                    <div className="stack-xs">
+                      <a
+                        className="store-link"
+                        href={entry.store.store_url}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {index + 1}. {entry.store.name}
+                      </a>
+                      <span className="muted">{entry.store.address_text}</span>
+                    </div>
+                    <Link className="price-pill" href={`/logs/${entry.latestLog.id}`}>
+                      {formatCurrency(entry.latestLog.normalized_price_yen)}
+                    </Link>
+                  </div>
+                  <div className="meta-row">
+                    <span className="tag">paid {formatCurrency(entry.latestLog.total_price_yen)}</span>
+                    <span className="tag">
+                      ex tax {formatCurrency(entry.latestLog.price_tax_excluded_yen)}
+                    </span>
+                    <span className="tag">
+                      {formatPackage(entry.latestLog.package_amount, entry.latestLog.package_unit)}
+                    </span>
+                    <span className="tag">observed {formatDate(entry.latestLog.observed_at)}</span>
+                  </div>
+                  <div className="result-card__actions">
+                    <button
+                      className="button-inline"
+                      onClick={() => setSelectedStoreId(entry.store.id)}
+                      type="button"
+                    >
+                      Show on map
+                    </button>
+                    {entry.latestLog.listing_url ? (
+                      <a
+                        className="button-inline"
+                        href={entry.latestLog.listing_url}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        Item listing
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </aside>
         </section>
       )}
     </div>

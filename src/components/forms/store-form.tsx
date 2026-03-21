@@ -21,22 +21,22 @@ const initialState: ActionState = {
 
 export function StoreForm({ disabled }: { disabled?: boolean }) {
   const [state, formAction] = useActionState(createStoreAction, initialState);
+  const [storeKind, setStoreKind] = useState<"physical" | "online">("physical");
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null }>({
     latitude: null,
     longitude: null,
   });
 
+  const linkLabel = storeKind === "physical" ? "Google Maps link" : "Store website";
+
   return (
     <form action={formAction} className="panel panel-muted stack-md">
-      <div className="split-header">
-        <div className="stack-xs">
-          <h2 className="section-title">Add a store</h2>
-          <p className="muted">
-            Stores are exact locations, not just the chain. Click the map to drop
-            the pin, then drag to refine it.
-          </p>
-        </div>
-        <SubmitButton>Add store</SubmitButton>
+      <div className="stack-xs">
+        <h2 className="section-title">Add a store</h2>
+        <p className="muted">
+          Use a Google Maps link for physical stores so duplicates are easier to spot.
+          Online stores can use their homepage instead.
+        </p>
       </div>
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
       <div className="form-grid">
@@ -48,6 +48,29 @@ export function StoreForm({ disabled }: { disabled?: boolean }) {
           ) : null}
         </label>
         <label className="form-field">
+          <span>Store type</span>
+          <select
+            className="select"
+            disabled={disabled}
+            name="storeKind"
+            onChange={(event) => {
+              const nextKind = event.target.value as "physical" | "online";
+              setStoreKind(nextKind);
+
+              if (nextKind === "online") {
+                setLocation({
+                  latitude: null,
+                  longitude: null,
+                });
+              }
+            }}
+            value={storeKind}
+          >
+            <option value="physical">Physical store</option>
+            <option value="online">Online store</option>
+          </select>
+        </label>
+        <label className="form-field">
           <span>Chain name</span>
           <input
             className="input"
@@ -56,13 +79,35 @@ export function StoreForm({ disabled }: { disabled?: boolean }) {
             placeholder="Optional"
           />
         </label>
+        <label className="form-field">
+          <span>{linkLabel}</span>
+          <input
+            className="input"
+            disabled={disabled}
+            name="storeUrl"
+            placeholder={
+              storeKind === "physical"
+                ? "https://maps.google.com/..."
+                : "https://shop.example.com"
+            }
+            required
+            type="url"
+          />
+          {state.fieldErrors?.storeUrl?.[0] ? (
+            <span className="field-error">{state.fieldErrors.storeUrl[0]}</span>
+          ) : null}
+        </label>
         <label className="form-field form-field--wide">
-          <span>Address or landmark</span>
+          <span>Address or descriptor</span>
           <input
             className="input"
             disabled={disabled}
             name="addressText"
-            placeholder="Nishi-Eifuku, Suginami-ku"
+            placeholder={
+              storeKind === "physical"
+                ? "Nishi-Eifuku, Suginami-ku"
+                : "Online store / shipping region"
+            }
             required
           />
         </label>
@@ -72,27 +117,30 @@ export function StoreForm({ disabled }: { disabled?: boolean }) {
             className="textarea"
             disabled={disabled}
             name="notes"
-            placeholder="Why this store matters, entrance details, opening hours"
+            placeholder="Why this store matters, special stock notes, online shipping details"
           />
         </label>
       </div>
       <input name="latitude" type="hidden" value={location.latitude ?? ""} />
       <input name="longitude" type="hidden" value={location.longitude ?? ""} />
-      <div className="stack-sm">
-        <DynamicLocationPicker
-          latitude={location.latitude}
-          longitude={location.longitude}
-          onChange={setLocation}
-        />
-        <p className="field-help">
-          {location.latitude !== null && location.longitude !== null
-            ? `Pinned at ${location.latitude}, ${location.longitude}`
-            : "No pin yet. Click anywhere on the map to place the store."}
-        </p>
-        {state.fieldErrors?.latitude?.[0] ? (
-          <span className="field-error">{state.fieldErrors.latitude[0]}</span>
-        ) : null}
-      </div>
+      {storeKind === "physical" ? (
+        <div className="stack-sm">
+          <DynamicLocationPicker
+            latitude={location.latitude}
+            longitude={location.longitude}
+            onChange={setLocation}
+          />
+          <p className="field-help">
+            {location.latitude !== null && location.longitude !== null
+              ? `Pinned at ${location.latitude}, ${location.longitude}`
+              : "No pin yet. Click anywhere on the map to place the store."}
+          </p>
+          {state.fieldErrors?.latitude?.[0] ? (
+            <span className="field-error">{state.fieldErrors.latitude[0]}</span>
+          ) : null}
+        </div>
+      ) : null}
+      <SubmitButton block>Add store</SubmitButton>
     </form>
   );
 }

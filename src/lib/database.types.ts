@@ -35,9 +35,11 @@ export type Database = {
           id: string;
           name: string;
           chain_name: string | null;
+          store_kind: Database["public"]["Enums"]["store_kind"];
+          store_url: string;
           address_text: string;
-          latitude: number;
-          longitude: number;
+          latitude: number | null;
+          longitude: number | null;
           notes: string | null;
           created_by: string;
           created_at: string;
@@ -46,9 +48,11 @@ export type Database = {
           id?: string;
           name: string;
           chain_name?: string | null;
+          store_kind?: Database["public"]["Enums"]["store_kind"];
+          store_url: string;
           address_text: string;
-          latitude: number;
-          longitude: number;
+          latitude?: number | null;
+          longitude?: number | null;
           notes?: string | null;
           created_by: string;
           created_at?: string;
@@ -57,9 +61,11 @@ export type Database = {
           id?: string;
           name?: string;
           chain_name?: string | null;
+          store_kind?: Database["public"]["Enums"]["store_kind"];
+          store_url?: string;
           address_text?: string;
-          latitude?: number;
-          longitude?: number;
+          latitude?: number | null;
+          longitude?: number | null;
           notes?: string | null;
           created_by?: string;
           created_at?: string;
@@ -105,9 +111,11 @@ export type Database = {
           package_amount: number;
           package_unit: Database["public"]["Enums"]["measurement_unit"];
           total_price_yen: number;
+          price_tax_excluded_yen: number;
           normalized_price_yen: number;
           observed_at: string;
           notes: string | null;
+          listing_url: string | null;
           created_at: string;
         };
         Insert: {
@@ -118,9 +126,11 @@ export type Database = {
           package_amount: number;
           package_unit: Database["public"]["Enums"]["measurement_unit"];
           total_price_yen: number;
+          price_tax_excluded_yen: number;
           normalized_price_yen: number;
           observed_at: string;
           notes?: string | null;
+          listing_url?: string | null;
           created_at?: string;
         };
         Update: {
@@ -131,9 +141,11 @@ export type Database = {
           package_amount?: number;
           package_unit?: Database["public"]["Enums"]["measurement_unit"];
           total_price_yen?: number;
+          price_tax_excluded_yen?: number;
           normalized_price_yen?: number;
           observed_at?: string;
           notes?: string | null;
+          listing_url?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -143,6 +155,7 @@ export type Database = {
     Functions: Record<string, never>;
     Enums: {
       measurement_unit: "count" | "piece" | "g" | "kg" | "ml" | "l";
+      store_kind: "physical" | "online";
     };
     CompositeTypes: Record<string, never>;
   };

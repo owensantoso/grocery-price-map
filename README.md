@@ -7,9 +7,10 @@ A Next.js + Supabase app for logging grocery prices at exact store locations, pr
 - Google-auth ready app shell with Supabase SSR wiring
 - Shared `items`, `stores`, and `price_logs` model
 - Manual item creation with normalization basis
-- Manual store creation with a map pin picker
-- Price log entry with normalized yen-per-unit calculation
-- Compare home screen with ranked list, map view, and per-store history
+- Manual store creation with a map pin picker plus required store link
+- Price log entry with tax-included / tax-excluded syncing
+- Compare home screen with a featured best result, larger map, and log-detail drilldowns
+- Dedicated log detail pages for individual observations
 - Demo-mode fallback data when Supabase is not configured
 - Supabase SQL migration with RLS policies
 - Unit tests for normalization and compare ordering
@@ -49,7 +50,10 @@ If env vars are missing, the app still renders in demo mode with seeded Tokyo gr
 1. Create a Supabase project.
 2. Enable Google auth in Supabase Auth.
 3. Add `http://localhost:3000/auth/callback` as an allowed redirect URL for local development.
-4. Run the SQL in [supabase/migrations/202603210001_init.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603210001_init.sql).
+4. Run the SQL in:
+
+- [supabase/migrations/202603210001_init.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603210001_init.sql)
+- [supabase/migrations/202603210002_feedback_iteration.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603210002_feedback_iteration.sql)
 
 The migration creates:
 
@@ -57,6 +61,8 @@ The migration creates:
 - `stores`
 - `items`
 - `price_logs`
+- store links and store type support
+- tax-excluded pricing and optional item listing URLs on price logs
 - a trigger to mirror new auth users into `profiles`
 - RLS policies for shared reads and owner-only `price_logs` updates
 

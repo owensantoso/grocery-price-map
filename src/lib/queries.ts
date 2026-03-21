@@ -3,8 +3,16 @@ import {
   demoItems,
   demoStores,
   getDemoCompareEntries,
+  getDemoLogDetail,
 } from "@/lib/demo-data";
-import type { CompareEntry, ItemRecord, StoreRecord, Viewer } from "@/lib/models";
+import type {
+  CompareEntry,
+  ItemRecord,
+  LogDetail,
+  PriceLogRecord,
+  StoreRecord,
+  Viewer,
+} from "@/lib/models";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type ComparisonSnapshot = {
@@ -16,6 +24,27 @@ type ComparisonSnapshot = {
   viewer: Viewer | null;
 };
 
+type PriceLogWithRelations = {
+  created_at: string;
+  id: string;
+  item_id: string;
+  listing_url: string | null;
+  normalized_price_yen: number;
+  notes: string | null;
+  observed_at: string;
+  package_amount: number;
+  package_unit: ItemRecord["comparison_unit"];
+  price_tax_excluded_yen: number;
+  store_id: string;
+  stores: StoreRecord | null;
+  submitted_by: string;
+  total_price_yen: number;
+};
+
+type PriceLogDetailRow = PriceLogWithRelations & {
+  items: ItemRecord | null;
+};
+
 function toViewer(user: User | null): Viewer | null {
   if (!user?.email) {
     return null;
@@ -25,6 +54,62 @@ function toViewer(user: User | null): Viewer | null {
     email: user.email,
     id: user.id,
   };
+}
+
+function stripRelations(log: PriceLogWithRelations): PriceLogRecord {
+  return {
+    created_at: log.created_at,
+    id: log.id,
+    item_id: log.item_id,
+    listing_url: log.listing_url,
+    normalized_price_yen: log.normalized_price_yen,
+    notes: log.notes,
+    observed_at: log.observed_at,
+    package_amount: log.package_amount,
+    package_unit: log.package_unit,
+    price_tax_excluded_yen: log.price_tax_excluded_yen,
+    store_id: log.store_id,
+    submitted_by: log.submitted_by,
+    total_price_yen: log.total_price_yen,
+  };
+}
+
+function buildCompareEntries(logs: PriceLogWithRelations[], selectedItem: ItemRecord) {
+  const seenStores = new Set<string>();
+  const entries: CompareEntry[] = [];
+
+  const sortedLogs = [...logs].sort((left, right) => {
+    if (left.observed_at === right.observed_at) {
+      return right.created_at.localeCompare(left.created_at);
+    }
+
+    return right.observed_at.localeCompare(left.observed_at);
+  });
+
+  for (const log of sortedLogs) {
+    if (seenStores.has(log.store_id) || !log.stores) {
+      continue;
+    }
+
+    seenStores.add(log.store_id);
+
+    entries.push({
+      history: sortedLogs
+        .filter((candidate) => candidate.store_id === log.store_id)
+        .map(stripRelations),
+      item: selectedItem,
+      latestLog: stripRelations(log),
+      store: log.stores,
+    });
+  }
+
+  return entries.sort((left, right) => {
+    if (left.latestLog.normalized_price_yen === right.latestLog.normalized_price_yen) {
+      return right.latestLog.observed_at.localeCompare(left.latestLog.observed_at);
+    }
+
+    return left.latestLog.normalized_price_yen - right.latestLog.normalized_price_yen;
+  });
 }
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -95,83 +180,6 @@ export async function getStores(): Promise<StoreRecord[]> {
   return (data ?? []) as StoreRecord[];
 }
 
-type PriceLogWithRelations = {
-  created_at: string;
-  id: string;
-  item_id: string;
-  normalized_price_yen: number;
-  notes: string | null;
-  observed_at: string;
-  package_amount: number;
-  package_unit: ItemRecord["comparison_unit"];
-  store_id: string;
-  stores: StoreRecord | null;
-  submitted_by: string;
-  total_price_yen: number;
-};
-
-function buildCompareEntries(logs: PriceLogWithRelations[], selectedItem: ItemRecord) {
-  const seenStores = new Set<string>();
-  const entries: CompareEntry[] = [];
-
-  const sortedLogs = [...logs].sort((left, right) => {
-    if (left.observed_at === right.observed_at) {
-      return right.created_at.localeCompare(left.created_at);
-    }
-
-    return right.observed_at.localeCompare(left.observed_at);
-  });
-
-  for (const log of sortedLogs) {
-    if (seenStores.has(log.store_id) || !log.stores) {
-      continue;
-    }
-
-    seenStores.add(log.store_id);
-
-    entries.push({
-      history: sortedLogs
-        .filter((candidate) => candidate.store_id === log.store_id)
-        .map((candidate) => ({
-          created_at: candidate.created_at,
-          id: candidate.id,
-          item_id: candidate.item_id,
-          normalized_price_yen: candidate.normalized_price_yen,
-          notes: candidate.notes,
-          observed_at: candidate.observed_at,
-          package_amount: candidate.package_amount,
-          package_unit: candidate.package_unit,
-          store_id: candidate.store_id,
-          submitted_by: candidate.submitted_by,
-          total_price_yen: candidate.total_price_yen,
-        })),
-      item: selectedItem,
-      latestLog: {
-        created_at: log.created_at,
-        id: log.id,
-        item_id: log.item_id,
-        normalized_price_yen: log.normalized_price_yen,
-        notes: log.notes,
-        observed_at: log.observed_at,
-        package_amount: log.package_amount,
-        package_unit: log.package_unit,
-        store_id: log.store_id,
-        submitted_by: log.submitted_by,
-        total_price_yen: log.total_price_yen,
-      },
-      store: log.stores,
-    });
-  }
-
-  return entries.sort((left, right) => {
-    if (left.latestLog.normalized_price_yen === right.latestLog.normalized_price_yen) {
-      return right.latestLog.observed_at.localeCompare(left.latestLog.observed_at);
-    }
-
-    return left.latestLog.normalized_price_yen - right.latestLog.normalized_price_yen;
-  });
-}
-
 export async function getComparisonSnapshot(
   itemId?: string | null,
 ): Promise<ComparisonSnapshot> {
@@ -231,14 +239,18 @@ export async function getComparisonSnapshot(
         package_amount,
         package_unit,
         total_price_yen,
+        price_tax_excluded_yen,
         normalized_price_yen,
         observed_at,
         notes,
+        listing_url,
         created_at,
         stores (
           id,
           name,
           chain_name,
+          store_kind,
+          store_url,
           address_text,
           latitude,
           longitude,
@@ -301,5 +313,126 @@ export async function getPriceEntrySnapshot(): Promise<{
     items,
     stores,
     viewer,
+  };
+}
+
+export async function getPriceLogDetail(logId: string): Promise<LogDetail | null> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return getDemoLogDetail(logId);
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("price_logs")
+    .select(
+      `
+        id,
+        store_id,
+        item_id,
+        submitted_by,
+        package_amount,
+        package_unit,
+        total_price_yen,
+        price_tax_excluded_yen,
+        normalized_price_yen,
+        observed_at,
+        notes,
+        listing_url,
+        created_at,
+        items (
+          id,
+          name,
+          category,
+          comparison_unit,
+          comparison_basis_amount,
+          created_at,
+          created_by
+        ),
+        stores (
+          id,
+          name,
+          chain_name,
+          store_kind,
+          store_url,
+          address_text,
+          latitude,
+          longitude,
+          notes,
+          created_at,
+          created_by
+        )
+      `,
+    )
+    .eq("id", logId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  const log = data as unknown as PriceLogDetailRow;
+
+  if (!log.items || !log.stores) {
+    return null;
+  }
+
+  const { data: historyData, error: historyError } = await supabase
+    .from("price_logs")
+    .select(
+      `
+        id,
+        store_id,
+        item_id,
+        submitted_by,
+        package_amount,
+        package_unit,
+        total_price_yen,
+        price_tax_excluded_yen,
+        normalized_price_yen,
+        observed_at,
+        notes,
+        listing_url,
+        created_at,
+        stores (
+          id,
+          name,
+          chain_name,
+          store_kind,
+          store_url,
+          address_text,
+          latitude,
+          longitude,
+          notes,
+          created_at,
+          created_by
+        )
+      `,
+    )
+    .eq("item_id", log.item_id)
+    .eq("store_id", log.store_id);
+
+  if (historyError) {
+    throw new Error(historyError.message);
+  }
+
+  return {
+    item: log.items,
+    latestAcrossStores: await getComparisonSnapshot(log.item_id).then(
+      (snapshot) => snapshot.entries,
+    ),
+    log: stripRelations(log),
+    sameStoreHistory: ((historyData ?? []) as unknown as PriceLogWithRelations[])
+      .sort((left, right) => right.observed_at.localeCompare(left.observed_at))
+      .map(stripRelations),
+    store: log.stores,
   };
 }

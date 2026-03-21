@@ -1,11 +1,10 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useState } from "react";
 import { createPriceLogAction, type ActionState } from "@/app/actions";
 import { SubmitButton } from "@/components/forms/submit-button";
-import { formatUnitValue } from "@/lib/format";
 import { type ItemRecord, type StoreRecord } from "@/lib/models";
-import { MEASUREMENT_LABELS, MEASUREMENT_UNITS } from "@/lib/measurements";
+import { excludedFromIncluded, includedFromExcluded } from "@/lib/pricing";
 
 const initialState: ActionState = {
   message: "",
@@ -18,6 +17,10 @@ type PriceLogFormProps = {
   stores: StoreRecord[];
 };
 
+function stringifyNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
 export function PriceLogForm({
   disabled,
   items,
@@ -25,29 +28,39 @@ export function PriceLogForm({
 }: PriceLogFormProps) {
   const [state, formAction] = useActionState(createPriceLogAction, initialState);
   const [selectedItemId, setSelectedItemId] = useState(items[0]?.id ?? "");
-
-  const selectedItem = useMemo(
-    () => items.find((item) => item.id === selectedItemId) ?? items[0] ?? null,
-    [items, selectedItemId],
+  const [selectedStoreId, setSelectedStoreId] = useState(stores[0]?.id ?? "");
+  const [priceIncluded, setPriceIncluded] = useState("");
+  const [priceExcluded, setPriceExcluded] = useState("");
+  const [packageAmount, setPackageAmount] = useState(
+    items[0] ? stringifyNumber(items[0].comparison_basis_amount) : "",
   );
+
+  const selectedItem =
+    items.find((item) => item.id === selectedItemId) ?? items[0] ?? null;
+  const selectedStore =
+    stores.find((store) => store.id === selectedStoreId) ?? stores[0] ?? null;
 
   return (
     <form action={formAction} className="panel panel-muted stack-md">
-      <div className="split-header">
-        <div className="stack-xs">
-          <h2 className="section-title">Log a price observation</h2>
-          <p className="muted">
-            The app stores the original shelf price and also computes the normalized
-            comparison price for ranking.
-          </p>
-        </div>
-        <SubmitButton>Add log</SubmitButton>
+      <div className="stack-xs">
+        <h2 className="section-title">Log a price observation</h2>
+        <p className="muted">
+          Enter either tax-included or tax-excluded price. The other field updates
+          using a 10% tax assumption.
+        </p>
       </div>
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
       <div className="form-grid">
         <label className="form-field">
           <span>Store</span>
-          <select className="select" disabled={disabled} name="storeId" required>
+          <select
+            className="select"
+            disabled={disabled}
+            name="storeId"
+            onChange={(event) => setSelectedStoreId(event.target.value)}
+            required
+            value={selectedStoreId}
+          >
             {stores.map((store) => (
               <option key={store.id} value={store.id}>
                 {store.name}
@@ -61,7 +74,15 @@ export function PriceLogForm({
             className="select"
             disabled={disabled}
             name="itemId"
-            onChange={(event) => setSelectedItemId(event.target.value)}
+            onChange={(event) => {
+              const nextItem =
+                items.find((item) => item.id === event.target.value) ?? items[0] ?? null;
+              setSelectedItemId(event.target.value);
+
+              if (nextItem) {
+                setPackageAmount(stringifyNumber(nextItem.comparison_basis_amount));
+              }
+            }}
             required
             value={selectedItemId}
           >
@@ -73,39 +94,19 @@ export function PriceLogForm({
           </select>
         </label>
         <label className="form-field">
-          <span>Package amount</span>
+          <span>
+            Package amount{selectedItem ? ` (${selectedItem.comparison_unit})` : ""}
+          </span>
           <input
             className="input"
-            defaultValue="1"
             disabled={disabled}
             min="0.01"
             name="packageAmount"
+            onChange={(event) => setPackageAmount(event.target.value)}
             required
             step="0.01"
             type="number"
-          />
-        </label>
-        <label className="form-field">
-          <span>Package unit</span>
-          <select className="select" defaultValue="count" disabled={disabled} name="packageUnit">
-            {MEASUREMENT_UNITS.map((unit) => (
-              <option key={unit} value={unit}>
-                {MEASUREMENT_LABELS[unit]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="form-field">
-          <span>Total price (JPY)</span>
-          <input
-            className="input"
-            defaultValue="0"
-            disabled={disabled}
-            min="1"
-            name="totalPriceYen"
-            required
-            step="1"
-            type="number"
+            value={packageAmount}
           />
         </label>
         <label className="form-field">
@@ -117,6 +118,70 @@ export function PriceLogForm({
             name="observedAt"
             required
             type="date"
+          />
+        </label>
+        <label className="form-field">
+          <span>Tax included price (actual paid)</span>
+          <input
+            className="input"
+            disabled={disabled}
+            inputMode="numeric"
+            min="0"
+            name="totalPriceYen"
+            onChange={(event) => {
+              const nextValue = event.target.value;
+              setPriceIncluded(nextValue);
+
+              if (nextValue === "") {
+                setPriceExcluded("");
+                return;
+              }
+
+              setPriceExcluded(
+                stringifyNumber(excludedFromIncluded(Number(nextValue))),
+              );
+            }}
+            required
+            step="1"
+            type="number"
+            value={priceIncluded}
+          />
+        </label>
+        <label className="form-field">
+          <span>Tax excluded price</span>
+          <input
+            className="input"
+            disabled={disabled}
+            inputMode="numeric"
+            min="0"
+            name="priceTaxExcludedYen"
+            onChange={(event) => {
+              const nextValue = event.target.value;
+              setPriceExcluded(nextValue);
+
+              if (nextValue === "") {
+                setPriceIncluded("");
+                return;
+              }
+
+              setPriceIncluded(
+                stringifyNumber(includedFromExcluded(Number(nextValue))),
+              );
+            }}
+            required
+            step="1"
+            type="number"
+            value={priceExcluded}
+          />
+        </label>
+        <label className="form-field form-field--wide">
+          <span>Item listing URL (optional)</span>
+          <input
+            className="input"
+            disabled={disabled}
+            name="listingUrl"
+            placeholder="Useful for online stores or recurring product pages"
+            type="url"
           />
         </label>
         <label className="form-field form-field--wide">
@@ -133,13 +198,18 @@ export function PriceLogForm({
         <div className="banner">
           Normalizing against {selectedItem.name}:{" "}
           <strong>
-            {formatUnitValue(
-              selectedItem.comparison_basis_amount,
-              selectedItem.comparison_unit,
-            )}
+            {stringifyNumber(selectedItem.comparison_basis_amount)}
+            {selectedItem.comparison_unit}
           </strong>
         </div>
       ) : null}
+      {selectedStore ? (
+        <p className="field-help">
+          Selected store link will be attached to this log. Add an item listing URL
+          too if this is an online listing.
+        </p>
+      ) : null}
+      <SubmitButton block>Add log</SubmitButton>
     </form>
   );
 }
