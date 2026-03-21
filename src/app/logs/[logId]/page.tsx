@@ -20,8 +20,16 @@ export default async function LogDetailPage({ params }: PageProps) {
 
   return (
     <div className="stack-lg">
-      <section className="panel hero hero-card">
-        <div className="stack-sm">
+      <section className="panel hero hero-card log-hero">
+        <div className="log-hero__vote">
+          <LogVoteControls
+            disabled={false}
+            key={`${detail.log.id}:${detail.voteSummary.score}:${detail.voteSummary.viewerVote}`}
+            logId={detail.log.id}
+            summary={detail.voteSummary}
+          />
+        </div>
+        <div className="stack-sm log-hero__main">
           <p className="eyebrow">Item log</p>
           <h1 className="hero-title">{detail.item.name}</h1>
           <p className="hero-title hero-title--subtle">
@@ -41,16 +49,15 @@ export default async function LogDetailPage({ params }: PageProps) {
             <p className="muted">{detail.store.address_text}</p>
           </div>
         </div>
-        <div className="featured-result panel panel-muted current-log-panel">
-          <div className="current-log-panel__vote">
-            <LogVoteControls
-              disabled={false}
-              logId={detail.log.id}
-              summary={detail.voteSummary}
-            />
-          </div>
+        <div className="featured-result panel panel-muted current-log-panel log-hero__side">
           <div className="current-log-panel__content stack-sm">
             <p className="eyebrow">Current log</p>
+            <div className="photo-placeholder">
+              <span className="eyebrow">Photo placeholder</span>
+              <p className="muted">
+                Reserved for the future price-log photo feature.
+              </p>
+            </div>
             <p className="muted">
               paid {formatCurrency(detail.log.total_price_yen)} • ex tax{" "}
               {formatCurrency(detail.log.price_tax_excluded_yen)}

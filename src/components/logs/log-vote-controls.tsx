@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useMemo, useOptimistic, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { voteOnPriceLogAction } from "@/app/actions";
 import type { VoteSummary } from "@/lib/models";
 
@@ -11,16 +11,13 @@ type LogVoteControlsProps = {
   summary: VoteSummary;
 };
 
-type LocalVoteState = VoteSummary;
-
-function applyVote(summary: VoteSummary, nextVote: -1 | 0 | 1): LocalVoteState {
-  const previousVote = summary.viewerVote;
+function applyVote(summary: VoteSummary, nextVote: -1 | 0 | 1): VoteSummary {
   let upvotes = summary.upvotes;
   let downvotes = summary.downvotes;
 
-  if (previousVote === 1) {
+  if (summary.viewerVote === 1) {
     upvotes -= 1;
-  } else if (previousVote === -1) {
+  } else if (summary.viewerVote === -1) {
     downvotes -= 1;
   }
 
@@ -38,7 +35,7 @@ function applyVote(summary: VoteSummary, nextVote: -1 | 0 | 1): LocalVoteState {
   };
 }
 
-function getToggledVote(currentVote: -1 | 0 | 1, targetVote: -1 | 1): -1 | 0 | 1 {
+function getNextVote(currentVote: -1 | 0 | 1, targetVote: -1 | 1): -1 | 0 | 1 {
   return currentVote === targetVote ? 0 : targetVote;
 }
 
@@ -48,36 +45,20 @@ export function LogVoteControls({
   logId,
   summary,
 }: LogVoteControlsProps) {
-  const [optimisticSummary, setOptimisticSummary] = useOptimistic(
-    summary,
-    (_currentSummary, nextSummary: VoteSummary) => nextSummary,
-  );
+  const [localSummary, setLocalSummary] = useState(summary);
   const desiredVoteRef = useRef<-1 | 0 | 1>(summary.viewerVote);
   const inflightVoteRef = useRef<-1 | 0 | 1 | null>(null);
   const flushTimerRef = useRef<number | null>(null);
-  const mountedRef = useRef(true);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  useEffect(() => {
-    desiredVoteRef.current = summary.viewerVote;
-  }, [summary]);
 
   useEffect(() => {
     return () => {
-      mountedRef.current = false;
-
       if (flushTimerRef.current !== null) {
         window.clearTimeout(flushTimerRef.current);
       }
     };
   }, []);
 
-  const helperText = useMemo(
-    () => `${optimisticSummary.upvotes} up / ${optimisticSummary.downvotes} down`,
-    [optimisticSummary.downvotes, optimisticSummary.upvotes],
-  );
-
-  function queueFlush() {
+  function scheduleFlush() {
     if (flushTimerRef.current !== null) {
       window.clearTimeout(flushTimerRef.current);
     }
@@ -89,29 +70,20 @@ export function LogVoteControls({
 
       const voteToSend = desiredVoteRef.current;
       inflightVoteRef.current = voteToSend;
-      setIsSyncing(true);
 
       const result = await voteOnPriceLogAction(logId, voteToSend);
-
-      if (!mountedRef.current) {
-        return;
-      }
-
       inflightVoteRef.current = null;
-      setIsSyncing(false);
 
       if (result.status === "error") {
         desiredVoteRef.current = summary.viewerVote;
-        startTransition(() => {
-          setOptimisticSummary(summary);
-        });
+        setLocalSummary(summary);
         return;
       }
 
       if (desiredVoteRef.current !== voteToSend) {
-        queueFlush();
+        scheduleFlush();
       }
-    }, 160);
+    }, 140);
   }
 
   function handleVote(targetVote: -1 | 1) {
@@ -119,11 +91,11 @@ export function LogVoteControls({
       return;
     }
 
-    startTransition(() => {
-      const nextVote = getToggledVote(optimisticSummary.viewerVote, targetVote);
+    setLocalSummary((currentSummary) => {
+      const nextVote = getNextVote(currentSummary.viewerVote, targetVote);
       desiredVoteRef.current = nextVote;
-      queueFlush();
-      setOptimisticSummary(applyVote(optimisticSummary, nextVote));
+      scheduleFlush();
+      return applyVote(currentSummary, nextVote);
     });
   }
 
@@ -132,17 +104,17 @@ export function LogVoteControls({
       <div className="vote-controls" aria-label="Vote on this log">
         <button
           aria-label="Upvote"
-          className={`vote-button ${optimisticSummary.viewerVote === 1 ? "is-active" : ""}`}
+          className={`vote-button ${localSummary.viewerVote === 1 ? "is-active" : ""}`}
           disabled={disabled}
           onClick={() => handleVote(1)}
           type="button"
         >
           ▲
         </button>
-        <span className="vote-score">{optimisticSummary.score}</span>
+        <span className="vote-score">{localSummary.score}</span>
         <button
           aria-label="Downvote"
-          className={`vote-button ${optimisticSummary.viewerVote === -1 ? "is-active" : ""}`}
+          className={`vote-button ${localSummary.viewerVote === -1 ? "is-active" : ""}`}
           disabled={disabled}
           onClick={() => handleVote(-1)}
           type="button"
@@ -150,10 +122,11 @@ export function LogVoteControls({
           ▼
         </button>
       </div>
-      <span className="field-help">
-        {helperText}
-        {isSyncing ? " • syncing" : ""}
-      </span>
+      {!compact ? (
+        <span className="field-help">
+          {localSummary.upvotes} up / {localSummary.downvotes} down
+        </span>
+      ) : null}
     </div>
   );
 }

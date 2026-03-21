@@ -12,7 +12,12 @@ export function PriceLogCard({ entry, showEditLink }: PriceLogCardProps) {
   return (
     <article className="result-card log-card">
       <div className="log-card__vote">
-        <LogVoteControls compact logId={entry.log.id} summary={entry.voteSummary} />
+        <LogVoteControls
+          compact
+          key={`${entry.log.id}:${entry.voteSummary.score}:${entry.voteSummary.viewerVote}`}
+          logId={entry.log.id}
+          summary={entry.voteSummary}
+        />
       </div>
       <div className="log-card__content stack-sm">
         <div className="result-card__top">

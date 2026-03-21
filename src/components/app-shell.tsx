@@ -25,7 +25,9 @@ export function AppShell({ children, configured, viewer }: AppShellProps) {
           <div className="header-actions">
             {configured && viewer ? (
               <>
-                <span className="tag">{viewer.email}</span>
+                <Link className="tag header-account-link" href="/account">
+                  {viewer.email}
+                </Link>
                 <form action={signOutAction}>
                   <button className="button button-secondary" type="submit">
                     Sign out
