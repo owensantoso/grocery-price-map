@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOutAction } from "@/app/actions";
+import { AccountMenu } from "@/components/navigation/account-menu";
 import { PrimaryNav } from "@/components/navigation/primary-nav";
 import type { Viewer } from "@/lib/models";
 
@@ -14,15 +15,21 @@ export function AppShell({ children, configured, viewer }: AppShellProps) {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header__inner">
-          <div className="brand-lockup">
-            <span className="brand-lockup__mark">Tokyo Grocery Ledger</span>
-            <span className="brand-lockup__title">Grocery Price Map</span>
-            <span className="brand-lockup__subtitle">
-              Store-specific prices, normalized and kept as history.
-            </span>
+          <div className="app-header__top">
+            <div className="brand-lockup">
+              <span className="brand-lockup__mark">Tokyo Grocery Ledger</span>
+              <span className="brand-lockup__title">Grocery Price Map</span>
+              <span className="brand-lockup__subtitle">
+                Store-specific prices, normalized and kept as history.
+              </span>
+            </div>
+            <div className="header-actions header-actions--mobile">
+              <AccountMenu configured={configured} viewerEmail={viewer?.email ?? null} />
+            </div>
           </div>
-          <PrimaryNav />
-          <div className="header-actions">
+          <div className="app-header__bottom">
+            <PrimaryNav />
+            <div className="header-actions header-actions--desktop">
             {configured && viewer ? (
               <>
                 <Link className="tag header-account-link" href="/account">
@@ -39,6 +46,7 @@ export function AppShell({ children, configured, viewer }: AppShellProps) {
                 {configured ? "Sign in with Google" : "Setup required"}
               </Link>
             )}
+            </div>
           </div>
         </div>
       </header>
