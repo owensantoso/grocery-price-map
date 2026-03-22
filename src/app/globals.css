@@ -628,11 +628,17 @@ body::before {
 .select,
 .textarea {
   width: 100%;
+  min-width: 0;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.84);
   color: var(--ink);
   padding: 0.85rem 0.95rem;
+}
+
+.input-date {
+  max-width: 100%;
+  min-width: 0;
 }
 
 .input-prefix {
@@ -1028,7 +1034,6 @@ body::before {
   .list-table__row,
   .form-grid,
   .log-hero,
-  .log-card,
   .item-basis-grid,
   .comment-row {
     grid-template-columns: 1fr;
@@ -1060,6 +1065,20 @@ body::before {
   .vote-stack,
   .vote-stack--compact {
     align-items: flex-start;
+  }
+
+  .log-card {
+    grid-template-columns: auto 1fr;
+    gap: 0.9rem;
+  }
+
+  .log-card__vote {
+    padding-top: 0.35rem;
+  }
+
+  .log-card .result-card__top {
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .log-hero__vote {
@@ -1113,5 +1132,9 @@ body::before {
   .map-canvas .leaflet-container {
     height: 100%;
     min-height: 18rem;
+  }
+
+  .input-date {
+    font-size: 0.95rem;
   }
 }

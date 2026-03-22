@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { createPriceLogAction, type ActionState } from "@/app/actions";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
 import {
   AutocompleteField,
+  type AutocompleteFieldHandle,
   type AutocompleteOption,
 } from "@/components/forms/autocomplete-field";
 import { LogPhotoInput } from "@/components/forms/log-photo-input";
@@ -56,8 +57,8 @@ export function PriceLogForm({
   title = "Log a price observation",
 }: PriceLogFormProps) {
   const [state, formAction] = useActionState(submitAction, initialState);
-  const [selectedItemId, setSelectedItemId] = useState(initialLog?.item_id ?? items[0]?.id ?? "");
-  const [selectedStoreId, setSelectedStoreId] = useState(initialLog?.store_id ?? stores[0]?.id ?? "");
+  const [selectedItemId, setSelectedItemId] = useState(initialLog?.item_id ?? "");
+  const [selectedStoreId, setSelectedStoreId] = useState(initialLog?.store_id ?? "");
   const [priceIncluded, setPriceIncluded] = useState(
     initialLog ? stringifyNumber(initialLog.total_price_yen) : "",
   );
@@ -67,21 +68,22 @@ export function PriceLogForm({
   const [packageAmount, setPackageAmount] = useState(
     initialLog
       ? stringifyNumber(initialLog.package_amount)
-      : items[0]
-        ? stringifyNumber(items[0].comparison_basis_amount)
-        : "",
+      : "",
   );
   const debugEnabled = useDebugFlag();
+  const storeFieldRef = useRef<AutocompleteFieldHandle | null>(null);
+  const itemFieldRef = useRef<AutocompleteFieldHandle | null>(null);
+  const packageAmountRef = useRef<HTMLInputElement | null>(null);
+  const totalPriceRef = useRef<HTMLInputElement | null>(null);
+  const exTaxPriceRef = useRef<HTMLInputElement | null>(null);
 
   const selectedItem =
     items.find((item) => item.id === selectedItemId) ??
     items.find((item) => item.id === initialLog?.item_id) ??
-    items[0] ??
     null;
   const selectedStore =
     stores.find((store) => store.id === selectedStoreId) ??
     stores.find((store) => store.id === initialLog?.store_id) ??
-    stores[0] ??
     null;
   const itemOptions: AutocompleteOption[] = items.map((item) => ({
     hint:
@@ -133,32 +135,45 @@ export function PriceLogForm({
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
       <div className="form-grid">
         <AutocompleteField
-          defaultOptionId={selectedStore?.id}
+          defaultOptionId={selectedStore?.id ?? undefined}
           disabled={disabled}
           error={state.fieldErrors?.storeId?.[0]}
           label="Store"
           name="storeId"
+          onClear={() => setSelectedStoreId("")}
+          onCommit={() => itemFieldRef.current?.focus()}
           onSelect={(option) => setSelectedStoreId(option?.id ?? "")}
           options={storeOptions}
           placeholder="Search or choose a saved store"
+          ref={storeFieldRef}
+          showClearButton
         />
         <AutocompleteField
-          defaultOptionId={selectedItem?.id}
+          defaultOptionId={selectedItem?.id ?? undefined}
           disabled={disabled}
           error={state.fieldErrors?.itemId?.[0]}
           label="Item"
           name="itemId"
+          onClear={() => {
+            setSelectedItemId("");
+            setPackageAmount("");
+          }}
+          onCommit={() => packageAmountRef.current?.focus()}
           onSelect={(option) => {
             const nextItem =
-              items.find((item) => item.id === option?.id) ?? items[0] ?? null;
+              items.find((item) => item.id === option?.id) ?? null;
             setSelectedItemId(option?.id ?? "");
 
             if (nextItem) {
               setPackageAmount(stringifyNumber(nextItem.comparison_basis_amount));
+            } else {
+              setPackageAmount("");
             }
           }}
           options={itemOptions}
           placeholder="Search or choose a canonical item"
+          ref={itemFieldRef}
+          showClearButton
         />
         <label className="form-field">
           <span>
@@ -167,9 +182,18 @@ export function PriceLogForm({
           <input
             className="input"
             disabled={disabled}
+            inputMode="decimal"
             min="0.01"
             name="packageAmount"
             onChange={(event) => setPackageAmount(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                totalPriceRef.current?.focus();
+              }
+            }}
+            placeholder={selectedItem ? `${selectedItem.comparison_basis_amount}` : "e.g. 500"}
+            ref={packageAmountRef}
             required
             step="0.01"
             type="number"
@@ -182,7 +206,7 @@ export function PriceLogForm({
         <label className="form-field">
           <span>Observed date</span>
           <input
-            className="input"
+            className="input input-date"
             defaultValue={initialLog?.observed_at ?? new Date().toISOString().slice(0, 10)}
             disabled={disabled}
             name="observedAt"
@@ -204,7 +228,15 @@ export function PriceLogForm({
               onInput={(event) =>
                 handleIncludedPriceChange((event.target as HTMLInputElement).value)
               }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  exTaxPriceRef.current?.focus();
+                }
+              }}
               pattern="[0-9]*"
+              placeholder="e.g. 328"
+              ref={totalPriceRef}
               required
               step="1"
               type="text"
@@ -227,6 +259,8 @@ export function PriceLogForm({
                 handleExcludedPriceChange((event.target as HTMLInputElement).value)
               }
               pattern="[0-9]*"
+              placeholder="e.g. 298"
+              ref={exTaxPriceRef}
               required
               step="1"
               type="text"

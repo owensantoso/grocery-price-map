@@ -1,6 +1,15 @@
 "use client";
 
-import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useDeferredValue,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
 
 export type AutocompleteOption = {
@@ -21,6 +30,11 @@ type AutocompleteFieldProps = {
   options: AutocompleteOption[];
   showClearButton?: boolean;
   placeholder?: string;
+};
+
+export type AutocompleteFieldHandle = {
+  clearAndFocus: () => void;
+  focus: () => void;
 };
 
 function resolveDefaultOption(
@@ -47,7 +61,7 @@ function bindMediaQuery(
   return () => mediaQuery.removeListener(listener);
 }
 
-export function AutocompleteField({
+export const AutocompleteField = forwardRef<AutocompleteFieldHandle, AutocompleteFieldProps>(function AutocompleteField({
   defaultOptionId,
   disabled,
   error,
@@ -59,7 +73,7 @@ export function AutocompleteField({
   options,
   showClearButton,
   placeholder,
-}: AutocompleteFieldProps) {
+}, ref) {
   const inputId = useId();
   const listId = useId();
   const defaultOption = resolveDefaultOption(options, defaultOptionId);
@@ -121,6 +135,15 @@ export function AutocompleteField({
     onClear?.();
     inputRef.current?.focus();
   }
+
+  useImperativeHandle(ref, () => ({
+    clearAndFocus() {
+      clearSelection();
+    },
+    focus() {
+      inputRef.current?.focus();
+    },
+  }));
 
   return (
     <div className="form-field autocomplete-field">
@@ -269,4 +292,4 @@ export function AutocompleteField({
       ) : null}
     </div>
   );
-}
+});
