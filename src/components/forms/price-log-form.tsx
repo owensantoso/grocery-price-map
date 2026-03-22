@@ -65,12 +65,10 @@ export function PriceLogForm({
   const [state, formAction] = useActionState(submitAction, initialState);
   const [selectedItemId, setSelectedItemId] = useState(initialLog?.item_id ?? "");
   const [selectedStoreId, setSelectedStoreId] = useState(initialLog?.store_id ?? "");
-  const [priceIncluded, setPriceIncluded] = useState(
+  const [priceValue, setPriceValue] = useState(
     initialLog ? stringifyNumber(initialLog.total_price_yen) : "",
   );
-  const [priceExcluded, setPriceExcluded] = useState(
-    initialLog ? stringifyNumber(initialLog.price_tax_excluded_yen) : "",
-  );
+  const [priceIncludesTax, setPriceIncludesTax] = useState(true);
   const [packageAmount, setPackageAmount] = useState(
     initialLog
       ? stringifyNumber(initialLog.package_amount)
@@ -80,8 +78,7 @@ export function PriceLogForm({
   const storeFieldRef = useRef<AutocompleteFieldHandle | null>(null);
   const itemFieldRef = useRef<AutocompleteFieldHandle | null>(null);
   const packageAmountRef = useRef<HTMLInputElement | null>(null);
-  const totalPriceRef = useRef<HTMLInputElement | null>(null);
-  const exTaxPriceRef = useRef<HTMLInputElement | null>(null);
+  const priceFieldRef = useRef<HTMLInputElement | null>(null);
   const lastAutoFocusTarget = useRef<string | null>(null);
 
   const selectedItem =
@@ -106,28 +103,8 @@ export function PriceLogForm({
     label: store.name,
   }));
 
-  function handleIncludedPriceChange(nextValue: string) {
-    const sanitizedValue = sanitizeCurrencyInput(nextValue);
-    setPriceIncluded(sanitizedValue);
-
-    if (sanitizedValue === "") {
-      setPriceExcluded("");
-      return;
-    }
-
-    setPriceExcluded(stringifyNumber(excludedFromIncluded(Number(sanitizedValue))));
-  }
-
-  function handleExcludedPriceChange(nextValue: string) {
-    const sanitizedValue = sanitizeCurrencyInput(nextValue);
-    setPriceExcluded(sanitizedValue);
-
-    if (sanitizedValue === "") {
-      setPriceIncluded("");
-      return;
-    }
-
-    setPriceIncluded(stringifyNumber(includedFromExcluded(Number(sanitizedValue))));
+  function handlePriceChange(nextValue: string) {
+    setPriceValue(sanitizeCurrencyInput(nextValue));
   }
 
   function focusField(
@@ -182,17 +159,39 @@ export function PriceLogForm({
     });
   }
 
+  const parsedPrice =
+    priceValue.trim().length > 0 ? Number(priceValue) : null;
+  const totalPriceYen =
+    parsedPrice === null
+      ? ""
+      : stringifyNumber(
+          priceIncludesTax ? parsedPrice : includedFromExcluded(parsedPrice),
+        );
+  const priceTaxExcludedYen =
+    parsedPrice === null
+      ? ""
+      : stringifyNumber(
+          priceIncludesTax ? excludedFromIncluded(parsedPrice) : parsedPrice,
+        );
+
   return (
     <form action={formAction} className="panel panel-muted stack-md">
       <div className="stack-xs">
         <h2 className="section-title">{title}</h2>
         <p className="muted">
-          Enter either tax-included or tax-excluded price. The other field updates
-          using a 10% tax assumption.
+          Enter the shelf price once. The app calculates the tax-adjusted value using
+          an 8% tax assumption.
         </p>
       </div>
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
-      <div className="form-grid">
+      <input name="totalPriceYen" type="hidden" value={totalPriceYen} />
+      <input name="priceTaxExcludedYen" type="hidden" value={priceTaxExcludedYen} />
+      <section className="form-section stack-md">
+        <div className="stack-xs">
+          <p className="eyebrow">Core details</p>
+          <p className="muted">Pick the store and item, then record the package and price.</p>
+        </div>
+        <div className="form-grid">
         <AutocompleteField
           createActionLabel="store"
           defaultOptionId={selectedStore?.id ?? undefined}
@@ -244,12 +243,12 @@ export function PriceLogForm({
             disabled={disabled}
             inputMode="decimal"
             name="packageAmount"
-            onBlur={() => advanceOnBlur(totalPriceRef, "totalPrice", packageAmount)}
+            onBlur={() => advanceOnBlur(priceFieldRef, "price", packageAmount)}
             onChange={(event) => setPackageAmount(sanitizeDecimalInput(event.target.value))}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                focusField(totalPriceRef, "totalPrice");
+                focusField(priceFieldRef, "price");
               }
             }}
             enterKeyHint="next"
@@ -265,73 +264,53 @@ export function PriceLogForm({
           ) : null}
         </label>
         <label className="form-field">
-          <span>Observed date</span>
-          <input
-            className="input input-date"
-            defaultValue={initialLog?.observed_at ?? new Date().toISOString().slice(0, 10)}
-            disabled={disabled}
-            name="observedAt"
-            required
-            type="date"
-          />
-        </label>
-        <label className="form-field">
-          <span>Tax included price (JPY)</span>
+          <span>Price (JPY)</span>
           <div className="input-prefix">
             <span className="input-prefix__label">¥</span>
             <input
               className="input input-prefix__control"
               disabled={disabled}
               inputMode="decimal"
-              min="0"
-              name="totalPriceYen"
-              onBlur={() => advanceOnBlur(exTaxPriceRef, "exTaxPrice", priceIncluded)}
-              onChange={(event) => handleIncludedPriceChange(event.target.value)}
+              name="displayPrice"
+              onChange={(event) => handlePriceChange(event.target.value)}
               onInput={(event) =>
-                handleIncludedPriceChange((event.target as HTMLInputElement).value)
+                handlePriceChange((event.target as HTMLInputElement).value)
               }
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  focusField(exTaxPriceRef, "exTaxPrice");
-                }
-              }}
               enterKeyHint="next"
               pattern="[0-9]*"
               placeholder="e.g. 328"
-              ref={totalPriceRef}
+              ref={priceFieldRef}
               required
-              step="1"
               type="text"
-              value={priceIncluded}
+              value={priceValue}
             />
           </div>
-        </label>
-        <label className="form-field">
-          <span>Tax excluded price (JPY)</span>
-          <div className="input-prefix">
-            <span className="input-prefix__label">¥</span>
+          <label className="checkbox-row">
             <input
-              className="input input-prefix__control"
+              checked={priceIncludesTax}
               disabled={disabled}
-              inputMode="decimal"
-              min="0"
-              name="priceTaxExcludedYen"
-              onChange={(event) => handleExcludedPriceChange(event.target.value)}
-              onInput={(event) =>
-                handleExcludedPriceChange((event.target as HTMLInputElement).value)
-              }
-              enterKeyHint="done"
-              pattern="[0-9]*"
-              placeholder="e.g. 298"
-              ref={exTaxPriceRef}
-              required
-              step="1"
-              type="text"
-              value={priceExcluded}
+              onChange={(event) => setPriceIncludesTax(event.target.checked)}
+              type="checkbox"
             />
-          </div>
+            <span>Tax included?</span>
+          </label>
+          <p className="field-help">
+            {priceValue
+              ? priceIncludesTax
+                ? `Tax excluded price: ¥${priceTaxExcludedYen}`
+                : `Tax included price: ¥${totalPriceYen}`
+              : "The tax-adjusted price will appear here."}
+          </p>
         </label>
+        </div>
+      </section>
+      <section className="form-section form-section--secondary stack-md">
+        <div className="stack-xs">
+          <p className="eyebrow">Extras</p>
+          <p className="muted">Optional context, links, date, and notes for the log.</p>
+        </div>
+        <div className="form-grid">
+        <LogPhotoInput existingPhotoUrl={getPhotoUrl(initialLog?.photo_path ?? null)} />
         <label className="form-field form-field--wide">
           <span>Item listing URL (optional)</span>
           <input
@@ -343,7 +322,17 @@ export function PriceLogForm({
             type="url"
           />
         </label>
-        <LogPhotoInput existingPhotoUrl={getPhotoUrl(initialLog?.photo_path ?? null)} />
+        <label className="form-field">
+          <span>Observed date</span>
+          <input
+            className="input input-date"
+            defaultValue={initialLog?.observed_at ?? new Date().toISOString().slice(0, 10)}
+            disabled={disabled}
+            name="observedAt"
+            required
+            type="date"
+          />
+        </label>
         <label className="form-field form-field--wide">
           <span>Notes</span>
           <textarea
@@ -354,7 +343,8 @@ export function PriceLogForm({
             placeholder="Quality notes, promo sticker, carton size, section of the store"
           />
         </label>
-      </div>
+        </div>
+      </section>
       {selectedItem ? (
         <div className="banner">
           Normalizing against {selectedItem.name}:{" "}
@@ -376,8 +366,10 @@ export function PriceLogForm({
           <span>selectedStoreId: {selectedStoreId || "(none)"}</span>
           <span>selectedItemId: {selectedItemId || "(none)"}</span>
           <span>packageAmount: {packageAmount || "(empty)"}</span>
-          <span>priceIncluded: {priceIncluded || "(empty)"}</span>
-          <span>priceExcluded: {priceExcluded || "(empty)"}</span>
+          <span>priceValue: {priceValue || "(empty)"}</span>
+          <span>priceIncludesTax: {String(priceIncludesTax)}</span>
+          <span>totalPriceYen: {totalPriceYen || "(empty)"}</span>
+          <span>priceTaxExcludedYen: {priceTaxExcludedYen || "(empty)"}</span>
         </div>
       ) : null}
       <SubmitButton block>{submitLabel}</SubmitButton>

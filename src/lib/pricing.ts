@@ -1,4 +1,4 @@
-const TAX_RATE = 0.1;
+const TAX_RATE = 0.08;
 
 function roundYen(value: number) {
   return Math.round(value);

@@ -620,6 +620,17 @@ body::before {
   gap: 1rem;
 }
 
+.form-section {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.form-section--secondary {
+  background: rgba(31, 42, 31, 0.03);
+}
+
 .form-grid .form-field--wide {
   grid-column: 1 / -1;
 }
@@ -670,6 +681,18 @@ body::before {
 
 .input-prefix__control {
   padding-left: 2rem;
+}
+
+.checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+}
+
+.checkbox-row input {
+  width: 1rem;
+  height: 1rem;
 }
 
 .autocomplete {
