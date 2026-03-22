@@ -48,11 +48,17 @@ export function PriceLogCard({
         <div className="result-card__top">
           <div className="stack-xs">
             <Link className="store-link log-card__title" href={`/logs/${entry.log.id}`}>
-              {entry.item.name}
+              {entry.item.name}:{" "}
+              {formatPackage(entry.log.package_amount, entry.log.package_unit)} for{" "}
+              {formatCurrency(entry.log.total_price_yen)}
             </Link>
-            <Link className="muted" href={storeHref}>
-              {entry.store.name}
-            </Link>
+            <div className="muted log-card__subtitle">
+              <Link className="muted" href={storeHref}>
+                {entry.store.name}
+              </Link>
+              <span>•</span>
+              <span>{formatDate(entry.log.observed_at)}</span>
+            </div>
           </div>
           <Link className="price-pill" href={`/logs/${entry.log.id}`}>
             {formatCurrency(entry.log.normalized_price_yen)} /{" "}
@@ -60,18 +66,8 @@ export function PriceLogCard({
             {entry.item.comparison_unit}
           </Link>
         </div>
-        <div className="meta-row">
-          <span className="tag">
-            {formatPackage(entry.log.package_amount, entry.log.package_unit)}
-          </span>
-          <span className="tag">paid {formatCurrency(entry.log.total_price_yen)}</span>
-          <span className="tag">{formatDate(entry.log.observed_at)}</span>
-        </div>
         {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
         <div className="result-card__actions">
-          <Link className="button-inline" href={`/logs/${entry.log.id}`}>
-            Open full log
-          </Link>
           {showEditLink && entry.canEdit ? (
             <Link className="button-inline" href={`/logs/${entry.log.id}/edit`}>
               Edit your log

@@ -1034,6 +1034,22 @@ body::before {
   align-items: center;
 }
 
+.vote-stack--compact .vote-controls {
+  gap: 0.15rem;
+  padding: 0.3rem 0.2rem;
+}
+
+.vote-stack--compact .vote-button {
+  width: 1.55rem;
+  height: 1.55rem;
+  font-size: 0.95rem;
+}
+
+.vote-stack--compact .vote-score {
+  min-width: 1.5rem;
+  font-size: 1.02rem;
+}
+
 .vote-controls {
   display: grid;
   justify-items: center;
@@ -1095,6 +1111,13 @@ body::before {
 .log-card__title {
   font-size: 1.2rem;
   line-height: 1.05;
+}
+
+.log-card__subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
 }
 
 .current-log-panel {
