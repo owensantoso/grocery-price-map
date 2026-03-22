@@ -13,11 +13,50 @@ type LogPhotoInputProps = {
   existingPhotoUrl?: string | null;
 };
 
-async function compressImage(file: File) {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_PHOTO_WIDTH / bitmap.width);
-  const width = Math.max(1, Math.round(bitmap.width * scale));
-  const height = Math.max(1, Math.round(bitmap.height * scale));
+type CompressedImageResult = {
+  byteLength: number;
+  dataUrl: string;
+  height: number;
+  mimeType: string;
+  width: number;
+};
+
+async function blobToDataUrl(blob: Blob) {
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read compressed image."));
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Compressed image could not be serialized."));
+        return;
+      }
+
+      resolve(reader.result);
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function loadImageElement(file: File) {
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    return await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Could not load image for compression."));
+      image.src = objectUrl;
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+async function compressImage(file: File): Promise<CompressedImageResult> {
+  const image = await loadImageElement(file);
+  const scale = Math.min(1, MAX_PHOTO_WIDTH / image.width);
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -27,9 +66,27 @@ async function compressImage(file: File) {
     throw new Error("Could not prepare image compression.");
   }
 
-  context.drawImage(bitmap, 0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
 
-  return canvas.toDataURL("image/webp", PHOTO_QUALITY);
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/webp", PHOTO_QUALITY);
+  });
+
+  if (!blob) {
+    throw new Error("Could not encode this image as WebP.");
+  }
+
+  if (blob.type !== "image/webp") {
+    throw new Error("This browser did not produce a WebP image.");
+  }
+
+  return {
+    byteLength: blob.size,
+    dataUrl: await blobToDataUrl(blob),
+    height,
+    mimeType: blob.type,
+    width,
+  };
 }
 
 function formatBytes(bytes: number) {
@@ -44,19 +101,14 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function estimateDataUrlBytes(dataUrl: string) {
-  const payload = dataUrl.split(",", 2)[1] ?? "";
-  const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
-
-  return Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
-}
-
 export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
   const [previewUrl, setPreviewUrl] = useState(existingPhotoUrl ?? "");
   const [photoDataUrl, setPhotoDataUrl] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [originalFileSize, setOriginalFileSize] = useState<number | null>(null);
   const [compressedBytes, setCompressedBytes] = useState<number | null>(null);
+  const [compressedType, setCompressedType] = useState<string | null>(null);
+  const [outputDimensions, setOutputDimensions] = useState<string>("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const encodedLength = photoDataUrl.length;
   const nearingStorageLimit =
@@ -84,18 +136,22 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
             try {
               setOriginalFileSize(file.size);
               const compressed = await compressImage(file);
-              const nextCompressedBytes = estimateDataUrlBytes(compressed);
-              setPhotoDataUrl(compressed);
-              setPreviewUrl(compressed);
+              const nextCompressedBytes = compressed.byteLength;
+              setPhotoDataUrl(compressed.dataUrl);
+              setPreviewUrl(compressed.dataUrl);
               setCompressedBytes(nextCompressedBytes);
+              setCompressedType(compressed.mimeType);
+              setOutputDimensions(`${compressed.width}×${compressed.height}`);
               setStatusMessage(
                 nextCompressedBytes > MAX_PHOTO_BYTES
                   ? "Compressed image still looks too large. Try a tighter crop or a simpler photo."
-                  : "Compressed to a smaller WebP image for upload.",
+                  : "Compressed to WebP for upload.",
               );
             } catch {
               setOriginalFileSize(file.size);
               setCompressedBytes(null);
+              setCompressedType(null);
+              setOutputDimensions("");
               setStatusMessage("Could not process this image.");
             }
           }}
@@ -111,6 +167,8 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
               setStatusMessage("");
               setOriginalFileSize(null);
               setCompressedBytes(null);
+              setCompressedType(null);
+              setOutputDimensions("");
 
               if (inputRef.current) {
                 inputRef.current.value = "";
@@ -123,7 +181,7 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
         ) : null}
       </div>
       <p className="field-help">
-        Images are resized to max 600px wide and stored as compressed WebP to keep
+        Images are resized to max 400px wide and stored as compressed WebP to keep
         storage and bandwidth down.
       </p>
       {originalFileSize !== null || compressedBytes !== null ? (
@@ -134,6 +192,11 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
           {compressedBytes !== null ? (
             <p className="field-help">
               Compressed image: {formatBytes(compressedBytes)} / limit {formatBytes(MAX_PHOTO_BYTES)}
+            </p>
+          ) : null}
+          {compressedType || outputDimensions ? (
+            <p className="field-help">
+              Output: {compressedType ?? "unknown"}{outputDimensions ? ` • ${outputDimensions}` : ""}
             </p>
           ) : null}
           {photoDataUrl ? (
