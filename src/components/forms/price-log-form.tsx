@@ -207,6 +207,7 @@ export function PriceLogForm({
         </div>
         <div className="form-grid">
         <AutocompleteField
+          autoFocus
           createActionLabel="store"
           defaultOptionId={selectedStore?.id ?? undefined}
           disabled={disabled}

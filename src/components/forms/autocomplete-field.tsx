@@ -19,6 +19,7 @@ export type AutocompleteOption = {
 };
 
 type AutocompleteFieldProps = {
+  autoFocus?: boolean;
   createActionLabel?: string;
   defaultOptionId?: string;
   disabled?: boolean;
@@ -64,6 +65,7 @@ function bindMediaQuery(
 }
 
 export const AutocompleteField = forwardRef<AutocompleteFieldHandle, AutocompleteFieldProps>(function AutocompleteField({
+  autoFocus = false,
   createActionLabel,
   defaultOptionId,
   disabled,
@@ -99,6 +101,16 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
 
     return bindMediaQuery(mediaQuery, update);
   }, []);
+
+  useEffect(() => {
+    if (!autoFocus || isTouchLayout) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, [autoFocus, isTouchLayout]);
 
   const filteredOptions = useMemo(() => {
     const trimmedQuery = deferredQuery.trim().toLowerCase();
@@ -178,6 +190,7 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
             aria-expanded={isOpen}
             aria-invalid={error ? "true" : "false"}
             autoComplete="off"
+            autoFocus={autoFocus && !isTouchLayout}
             className="input autocomplete__input"
             disabled={disabled}
             id={inputId}

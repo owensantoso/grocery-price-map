@@ -1202,6 +1202,19 @@ body::before {
     width: 100%;
   }
 
+  .log-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .log-hero__main {
+    grid-column: 2;
+  }
+
+  .log-hero__side {
+    grid-column: 1 / -1;
+  }
+
   .main-nav {
     width: 100%;
   }
@@ -1218,7 +1231,7 @@ body::before {
 
   .vote-stack,
   .vote-stack--compact {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .log-card {

@@ -173,6 +173,14 @@ export function CompareDashboard({
                   {selectedEntry.history.map((log) => (
                     <div className="history-row" key={log.id}>
                       <div className="stack-xs">
+                        <a
+                          className="store-link"
+                          href={selectedEntry.store.store_url}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {selectedEntry.store.name}
+                        </a>
                         <Link className="store-link" href={`/logs/${log.id}`}>
                           {formatCurrency(log.normalized_price_yen)} /{" "}
                           {selectedEntry.item.comparison_basis_amount}
