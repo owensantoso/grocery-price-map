@@ -1,6 +1,10 @@
 export function normalizeExternalUrl(input: string) {
   const url = new URL(input.trim());
 
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new Error("Only http and https links are allowed.");
+  }
+
   url.hash = "";
 
   if (url.pathname !== "/") {

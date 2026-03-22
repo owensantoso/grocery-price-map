@@ -16,6 +16,7 @@ import type {
   PriceLogListEntry,
   PriceLogRecord,
   PriceLogVoteRecord,
+  PublicProfileRecord,
   StoreRecord,
   Viewer,
   VoteSummary,
@@ -60,16 +61,12 @@ type PriceLogWithRelations = {
 
 type PriceLogDetailRow = PriceLogWithRelations;
 
-type PriceLogCommentWithProfile = {
+type PriceLogCommentRow = {
   author_id: string;
   body: string;
   created_at: string;
   id: string;
   log_id: string;
-  profiles: {
-    display_name: string | null;
-    email: string;
-  } | null;
 };
 
 function toViewer(user: User | null): Viewer | null {
@@ -279,7 +276,8 @@ async function getVoteRowsForComments(
 }
 
 function buildCommentEntries(
-  comments: PriceLogCommentWithProfile[],
+  comments: PriceLogCommentRow[],
+  authorLabels: Map<string, string>,
   voteSummaries: Map<string, VoteSummary>,
 ) {
   return [...comments]
@@ -294,10 +292,7 @@ function buildCommentEntries(
       return rightSummary.score - leftSummary.score;
     })
     .map((comment) => ({
-      authorLabel:
-        comment.profiles?.display_name?.trim() ||
-        comment.profiles?.email ||
-        comment.author_id,
+      authorLabel: authorLabels.get(comment.author_id) ?? "User",
       comment: {
         author_id: comment.author_id,
         body: comment.body,
@@ -307,6 +302,35 @@ function buildCommentEntries(
       } satisfies PriceLogCommentRecord,
       voteSummary: voteSummaries.get(comment.id) ?? createEmptyVoteSummary(),
     } satisfies CommentThreadEntry));
+}
+
+async function getPublicProfileLabels(
+  authorIds: string[],
+): Promise<Map<string, string>> {
+  if (authorIds.length === 0) {
+    return new Map();
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return new Map();
+  }
+
+  const { data, error } = await supabase
+    .from("public_profiles")
+    .select("id, public_name")
+    .in("id", [...new Set(authorIds)]);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(
+    ((data ?? []) as PublicProfileRecord[])
+      .filter((row): row is { id: string; public_name: string | null } => Boolean(row.id))
+      .map((row) => [row.id, row.public_name?.trim() || "User"]),
+  );
 }
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -330,14 +354,6 @@ export async function getItems(): Promise<ItemRecord[]> {
     return demoItems;
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return [];
-  }
-
   const { data, error } = await supabase
     .from("items")
     .select("*")
@@ -355,14 +371,6 @@ export async function getStores(): Promise<StoreRecord[]> {
 
   if (!supabase) {
     return demoStores;
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return [];
   }
 
   const { data, error } = await supabase
@@ -400,17 +408,6 @@ export async function getComparisonSnapshot(
   } = await supabase.auth.getUser();
   const viewer = toViewer(user);
 
-  if (!viewer) {
-    return {
-      entries: [],
-      isConfigured: true,
-      isDemo: false,
-      items: [],
-      selectedItem: null,
-      viewer: null,
-    };
-  }
-
   const items = await getItems();
   const selectedItem = items.find((item) => item.id === itemId) ?? items[0] ?? null;
 
@@ -421,7 +418,7 @@ export async function getComparisonSnapshot(
       isDemo: false,
       items,
       selectedItem: null,
-      viewer,
+      viewer: viewer ?? null,
     };
   }
 
@@ -472,7 +469,7 @@ export async function getComparisonSnapshot(
     isDemo: false,
     items,
     selectedItem,
-    viewer,
+    viewer: viewer ?? null,
   };
 }
 
@@ -532,16 +529,6 @@ export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
   } = await supabase.auth.getUser();
   const viewer = toViewer(user);
 
-  if (!viewer) {
-    return {
-      allLogs: [],
-      isConfigured: true,
-      isDemo: false,
-      ownLogs: [],
-      viewer: null,
-    };
-  }
-
   const { data, error } = await supabase
     .from("price_logs")
     .select(
@@ -591,15 +578,15 @@ export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
 
   const logs = (data ?? []) as unknown as PriceLogWithRelations[];
   const votes = await getVoteRowsForLogs(logs.map((log) => log.id));
-  const voteSummaries = summarizeVotes(votes, viewer.id);
-  const allLogs = buildLogFeedEntries(logs, voteSummaries, viewer.id);
+  const voteSummaries = summarizeVotes(votes, viewer?.id ?? null);
+  const allLogs = buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null);
 
   return {
     allLogs,
     isConfigured: true,
     isDemo: false,
-    ownLogs: allLogs.filter((entry) => entry.log.submitted_by === viewer.id),
-    viewer,
+    ownLogs: viewer ? allLogs.filter((entry) => entry.log.submitted_by === viewer.id) : [],
+    viewer: viewer ?? null,
   };
 }
 
@@ -682,10 +669,6 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
     data: { user },
   } = await supabase.auth.getUser();
   const viewer = toViewer(user);
-
-  if (!viewer) {
-    return null;
-  }
 
   const { data, error } = await supabase
     .from("price_logs")
@@ -792,7 +775,7 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
 
   const itemLogs = (historyData ?? []) as unknown as PriceLogWithRelations[];
   const voteRows = await getVoteRowsForLogs(itemLogs.map((entry) => entry.id));
-  const voteSummaries = summarizeVotes(voteRows, viewer.id);
+  const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
   const { data: commentData, error: commentError } = await supabase
     .from("price_log_comments")
     .select(
@@ -801,11 +784,7 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
         log_id,
         author_id,
         body,
-        created_at,
-        profiles!price_log_comments_author_id_fkey (
-          display_name,
-          email
-        )
+        created_at
       `,
     )
     .eq("log_id", logId);
@@ -814,25 +793,29 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
     throw new Error(commentError.message);
   }
 
-  const comments = (commentData ?? []) as unknown as PriceLogCommentWithProfile[];
+  const comments = (commentData ?? []) as PriceLogCommentRow[];
+  const authorLabels = await getPublicProfileLabels(
+    comments.map((comment) => comment.author_id),
+  );
   const commentVoteRows = await getVoteRowsForComments(comments.map((comment) => comment.id));
-  const commentVoteSummaries = summarizeCommentVotes(commentVoteRows, viewer.id);
+  const commentVoteSummaries = summarizeCommentVotes(commentVoteRows, viewer?.id ?? null);
   const sameStoreHistory = itemLogs
     .filter((candidate) => candidate.store_id === log.store_id)
     .sort(sortLogsByRecency)
     .map(stripRelations);
 
   return {
-    canEdit: viewer.id === log.submitted_by,
-    comments: buildCommentEntries(comments, commentVoteSummaries),
+    canEdit: viewer?.id === log.submitted_by,
+    comments: buildCommentEntries(comments, authorLabels, commentVoteSummaries),
     item: log.items,
     latestAcrossStores: await getComparisonSnapshot(log.item_id).then(
       (snapshot) => snapshot.entries,
     ),
     log: stripRelations(log),
-    recentItemLogs: buildLogFeedEntries(itemLogs, voteSummaries, viewer.id),
+    recentItemLogs: buildLogFeedEntries(itemLogs, voteSummaries, viewer?.id ?? null),
     sameStoreHistory,
     store: log.stores,
+    viewer: viewer ?? null,
     voteSummary: voteSummaries.get(log.id) ?? createEmptyVoteSummary(),
   };
 }

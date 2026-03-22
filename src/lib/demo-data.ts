@@ -483,6 +483,7 @@ export function getDemoLogDetail(logId: string): LogDetail | null {
       )
       .sort((left, right) => right.observed_at.localeCompare(left.observed_at)),
     store,
+    viewer: null,
     voteSummary: getDemoVoteSummary(log.id, null),
   };
 }

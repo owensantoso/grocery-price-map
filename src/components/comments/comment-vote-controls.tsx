@@ -6,6 +6,7 @@ import type { VoteSummary } from "@/lib/models";
 
 type CommentVoteControlsProps = {
   commentId: string;
+  disabled?: boolean;
   summary: VoteSummary;
 };
 
@@ -35,6 +36,7 @@ function applyVote(summary: VoteSummary, nextVote: -1 | 0 | 1): VoteSummary {
 
 export function CommentVoteControls({
   commentId,
+  disabled,
   summary,
 }: CommentVoteControlsProps) {
   const [localSummary, setLocalSummary] = useState(summary);
@@ -81,7 +83,11 @@ export function CommentVoteControls({
     <div className="comment-vote-controls">
       <button
         className={`vote-button ${localSummary.viewerVote === 1 ? "is-active" : ""}`}
+        disabled={disabled}
         onClick={() => {
+          if (disabled) {
+            return;
+          }
           setLocalSummary((current) => {
             const nextVote = current.viewerVote === 1 ? 0 : 1;
             desiredVoteRef.current = nextVote;
@@ -96,7 +102,11 @@ export function CommentVoteControls({
       <span className="vote-score vote-score--comment">{localSummary.score}</span>
       <button
         className={`vote-button ${localSummary.viewerVote === -1 ? "is-active" : ""}`}
+        disabled={disabled}
         onClick={() => {
+          if (disabled) {
+            return;
+          }
           setLocalSummary((current) => {
             const nextVote = current.viewerVote === -1 ? 0 : -1;
             desiredVoteRef.current = nextVote;

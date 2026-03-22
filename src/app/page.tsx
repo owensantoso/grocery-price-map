@@ -17,32 +17,30 @@ export default async function Home({ searchParams }: PageProps) {
   return (
     <div className="stack-lg">
       {!snapshot.isConfigured ? <SetupNotice /> : null}
+      <CompareDashboard
+        key={snapshot.selectedItem?.id ?? "empty"}
+        entries={snapshot.entries}
+        initialStoreId={params.store ?? snapshot.entries[0]?.store.id ?? null}
+        isDemo={snapshot.isDemo}
+        itemOptions={snapshot.items}
+        selectedItemId={snapshot.selectedItem?.id ?? null}
+      />
       {!snapshot.viewer && snapshot.isConfigured ? (
         <section className="panel callout">
           <div className="stack-sm">
-            <p className="eyebrow">Sign In Required</p>
-            <h1 className="section-title">Compare prices with your shared data.</h1>
+            <p className="eyebrow">Read Publicly, Contribute With Sign-In</p>
             <p className="muted">
-              This project uses Supabase auth, so you need to sign in with Google
-              before reading or adding shared prices.
+              You can browse prices without an account. Sign in to add logs, comments,
+              and votes.
             </p>
             <div className="inline-actions">
               <Link className="button button-primary" href="/auth/sign-in">
-                Continue to sign in
+                Sign in to contribute
               </Link>
             </div>
           </div>
         </section>
-      ) : (
-        <CompareDashboard
-          key={snapshot.selectedItem?.id ?? "empty"}
-          entries={snapshot.entries}
-          initialStoreId={params.store ?? snapshot.entries[0]?.store.id ?? null}
-          isDemo={snapshot.isDemo}
-          itemOptions={snapshot.items}
-          selectedItemId={snapshot.selectedItem?.id ?? null}
-        />
-      )}
+      ) : null}
     </div>
   );
 }

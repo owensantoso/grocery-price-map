@@ -14,18 +14,21 @@ export type Database = {
           id: string;
           display_name: string | null;
           email: string;
+          public_name: string | null;
           created_at: string;
         };
         Insert: {
           id: string;
           display_name?: string | null;
           email: string;
+          public_name?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           display_name?: string | null;
           email?: string;
+          public_name?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -220,7 +223,15 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      public_profiles: {
+        Row: {
+          id: string | null;
+          public_name: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: {
       measurement_unit: "count" | "piece" | "g" | "kg" | "ml" | "l";

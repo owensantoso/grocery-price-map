@@ -15,52 +15,54 @@ export default async function ItemsPage() {
       {configured && !snapshot.viewer ? (
         <section className="panel callout">
           <div className="stack-sm">
-            <h1 className="section-title">Sign in to manage shared item definitions.</h1>
+            <h1 className="section-title">Browse canonical items publicly.</h1>
+            <p className="muted">
+              Sign in if you want to add or manage shared item definitions.
+            </p>
             <Link className="button button-primary" href="/auth/sign-in">
               Sign in
             </Link>
           </div>
         </section>
-      ) : (
-        <>
-          <ItemForm disabled={!configured} />
-          <section className="panel stack-md">
-            <div className="stack-xs">
-              <p className="eyebrow">Current item catalog</p>
-              <h1 className="section-title">Canonical items and normalization rules</h1>
-            </div>
-            {snapshot.items.length === 0 ? (
-              <div className="empty-state">
-                No items exist yet. Create canonical names before logging prices.
+      ) : null}
+      {snapshot.viewer ? <ItemForm disabled={!configured} /> : null}
+      <section className="panel stack-md">
+        <div className="stack-xs">
+          <p className="eyebrow">Current item catalog</p>
+          <h1 className="section-title">Canonical items and normalization rules</h1>
+        </div>
+        {snapshot.items.length === 0 ? (
+          <div className="empty-state">
+            No items exist yet. Create canonical names before logging prices.
+          </div>
+        ) : (
+          <div className="list-table">
+            {snapshot.items.map((item) => (
+              <div className="list-table__row" key={item.id}>
+                <div className="stack-xs">
+                  <strong>{item.name}</strong>
+                  <span className="muted">{item.category ?? "Uncategorized"}</span>
+                </div>
+                <div className="stack-xs">
+                  <span className="tag">Basis</span>
+                  <strong>
+                    {formatUnitValue(
+                      item.comparison_basis_amount,
+                      item.comparison_unit,
+                    )}
+                  </strong>
+                </div>
+                <div className="stack-xs">
+                  <span className="tag">Owner</span>
+                  <span className="muted">
+                    {snapshot.viewer ? item.created_by : "Shared catalog"}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className="list-table">
-                {snapshot.items.map((item) => (
-                  <div className="list-table__row" key={item.id}>
-                    <div className="stack-xs">
-                      <strong>{item.name}</strong>
-                      <span className="muted">{item.category ?? "Uncategorized"}</span>
-                    </div>
-                    <div className="stack-xs">
-                      <span className="tag">Basis</span>
-                      <strong>
-                        {formatUnitValue(
-                          item.comparison_basis_amount,
-                          item.comparison_unit,
-                        )}
-                      </strong>
-                    </div>
-                    <div className="stack-xs">
-                      <span className="tag">Owner</span>
-                      <span className="muted">{item.created_by}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </>
-      )}
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

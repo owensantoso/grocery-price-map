@@ -9,47 +9,47 @@ export default async function LogsPage() {
   return (
     <div className="stack-lg">
       {!snapshot.isConfigured ? <SetupNotice /> : null}
-      {snapshot.isConfigured && !snapshot.viewer ? (
-        <section className="panel callout">
+      <>
+        <section className="panel hero hero-card">
           <div className="stack-sm">
-            <h1 className="section-title">Sign in to browse shared price logs.</h1>
-            <Link className="button button-primary" href="/auth/sign-in">
-              Sign in
-            </Link>
+            <p className="eyebrow">{snapshot.isDemo ? "Demo logs" : "Shared log feed"}</p>
+            <h1 className="hero-title">All recent grocery logs</h1>
+            <p className="hero-copy">
+              Browse every submitted observation by recency, then jump into the full
+              log or open the store directly.
+            </p>
+            {!snapshot.viewer && snapshot.isConfigured ? (
+              <div className="inline-actions">
+                <Link className="button button-primary" href="/auth/sign-in">
+                  Sign in to add, comment, or vote
+                </Link>
+              </div>
+            ) : null}
           </div>
         </section>
-      ) : (
-        <>
-          <section className="panel hero hero-card">
-            <div className="stack-sm">
-              <p className="eyebrow">{snapshot.isDemo ? "Demo logs" : "Shared log feed"}</p>
-              <h1 className="hero-title">All recent grocery logs</h1>
-              <p className="hero-copy">
-                Browse every submitted observation by recency, then jump into the full
-                log or open the store directly.
-              </p>
-            </div>
-          </section>
 
-          <section className="panel stack-md">
-            <div className="stack-xs">
-              <h2 className="section-title">All logs</h2>
-              <p className="muted">Sorted by observed date, newest first.</p>
+        <section className="panel stack-md">
+          <div className="stack-xs">
+            <h2 className="section-title">All logs</h2>
+            <p className="muted">Sorted by observed date, newest first.</p>
+          </div>
+          {snapshot.allLogs.length === 0 ? (
+            <div className="empty-state">
+              No logs exist yet. Add one after creating items and stores.
             </div>
-            {snapshot.allLogs.length === 0 ? (
-              <div className="empty-state">
-                No logs exist yet. Add one after creating items and stores.
-              </div>
-            ) : (
-              <div className="list-rows">
-                {snapshot.allLogs.map((entry) => (
-                  <PriceLogCard entry={entry} key={entry.log.id} />
-                ))}
-              </div>
-            )}
-          </section>
-        </>
-      )}
+          ) : (
+            <div className="list-rows">
+              {snapshot.allLogs.map((entry) => (
+                <PriceLogCard
+                  disableVoting={!snapshot.viewer}
+                  entry={entry}
+                  key={entry.log.id}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </>
     </div>
   );
 }

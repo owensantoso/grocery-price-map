@@ -28,7 +28,7 @@ export default async function LogDetailPage({ params }: PageProps) {
       <section className="panel hero hero-card log-hero">
         <div className="log-hero__vote">
           <LogVoteControls
-            disabled={false}
+            disabled={!detail.viewer}
             key={`${detail.log.id}:${detail.voteSummary.score}:${detail.voteSummary.viewerVote}`}
             logId={detail.log.id}
             summary={detail.voteSummary}
@@ -97,6 +97,7 @@ export default async function LogDetailPage({ params }: PageProps) {
                 </Link>
               ) : null}
             </div>
+            {!detail.viewer ? <p className="field-help">Sign in to vote or comment.</p> : null}
           </div>
         </div>
       </section>
@@ -163,7 +164,7 @@ export default async function LogDetailPage({ params }: PageProps) {
         </aside>
       </section>
 
-      <CommentThread comments={detail.comments} logId={detail.log.id} />
+      <CommentThread canInteract={Boolean(detail.viewer)} comments={detail.comments} logId={detail.log.id} />
 
       <section className="panel stack-md">
         <div className="stack-xs">

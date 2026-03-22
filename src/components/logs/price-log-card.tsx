@@ -6,11 +6,16 @@ import type { PriceLogListEntry } from "@/lib/models";
 import { getPhotoUrl } from "@/lib/photos";
 
 type PriceLogCardProps = {
+  disableVoting?: boolean;
   entry: PriceLogListEntry;
   showEditLink?: boolean;
 };
 
-export function PriceLogCard({ entry, showEditLink }: PriceLogCardProps) {
+export function PriceLogCard({
+  disableVoting,
+  entry,
+  showEditLink,
+}: PriceLogCardProps) {
   const photoUrl = getPhotoUrl(entry.log.photo_path);
 
   return (
@@ -18,6 +23,7 @@ export function PriceLogCard({ entry, showEditLink }: PriceLogCardProps) {
       <div className="log-card__vote">
         <LogVoteControls
           compact
+          disabled={disableVoting}
           key={`${entry.log.id}:${entry.voteSummary.score}:${entry.voteSummary.viewerVote}`}
           logId={entry.log.id}
           summary={entry.voteSummary}
