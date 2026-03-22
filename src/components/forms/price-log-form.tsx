@@ -140,15 +140,21 @@ export function PriceLogForm({
 
     lastAutoFocusTarget.current = targetName;
 
-    window.setTimeout(() => {
+    const focusNow = () => {
       node.focus({ preventScroll: true });
-      window.setTimeout(() => {
-        node.scrollIntoView({
-          block: "nearest",
-          inline: "nearest",
-        });
-      }, 120);
-    }, 0);
+
+      if (typeof node.setSelectionRange === "function") {
+        const valueLength = node.value.length;
+        node.setSelectionRange(valueLength, valueLength);
+      }
+    };
+
+    window.requestAnimationFrame(focusNow);
+    window.setTimeout(() => {
+      if (document.activeElement !== node) {
+        focusNow();
+      }
+    }, 10);
   }
 
   function advanceOnBlur(
@@ -156,7 +162,7 @@ export function PriceLogForm({
     targetName: string,
     currentValue: string,
   ) {
-    window.setTimeout(() => {
+    window.requestAnimationFrame(() => {
       const activeElement = document.activeElement;
 
       if (
@@ -171,7 +177,7 @@ export function PriceLogForm({
       }
 
       focusField(ref, targetName);
-    }, 40);
+    });
   }
 
   return (
@@ -211,15 +217,8 @@ export function PriceLogForm({
           }}
           onCommit={() => packageAmountRef.current?.focus()}
           onSelect={(option) => {
-            const nextItem =
-              items.find((item) => item.id === option?.id) ?? null;
             setSelectedItemId(option?.id ?? "");
-
-            if (nextItem) {
-              setPackageAmount(stringifyNumber(nextItem.comparison_basis_amount));
-            } else {
-              setPackageAmount("");
-            }
+            setPackageAmount("");
           }}
           options={itemOptions}
           placeholder="Search or choose a canonical item"
