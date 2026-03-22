@@ -695,12 +695,31 @@ body::before {
   text-decoration: underline;
 }
 
-.leaflet-tooltip.map-tooltip {
-  background: rgba(255, 250, 242, 0.52);
-  border: 1px solid rgba(31, 42, 31, 0.1);
-  box-shadow: 0 10px 26px rgba(31, 42, 31, 0.08);
-  backdrop-filter: blur(8px);
+.leaflet-tooltip.map-label {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
   pointer-events: none;
+}
+
+.leaflet-tooltip.map-label::before {
+  display: none;
+}
+
+.map-tooltip__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  text-shadow:
+    0 1px 0 rgba(255, 250, 242, 0.96),
+    0 0 8px rgba(255, 250, 242, 0.95),
+    0 0 18px rgba(255, 250, 242, 0.8);
+}
+
+.map-tooltip__content span {
+  color: var(--ink-muted);
 }
 
 .leaflet-popup-content-wrapper,
@@ -708,16 +727,6 @@ body::before {
   background: rgba(255, 250, 242, 0.68);
   box-shadow: 0 10px 26px rgba(31, 42, 31, 0.08);
   backdrop-filter: blur(8px);
-}
-
-.map-tooltip__content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.map-tooltip__content span {
-  color: var(--ink-muted);
 }
 
 .compare-search {

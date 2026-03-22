@@ -240,7 +240,13 @@ export function ComparisonMap({
             radius={9}
             stroke
           >
-            <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={showPermanentLabels}>
+            <Tooltip
+              className="map-label"
+              direction={showPermanentLabels ? "right" : "top"}
+              offset={showPermanentLabels ? [12, 0] : [0, -10]}
+              opacity={1}
+              permanent={showPermanentLabels}
+            >
               <div className="map-tooltip__content">
                 <strong>Your location</strong>
               </div>
@@ -268,9 +274,9 @@ export function ComparisonMap({
               stroke
             >
               <Tooltip
-                className="map-tooltip"
-                direction="top"
-                offset={[0, -10]}
+                className="map-label"
+                direction={showPermanentLabels ? "right" : "top"}
+                offset={showPermanentLabels ? [12, 0] : [0, -10]}
                 opacity={1}
                 permanent={showPermanentLabels}
               >
