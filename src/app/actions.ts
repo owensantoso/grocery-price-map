@@ -6,7 +6,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
-import { dataUrlToBuffer, PRICE_LOG_PHOTO_BUCKET } from "@/lib/photos";
+import {
+  dataUrlToBuffer,
+  MAX_PHOTO_BYTES,
+  PRICE_LOG_PHOTO_BUCKET,
+} from "@/lib/photos";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeExternalUrl } from "@/lib/urls";
 
@@ -21,6 +25,78 @@ type VoteActionState = {
   status: "error" | "idle";
 };
 
+const RATE_LIMIT_RULES = {
+  commentCreate: { action: "comment-create", limit: 12, windowMs: 60_000 },
+  commentVote: { action: "comment-vote", limit: 60, windowMs: 60_000 },
+  itemCreate: { action: "item-create", limit: 12, windowMs: 3_600_000 },
+  logCreate: { action: "log-create", limit: 30, windowMs: 3_600_000 },
+  logEdit: { action: "log-edit", limit: 60, windowMs: 3_600_000 },
+  logVote: { action: "log-vote", limit: 60, windowMs: 60_000 },
+  storeCreate: { action: "store-create", limit: 12, windowMs: 3_600_000 },
+} as const;
+
+function formatRateLimitWindow(windowMs: number) {
+  const minutes = Math.round(windowMs / 60_000);
+
+  if (minutes < 60) {
+    return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+  }
+
+  const hours = Math.round(minutes / 60);
+  return `${hours} hour${hours === 1 ? "" : "s"}`;
+}
+
+async function consumeRateLimit(input: {
+  action: string;
+  limit: number;
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
+  userId: string;
+  windowMs: number;
+}) {
+  const { action, limit, supabase, userId, windowMs } = input;
+  const since = new Date(Date.now() - windowMs).toISOString();
+
+  const { count, error: countError } = await supabase
+    .from("action_events")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("action", action)
+    .gte("created_at", since);
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  if ((count ?? 0) >= limit) {
+    throw new Error(
+      `Rate limit reached for this action. Try again in ${formatRateLimitWindow(windowMs)}.`,
+    );
+  }
+
+  const { error: insertError } = await supabase.from("action_events").insert({
+    action,
+    user_id: userId,
+  });
+
+  if (insertError) {
+    throw new Error(insertError.message);
+  }
+}
+
+function getConfiguredSiteUrl(headerOrigin: string | null) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+  if (siteUrl) {
+    return siteUrl;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_SITE_URL must be set in production.");
+  }
+
+  return headerOrigin ?? "http://localhost:3000";
+}
+
 async function uploadPhotoIfPresent(input: {
   existingPath?: string | null;
   photoDataUrl?: string | null;
@@ -31,6 +107,11 @@ async function uploadPhotoIfPresent(input: {
 
   if (!photoDataUrl) {
     return existingPath ?? null;
+  }
+
+  // Guard against oversized payloads before base64 decode to keep memory use bounded.
+  if (photoDataUrl.length > Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000) {
+    throw new Error("Photo payload is too large.");
   }
 
   const { buffer, contentType } = dataUrlToBuffer(photoDataUrl);
@@ -108,6 +189,11 @@ export async function createItemAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.itemCreate,
+      supabase,
+      userId: user.id,
+    });
 
     const { error } = await supabase.from("items").insert({
       category: parsed.data.category || null,
@@ -179,6 +265,11 @@ export async function createStoreAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.storeCreate,
+      supabase,
+      userId: user.id,
+    });
     const normalizedStoreUrl = normalizeExternalUrl(parsed.data.storeUrl);
 
     const { data: duplicateStore } = await supabase
@@ -256,6 +347,11 @@ export async function createPriceLogAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.logCreate,
+      supabase,
+      userId: user.id,
+    });
     const { data: item, error: itemError } = await supabase
       .from("items")
       .select("comparison_basis_amount, comparison_unit")
@@ -340,6 +436,11 @@ export async function updatePriceLogAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.logEdit,
+      supabase,
+      userId: user.id,
+    });
     const { data: item, error: itemError } = await supabase
       .from("items")
       .select("comparison_basis_amount, comparison_unit")
@@ -420,6 +521,11 @@ export async function voteOnPriceLogAction(
 ): Promise<VoteActionState> {
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.logVote,
+      supabase,
+      userId: user.id,
+    });
     if (value === 0) {
       const { error: deleteError } = await supabase
         .from("price_log_votes")
@@ -485,6 +591,11 @@ export async function createPriceLogCommentAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.commentCreate,
+      supabase,
+      userId: user.id,
+    });
     const { error } = await supabase.from("price_log_comments").insert({
       author_id: user.id,
       body: parsed.data.body,
@@ -512,6 +623,11 @@ export async function voteOnCommentAction(
 ): Promise<VoteActionState> {
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.commentVote,
+      supabase,
+      userId: user.id,
+    });
 
     if (value === 0) {
       const { error: deleteError } = await supabase
@@ -562,12 +678,11 @@ export async function signInWithGoogleAction() {
   }
 
   const headerStore = await headers();
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ?? headerStore.get("origin") ?? "http://localhost:3000";
+  const origin = getConfiguredSiteUrl(headerStore.get("origin"));
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: new URL("/auth/callback", origin).toString(),
     },
     provider: "google",
   });

@@ -1,6 +1,12 @@
 export const PRICE_LOG_PHOTO_BUCKET = "price-log-photos";
 export const MAX_PHOTO_WIDTH = 600;
 export const PHOTO_QUALITY = 0.48;
+export const MAX_PHOTO_BYTES = 1_000_000;
+export const ALLOWED_PHOTO_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
 
 export function dataUrlToBuffer(dataUrl: string) {
   const [header, payload] = dataUrl.split(",", 2);
@@ -15,8 +21,22 @@ export function dataUrlToBuffer(dataUrl: string) {
     throw new Error("Photo format is invalid.");
   }
 
+  if (
+    !ALLOWED_PHOTO_MIME_TYPES.includes(
+      mimeMatch[1] as (typeof ALLOWED_PHOTO_MIME_TYPES)[number],
+    )
+  ) {
+    throw new Error("Only JPEG, PNG, and WebP images are allowed.");
+  }
+
+  const buffer = Buffer.from(payload, "base64");
+
+  if (buffer.byteLength > MAX_PHOTO_BYTES) {
+    throw new Error("Photo is too large after compression.");
+  }
+
   return {
-    buffer: Buffer.from(payload, "base64"),
+    buffer,
     contentType: mimeMatch[1],
   };
 }

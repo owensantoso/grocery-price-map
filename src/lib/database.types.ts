@@ -222,6 +222,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      action_events: {
+        Row: {
+          action: string;
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          action: string;
+          created_at?: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          action?: string;
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       public_profiles: {
