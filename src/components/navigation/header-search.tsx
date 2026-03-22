@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AutocompleteField, type AutocompleteOption } from "@/components/forms/autocomplete-field";
+import {
+  AutocompleteField,
+  type AutocompleteFieldHandle,
+  type AutocompleteOption,
+} from "@/components/forms/autocomplete-field";
 import type { ItemRecord, StoreRecord } from "@/lib/models";
 
 type HeaderSearchProps = {
@@ -14,6 +18,7 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const autocompleteRef = useRef<AutocompleteFieldHandle | null>(null);
 
   const options: AutocompleteOption[] = [
     ...stores.map((store) => ({
@@ -45,6 +50,14 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    autocompleteRef.current?.focus();
+  }, [isOpen]);
+
   function handleCommit(option: AutocompleteOption) {
     const [kind, id] = option.id.split(":");
 
@@ -63,7 +76,14 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
       <button
         aria-expanded={isOpen}
         className="header-search__toggle"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => {
+          if (!isOpen) {
+            setIsOpen(true);
+            return;
+          }
+
+          setIsOpen(false);
+        }}
         type="button"
       >
         <span aria-hidden="true">⌕</span>
@@ -75,6 +95,7 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
             ⌕
           </span>
           <AutocompleteField
+            ref={autocompleteRef}
             label="Search"
             name="globalSearch"
             onCommit={handleCommit}
