@@ -70,20 +70,20 @@ export function AccountMenu({ configured, viewerEmail, viewerName }: AccountMenu
         <div className="account-menu__panel" role="menu">
           <Link
             className="account-menu__link"
+            href="/settings"
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+          >
+            <span className="account-menu__meta">Account</span>
+            <strong>{viewerName ?? viewerEmail}</strong>
+          </Link>
+          <Link
+            className="account-menu__link"
             href="/account"
             onClick={() => setIsOpen(false)}
             role="menuitem"
           >
             <span className="account-menu__meta">My Logs</span>
-            <strong>{viewerName ?? viewerEmail}</strong>
-          </Link>
-          <Link
-            className="account-menu__link"
-            href="/settings"
-            onClick={() => setIsOpen(false)}
-            role="menuitem"
-          >
-            <span className="account-menu__meta">Account settings</span>
             <strong>{viewerEmail}</strong>
           </Link>
           <form action={signOutAction}>

@@ -70,14 +70,19 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
         <span>Search</span>
       </button>
       <div className="header-search__panel">
-        <AutocompleteField
-          label="Search"
-          name="globalSearch"
-          onCommit={handleCommit}
-          options={options}
-          placeholder="Search stores or items..."
-          showClearButton
-        />
+        <div className="header-search__field">
+          <span aria-hidden="true" className="header-search__icon">
+            ⌕
+          </span>
+          <AutocompleteField
+            label="Search"
+            name="globalSearch"
+            onCommit={handleCommit}
+            options={options}
+            placeholder="Search stores or items..."
+            showClearButton
+          />
+        </div>
       </div>
     </div>
   );

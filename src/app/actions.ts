@@ -310,9 +310,20 @@ export async function updateAccountSettingsAction(
       throw new Error(error.message);
     }
 
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: {
+        public_name: normalizedPublicName,
+      },
+    });
+
+    if (metadataError) {
+      throw new Error(metadataError.message);
+    }
+
+    revalidatePath("/", "layout");
     revalidatePath("/account");
     revalidatePath("/settings");
-    redirect("/settings?saved=1");
+    redirect(`/settings?saved=1&updated=${Date.now()}`);
   } catch (error) {
     rethrowIfRedirectError(error);
     return toActionState(error);

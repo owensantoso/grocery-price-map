@@ -19,7 +19,7 @@ export function PriceLogCard({
   const photoUrl = getPhotoUrl(entry.log.photo_path);
 
   return (
-    <article className={`result-card log-card ${photoUrl ? "log-card--with-media" : ""}`}>
+    <article className="result-card log-card">
       <div className="log-card__vote">
         <LogVoteControls
           compact
@@ -29,15 +29,20 @@ export function PriceLogCard({
           summary={entry.voteSummary}
         />
       </div>
-      {photoUrl ? (
-        <div className="result-card__media log-card__media">
+      <div className="result-card__media log-card__media">
+        {photoUrl ? (
           <LogPhoto
             alt={`${entry.item.name} price log photo`}
             className="log-photo log-photo--square"
             src={photoUrl}
           />
-        </div>
-      ) : null}
+        ) : (
+          <div
+            aria-hidden="true"
+            className="log-photo log-photo--square log-photo--placeholder"
+          />
+        )}
+      </div>
       <div className="log-card__content stack-sm">
         <div className="result-card__top">
           <div className="stack-xs">

@@ -36,10 +36,16 @@ function bindMediaQuery(
 
 function FitBounds({ entries }: { entries: CompareEntry[] }) {
   const map = useMap();
+  const hasFittedRef = useRef(false);
 
   useEffect(() => {
+    if (hasFittedRef.current) {
+      return;
+    }
+
     if (entries.length === 0) {
       map.setView(TOKYO_CENTER, 11);
+      hasFittedRef.current = true;
       return;
     }
 
@@ -49,10 +55,12 @@ function FitBounds({ entries }: { entries: CompareEntry[] }) {
 
     if (bounds.length === 0) {
       map.setView(TOKYO_CENTER, 11);
+      hasFittedRef.current = true;
       return;
     }
 
     map.fitBounds(bounds, { padding: [48, 48] });
+    hasFittedRef.current = true;
   }, [entries, map]);
 
   return null;
