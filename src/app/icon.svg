@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="gpm-bg" x1="10" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F3D26C"/>
+      <stop offset="1" stop-color="#2D7A51"/>
+    </linearGradient>
+    <linearGradient id="gpm-dot" x1="22" y1="18" x2="42" y2="38" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8E5"/>
+      <stop offset="1" stop-color="#E5F4EA"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="#1F2A1F"/>
+  <path
+    d="M32 13C23.7 13 17 19.7 17 28C17 40.6 30.4 50.1 31 50.5C31.6 50.9 32.4 50.9 33 50.5C33.6 50.1 47 40.6 47 28C47 19.7 40.3 13 32 13Z"
+    fill="url(#gpm-bg)"
+  />
+  <circle cx="32" cy="28" r="9.5" fill="url(#gpm-dot)"/>
+  <path
+    d="M26 29.5C28.2 31.5 30.8 32.5 33.6 32.5C37.2 32.5 39.8 30.7 41.2 29.2"
+    stroke="#2D7A51"
+    stroke-linecap="round"
+    stroke-width="3"
+  />
+  <circle cx="28.5" cy="25" r="1.4" fill="#2D7A51"/>
+  <circle cx="35.5" cy="25" r="1.4" fill="#2D7A51"/>
+</svg>

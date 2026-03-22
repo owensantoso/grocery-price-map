@@ -8,6 +8,11 @@ import "leaflet/dist/leaflet.css";
 export const metadata: Metadata = {
   title: "Grocery Price Map",
   description: "Track and compare grocery prices by store location.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default async function RootLayout({
