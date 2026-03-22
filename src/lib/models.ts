@@ -3,7 +3,10 @@ import type { Database } from "@/lib/database.types";
 export type Viewer = {
   email: string;
   id: string;
+  publicName: string;
 };
+
+export type ProfileRecord = Database["public"]["Tables"]["profiles"]["Row"];
 
 export type ItemRecord = Database["public"]["Tables"]["items"]["Row"];
 export type PublicProfileRecord = Database["public"]["Views"]["public_profiles"]["Row"];

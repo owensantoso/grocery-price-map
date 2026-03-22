@@ -203,6 +203,17 @@ const itemSchema = z.object({
   returnTo: z.string().trim().optional(),
 });
 
+const accountSettingsSchema = z.object({
+  publicName: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters.")
+    .max(32, "Username must be 32 characters or fewer.")
+    .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i, {
+      message: "Username can use letters, numbers, and hyphens only.",
+    }),
+});
+
 export async function createItemAction(
   _previousState: ActionState,
   formData: FormData,
@@ -252,6 +263,56 @@ export async function createItemAction(
     }
 
     redirect("/items");
+  } catch (error) {
+    rethrowIfRedirectError(error);
+    return toActionState(error);
+  }
+}
+
+export async function updateAccountSettingsAction(
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = accountSettingsSchema.safeParse({
+    publicName: formData.get("publicName"),
+  });
+
+  if (!parsed.success) {
+    return toActionState(
+      new Error("Fix the username and try again."),
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  try {
+    const { supabase, user } = await requireAuthedClient();
+    const normalizedPublicName = parsed.data.publicName.trim().toLowerCase();
+
+    const { data: conflict } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("public_name", normalizedPublicName)
+      .neq("id", user.id)
+      .maybeSingle();
+
+    if (conflict) {
+      throw new Error("That username is already taken.");
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        public_name: normalizedPublicName,
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    revalidatePath("/account");
+    revalidatePath("/settings");
+    redirect("/settings?saved=1");
   } catch (error) {
     rethrowIfRedirectError(error);
     return toActionState(error);

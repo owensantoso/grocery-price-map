@@ -12,6 +12,7 @@ import type {
   CompareEntry,
   ItemRecord,
   LogDetail,
+  ProfileRecord,
   PriceLogCommentRecord,
   PriceLogCommentVoteRecord,
   PriceLogListEntry,
@@ -39,6 +40,20 @@ type PriceLogsSnapshot = {
   isConfigured: boolean;
   isDemo: boolean;
   ownLogs: PriceLogListEntry[];
+  viewer: Viewer | null;
+};
+
+export type PriceLogSort =
+  | "cheapest"
+  | "downvoted"
+  | "expensive"
+  | "oldest"
+  | "recent"
+  | "upvoted";
+
+type AccountSettingsSnapshot = {
+  isConfigured: boolean;
+  profile: ProfileRecord | null;
   viewer: Viewer | null;
 };
 
@@ -79,6 +94,20 @@ function toViewer(user: User | null): Viewer | null {
   return {
     email: user.email,
     id: user.id,
+    publicName: user.user_metadata?.public_name ?? user.user_metadata?.name ?? user.email,
+  };
+}
+
+function toViewerWithProfile(user: User | null, profile: ProfileRecord | null): Viewer | null {
+  const base = toViewer(user);
+
+  if (!base) {
+    return null;
+  }
+
+  return {
+    ...base,
+    publicName: profile?.public_name?.trim() || base.publicName,
   };
 }
 
@@ -234,6 +263,52 @@ function buildLogFeedEntries(
   });
 }
 
+function compareFeedEntries(left: PriceLogListEntry, right: PriceLogListEntry, sort: PriceLogSort) {
+  switch (sort) {
+    case "oldest":
+      if (left.log.observed_at === right.log.observed_at) {
+        return left.log.created_at.localeCompare(right.log.created_at);
+      }
+
+      return left.log.observed_at.localeCompare(right.log.observed_at);
+    case "upvoted":
+      if (right.voteSummary.upvotes === left.voteSummary.upvotes) {
+        return compareFeedEntries(left, right, "recent");
+      }
+
+      return right.voteSummary.upvotes - left.voteSummary.upvotes;
+    case "downvoted":
+      if (right.voteSummary.downvotes === left.voteSummary.downvotes) {
+        return compareFeedEntries(left, right, "recent");
+      }
+
+      return right.voteSummary.downvotes - left.voteSummary.downvotes;
+    case "cheapest":
+      if (left.log.normalized_price_yen === right.log.normalized_price_yen) {
+        return compareFeedEntries(left, right, "recent");
+      }
+
+      return left.log.normalized_price_yen - right.log.normalized_price_yen;
+    case "expensive":
+      if (left.log.normalized_price_yen === right.log.normalized_price_yen) {
+        return compareFeedEntries(left, right, "recent");
+      }
+
+      return right.log.normalized_price_yen - left.log.normalized_price_yen;
+    case "recent":
+    default:
+      if (left.log.observed_at === right.log.observed_at) {
+        return right.log.created_at.localeCompare(left.log.created_at);
+      }
+
+      return right.log.observed_at.localeCompare(left.log.observed_at);
+  }
+}
+
+function sortFeedEntries(entries: PriceLogListEntry[], sort: PriceLogSort) {
+  return [...entries].sort((left, right) => compareFeedEntries(left, right, sort));
+}
+
 async function getVoteRowsForLogs(
   logIds: string[],
 ): Promise<PriceLogVoteRecord[]> {
@@ -353,7 +428,17 @@ export async function getViewer(): Promise<Viewer | null> {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return toViewer(user);
+  if (!user?.email) {
+    return null;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null);
 }
 
 export async function getItems(): Promise<ItemRecord[]> {
@@ -522,12 +607,12 @@ export async function getPriceEntrySnapshot(): Promise<{
   };
 }
 
-export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
+export async function getPriceLogsSnapshot(sort: PriceLogSort = "recent"): Promise<PriceLogsSnapshot> {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
     return {
-      allLogs: getDemoLogsFeed(null),
+      allLogs: sortFeedEntries(getDemoLogsFeed(null), sort),
       isConfigured: false,
       isDemo: true,
       ownLogs: [],
@@ -538,7 +623,16 @@ export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const viewer = toViewer(user);
+  const profile = user
+    ? (
+        await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .maybeSingle()
+      ).data
+    : null;
+  const viewer = toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null);
 
   const { data, error } = await supabase
     .from("price_logs")
@@ -590,7 +684,10 @@ export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
   const logs = (data ?? []) as unknown as PriceLogWithRelations[];
   const votes = await getVoteRowsForLogs(logs.map((log) => log.id));
   const voteSummaries = summarizeVotes(votes, viewer?.id ?? null);
-  const allLogs = buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null);
+  const allLogs = sortFeedEntries(
+    buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null),
+    sort,
+  );
 
   return {
     allLogs,
@@ -598,6 +695,46 @@ export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
     isDemo: false,
     ownLogs: viewer ? allLogs.filter((entry) => entry.log.submitted_by === viewer.id) : [],
     viewer: viewer ?? null,
+  };
+}
+
+export async function getAccountSettingsSnapshot(): Promise<AccountSettingsSnapshot> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return {
+      isConfigured: false,
+      profile: null,
+      viewer: null,
+    };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return {
+      isConfigured: true,
+      profile: null,
+      viewer: null,
+    };
+  }
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    isConfigured: true,
+    profile: (profile as ProfileRecord | null) ?? null,
+    viewer: toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null),
   };
 }
 

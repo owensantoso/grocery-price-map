@@ -7,9 +7,10 @@ import { signOutAction } from "@/app/actions";
 type AccountMenuProps = {
   configured: boolean;
   viewerEmail?: string | null;
+  viewerName?: string | null;
 };
 
-export function AccountMenu({ configured, viewerEmail }: AccountMenuProps) {
+export function AccountMenu({ configured, viewerEmail, viewerName }: AccountMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -73,7 +74,16 @@ export function AccountMenu({ configured, viewerEmail }: AccountMenuProps) {
             onClick={() => setIsOpen(false)}
             role="menuitem"
           >
-            <span className="account-menu__meta">Signed in as</span>
+            <span className="account-menu__meta">My Logs</span>
+            <strong>{viewerName ?? viewerEmail}</strong>
+          </Link>
+          <Link
+            className="account-menu__link"
+            href="/settings"
+            onClick={() => setIsOpen(false)}
+            role="menuitem"
+          >
+            <span className="account-menu__meta">Account settings</span>
             <strong>{viewerEmail}</strong>
           </Link>
           <form action={signOutAction}>

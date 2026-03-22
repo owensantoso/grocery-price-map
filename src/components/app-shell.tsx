@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { signOutAction } from "@/app/actions";
 import { AccountMenu } from "@/components/navigation/account-menu";
 import { HeaderSearch } from "@/components/navigation/header-search";
 import { PrimaryNav } from "@/components/navigation/primary-nav";
@@ -27,36 +25,16 @@ export function AppShell({ children, configured, items, stores, viewer }: AppShe
               </span>
             </div>
             <div className="header-top-actions">
-              <Link className="button button-primary header-add-price" href="/prices/new">
-                <span className="main-nav__icon">+</span>
-                <span>Add Price</span>
-              </Link>
-            <div className="header-actions header-actions--mobile">
-              <AccountMenu configured={configured} viewerEmail={viewer?.email ?? null} />
-            </div>
+              <AccountMenu
+                configured={configured}
+                viewerEmail={viewer?.email ?? null}
+                viewerName={viewer?.publicName ?? null}
+              />
             </div>
           </div>
           <HeaderSearch items={items} stores={stores} />
           <div className="app-header__bottom">
             <PrimaryNav />
-            <div className="header-actions header-actions--desktop">
-            {configured && viewer ? (
-              <>
-                <Link className="tag header-account-link" href="/account">
-                  {viewer.email}
-                </Link>
-                <form action={signOutAction}>
-                  <button className="button button-secondary" type="submit">
-                    Sign out
-                  </button>
-                </form>
-              </>
-            ) : (
-              <Link className="button button-primary" href="/auth/sign-in">
-                {configured ? "Sign in with Google" : "Setup required"}
-              </Link>
-            )}
-            </div>
           </div>
         </div>
       </header>

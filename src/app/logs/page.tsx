@@ -1,10 +1,29 @@
 import Link from "next/link";
 import { PriceLogFeed } from "@/components/logs/price-log-feed";
 import { SetupNotice } from "@/components/setup-notice";
-import { getPriceLogsSnapshot } from "@/lib/queries";
+import { getPriceLogsSnapshot, type PriceLogSort } from "@/lib/queries";
 
-export default async function LogsPage() {
-  const snapshot = await getPriceLogsSnapshot();
+const SORT_OPTIONS: Array<{ label: string; value: PriceLogSort }> = [
+  { label: "Most recent", value: "recent" },
+  { label: "Oldest first", value: "oldest" },
+  { label: "Most upvoted", value: "upvoted" },
+  { label: "Most downvoted", value: "downvoted" },
+  { label: "Cheapest", value: "cheapest" },
+  { label: "Most expensive", value: "expensive" },
+];
+
+type LogsPageProps = {
+  searchParams?: Promise<{
+    sort?: PriceLogSort;
+  }>;
+};
+
+export default async function LogsPage({ searchParams }: LogsPageProps) {
+  const params = (await searchParams) ?? {};
+  const selectedSort = SORT_OPTIONS.some((option) => option.value === params.sort)
+    ? (params.sort as PriceLogSort)
+    : "recent";
+  const snapshot = await getPriceLogsSnapshot(selectedSort);
 
   return (
     <div className="stack-lg">
@@ -29,9 +48,28 @@ export default async function LogsPage() {
         </section>
 
         <section className="panel stack-md">
-          <div className="stack-xs">
+          <div className="split-header">
+            <div className="stack-xs">
             <h2 className="section-title">All logs</h2>
-            <p className="muted">Sorted by observed date, newest first.</p>
+              <p className="muted">Browse the shared feed in whatever order is most useful.</p>
+            </div>
+            <form className="sort-control" method="get">
+              <label className="form-field">
+                <span>Sort by</span>
+                <select
+                  className="select"
+                  defaultValue={selectedSort}
+                  name="sort"
+                  onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </form>
           </div>
           <PriceLogFeed
             disableVoting={!snapshot.viewer}
