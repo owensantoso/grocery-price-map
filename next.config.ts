@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
               "base-uri 'self'",
               "frame-ancestors 'none'",
               "form-action 'self' https: http://localhost:3000",
-              "script-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.supabase.co https://tile.openstreetmap.org https://*.tile.openstreetmap.org",
               "connect-src 'self' https://*.supabase.co",
