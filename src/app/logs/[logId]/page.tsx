@@ -178,36 +178,52 @@ export default async function LogDetailPage({ params }: PageProps) {
           </p>
         </div>
         <div className="list-rows">
-          {detail.recentItemLogs.map((entry) => (
-            <article className="result-card" key={entry.log.id}>
-              <div className="result-card__top">
-                <div className="stack-xs">
-                  <a
-                    className="store-link"
-                    href={entry.store.store_url}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {entry.store.name}
-                  </a>
-                  <span className="muted">{entry.store.address_text}</span>
+          {detail.recentItemLogs.map((entry) => {
+            const photoPath = entry.log.photo_path;
+            const photoUrl = photoPath ? getPhotoUrl(photoPath) : null;
+
+            return (
+              <article className="result-card" key={entry.log.id}>
+                <div className="result-card__lead">
+                  <div className="result-card__media">
+                    {photoUrl ? (
+                    <LogPhoto
+                      alt={`${detail.item.name} photo from ${entry.store.name}`}
+                      className="log-photo log-photo--square"
+                      src={photoUrl}
+                    />
+                    ) : null}
+                  </div>
+                  <div className="result-card__top">
+                    <div className="stack-xs">
+                      <a
+                        className="store-link"
+                        href={entry.store.store_url}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {entry.store.name}
+                      </a>
+                      <span className="muted">{entry.store.address_text}</span>
+                    </div>
+                    <Link className="price-pill" href={`/logs/${entry.log.id}`}>
+                      {formatCurrency(entry.log.normalized_price_yen)} /{" "}
+                      {detail.item.comparison_basis_amount}
+                      {detail.item.comparison_unit}
+                    </Link>
+                  </div>
                 </div>
-                <Link className="price-pill" href={`/logs/${entry.log.id}`}>
-                  {formatCurrency(entry.log.normalized_price_yen)} /{" "}
-                  {detail.item.comparison_basis_amount}
-                  {detail.item.comparison_unit}
-                </Link>
-              </div>
-              <div className="meta-row">
-                <span className="tag">
-                  {formatPackage(entry.log.package_amount, entry.log.package_unit)}
-                </span>
-                <span className="tag">observed {formatDate(entry.log.observed_at)}</span>
-                <span className="tag">score {entry.voteSummary.score}</span>
-              </div>
-              {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
-            </article>
-          ))}
+                <div className="meta-row">
+                  <span className="tag">
+                    {formatPackage(entry.log.package_amount, entry.log.package_unit)}
+                  </span>
+                  <span className="tag">observed {formatDate(entry.log.observed_at)}</span>
+                  <span className="tag">score {entry.voteSummary.score}</span>
+                </div>
+                {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>

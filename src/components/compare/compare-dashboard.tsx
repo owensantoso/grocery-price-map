@@ -8,12 +8,14 @@ import {
   AutocompleteField,
   type AutocompleteOption,
 } from "@/components/forms/autocomplete-field";
+import { LogPhoto } from "@/components/logs/log-photo";
 import {
   formatCurrency,
   formatDate,
   formatPackage,
 } from "@/lib/format";
 import type { CompareEntry, ItemRecord } from "@/lib/models";
+import { getPhotoUrl } from "@/lib/photos";
 
 const DynamicComparisonMap = dynamic(
   () =>
@@ -171,31 +173,49 @@ export function CompareDashboard({
                 </div>
                 <div className="history-list">
                   {selectedEntry.history.map((log) => (
-                    <div className="history-row" key={log.id}>
-                      <div className="stack-xs">
-                        <a
-                          className="store-link"
-                          href={selectedEntry.store.store_url}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          {selectedEntry.store.name}
-                        </a>
-                        <Link className="store-link" href={`/logs/${log.id}`}>
-                          {formatCurrency(log.normalized_price_yen)} /{" "}
-                          {selectedEntry.item.comparison_basis_amount}
-                          {selectedEntry.item.comparison_unit}
-                        </Link>
-                        <span className="muted">
-                          paid {formatCurrency(log.total_price_yen)} • ex tax{" "}
-                          {formatCurrency(log.price_tax_excluded_yen)}
-                        </span>
-                      </div>
-                      <div className="stack-xs" style={{ alignItems: "flex-end" }}>
-                        <span className="tag">{formatPackage(log.package_amount, log.package_unit)}</span>
-                        <span className="muted">{formatDate(log.observed_at)}</span>
-                      </div>
-                    </div>
+                    (() => {
+                      const photoPath = log.photo_path;
+                      const photoUrl = photoPath ? getPhotoUrl(photoPath) : null;
+
+                      return (
+                        <div className="history-row" key={log.id}>
+                          <div className="history-row__media">
+                            {photoUrl ? (
+                              <LogPhoto
+                                alt={`${selectedEntry.item.name} photo from ${selectedEntry.store.name}`}
+                                className="log-photo log-photo--square"
+                                src={photoUrl}
+                              />
+                            ) : null}
+                          </div>
+                          <div className="stack-xs">
+                            <a
+                              className="store-link"
+                              href={selectedEntry.store.store_url}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              {selectedEntry.store.name}
+                            </a>
+                            <Link className="store-link" href={`/logs/${log.id}`}>
+                              {formatCurrency(log.normalized_price_yen)} /{" "}
+                              {selectedEntry.item.comparison_basis_amount}
+                              {selectedEntry.item.comparison_unit}
+                            </Link>
+                            <span className="muted">
+                              paid {formatCurrency(log.total_price_yen)} • ex tax{" "}
+                              {formatCurrency(log.price_tax_excluded_yen)}
+                            </span>
+                          </div>
+                          <div className="stack-xs" style={{ alignItems: "flex-end" }}>
+                            <span className="tag">
+                              {formatPackage(log.package_amount, log.package_unit)}
+                            </span>
+                            <span className="muted">{formatDate(log.observed_at)}</span>
+                          </div>
+                        </div>
+                      );
+                    })()
                   ))}
                 </div>
               </section>
@@ -208,29 +228,45 @@ export function CompareDashboard({
             </div>
             <div className="list-rows">
               {entries.map((entry, index) => (
+                (() => {
+                  const photoPath = entry.latestLog.photo_path;
+                  const photoUrl = photoPath ? getPhotoUrl(photoPath) : null;
+
+                  return (
                 <article
                   className={`result-card ${
                     entry.store.id === selectedStoreId ? "is-selected" : ""
                   }`}
                   key={entry.store.id}
                 >
-                  <div className="result-card__top">
-                    <div className="stack-xs">
-                      <a
-                        className="store-link"
-                        href={entry.store.store_url}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        {index + 1}. {entry.store.name}
-                      </a>
-                      <span className="muted">{entry.store.address_text}</span>
+                  <div className="result-card__lead">
+                    <div className="result-card__media">
+                      {photoUrl ? (
+                        <LogPhoto
+                          alt={`${entry.item.name} photo from ${entry.store.name}`}
+                          className="log-photo log-photo--square"
+                          src={photoUrl}
+                        />
+                      ) : null}
                     </div>
-                    <Link className="price-pill" href={`/logs/${entry.latestLog.id}`}>
-                      {formatCurrency(entry.latestLog.normalized_price_yen)} /{" "}
-                      {entry.item.comparison_basis_amount}
-                      {entry.item.comparison_unit}
-                    </Link>
+                    <div className="result-card__top">
+                      <div className="stack-xs">
+                        <a
+                          className="store-link"
+                          href={entry.store.store_url}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {index + 1}. {entry.store.name}
+                        </a>
+                        <span className="muted">{entry.store.address_text}</span>
+                      </div>
+                      <Link className="price-pill" href={`/logs/${entry.latestLog.id}`}>
+                        {formatCurrency(entry.latestLog.normalized_price_yen)} /{" "}
+                        {entry.item.comparison_basis_amount}
+                        {entry.item.comparison_unit}
+                      </Link>
+                    </div>
                   </div>
                   <div className="meta-row">
                     <span className="tag">paid {formatCurrency(entry.latestLog.total_price_yen)}</span>
@@ -262,6 +298,8 @@ export function CompareDashboard({
                     ) : null}
                   </div>
                 </article>
+                  );
+                })()
               ))}
             </div>
           </aside>

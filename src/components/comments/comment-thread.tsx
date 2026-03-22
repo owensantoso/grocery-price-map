@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createPriceLogCommentAction, type ActionState } from "@/app/actions";
 import { CommentVoteControls } from "@/components/comments/comment-vote-controls";
+import { SubmitButton } from "@/components/forms/submit-button";
 import { formatDate } from "@/lib/format";
 import type { CommentThreadEntry } from "@/lib/models";
 
@@ -37,9 +38,9 @@ export function CommentThread({ canInteract, comments, logId }: CommentThreadPro
             placeholder="Add a comment about this price, the item, or the store..."
           />
           {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
-          <button className="button button-primary" type="submit">
+          <SubmitButton pendingLabel="Submitting...">
             Post comment
-          </button>
+          </SubmitButton>
         </form>
       ) : (
         <p className="field-help">Sign in to comment or vote.</p>
