@@ -19,7 +19,7 @@ export function PriceLogCard({
   const photoUrl = getPhotoUrl(entry.log.photo_path);
 
   return (
-    <article className="result-card log-card">
+    <article className={`result-card log-card ${photoUrl ? "log-card--with-media" : ""}`}>
       <div className="log-card__vote">
         <LogVoteControls
           compact
@@ -29,6 +29,15 @@ export function PriceLogCard({
           summary={entry.voteSummary}
         />
       </div>
+      {photoUrl ? (
+        <div className="result-card__media log-card__media">
+          <LogPhoto
+            alt={`${entry.item.name} price log photo`}
+            className="log-photo log-photo--square"
+            src={photoUrl}
+          />
+        </div>
+      ) : null}
       <div className="log-card__content stack-sm">
         <div className="result-card__top">
           <div className="stack-xs">
@@ -61,13 +70,6 @@ export function PriceLogCard({
           <span className="tag">observed {formatDate(entry.log.observed_at)}</span>
         </div>
         {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
-        {photoUrl ? (
-          <LogPhoto
-            alt={`${entry.item.name} price log photo`}
-            className="log-photo--thumbnail"
-            src={photoUrl}
-          />
-        ) : null}
         <div className="result-card__actions">
           <Link className="button-inline" href={`/logs/${entry.log.id}`}>
             Open full log

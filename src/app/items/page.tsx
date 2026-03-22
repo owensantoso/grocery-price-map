@@ -68,9 +68,7 @@ export default async function ItemsPage({ searchParams }: ItemsPageProps) {
                 </div>
                 <div className="stack-xs">
                   <span className="tag">Owner</span>
-                  <span className="muted">
-                    {snapshot.viewer ? item.created_by : "Shared catalog"}
-                  </span>
+                  <span className="muted">Shared catalog</span>
                 </div>
               </div>
             ))}

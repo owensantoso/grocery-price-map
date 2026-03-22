@@ -24,6 +24,7 @@ export function AppShell({ children, configured, items, stores, viewer }: AppShe
                 Store-specific prices, normalized and kept as history.
               </span>
             </div>
+            <HeaderSearch items={items} stores={stores} />
             <div className="header-top-actions">
               <AccountMenu
                 configured={configured}
@@ -32,7 +33,6 @@ export function AppShell({ children, configured, items, stores, viewer }: AppShe
               />
             </div>
           </div>
-          <HeaderSearch items={items} stores={stores} />
           <div className="app-header__bottom">
             <PrimaryNav />
           </div>

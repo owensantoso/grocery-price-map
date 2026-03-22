@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AutocompleteField, type AutocompleteOption } from "@/components/forms/autocomplete-field";
 import type { ItemRecord, StoreRecord } from "@/lib/models";
@@ -11,6 +12,8 @@ type HeaderSearchProps = {
 
 export function HeaderSearch({ items, stores }: HeaderSearchProps) {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   const options: AutocompleteOption[] = [
     ...stores.map((store) => ({
@@ -31,25 +34,51 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
     })),
   ];
 
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
+
+  function handleCommit(option: AutocompleteOption) {
+    const [kind, id] = option.id.split(":");
+
+    setIsOpen(false);
+
+    if (kind === "store") {
+      router.push(`/stores/${id}`);
+      return;
+    }
+
+    router.push(`/?item=${id}#price-map`);
+  }
+
   return (
-    <div className="header-search">
-      <AutocompleteField
-        label="Search"
-        name="globalSearch"
-        onCommit={(option) => {
-          const [kind, id] = option.id.split(":");
-
-          if (kind === "store") {
-            router.push(`/stores/${id}`);
-            return;
-          }
-
-          router.push(`/?item=${id}#price-map`);
-        }}
-        options={options}
-        placeholder="Search stores or items..."
-        showClearButton
-      />
+    <div className={`header-search ${isOpen ? "is-open" : ""}`} ref={rootRef}>
+      <button
+        aria-expanded={isOpen}
+        className="header-search__toggle"
+        onClick={() => setIsOpen((current) => !current)}
+        type="button"
+      >
+        <span aria-hidden="true">⌕</span>
+        <span>Search</span>
+      </button>
+      <div className="header-search__panel">
+        <AutocompleteField
+          label="Search"
+          name="globalSearch"
+          onCommit={handleCommit}
+          options={options}
+          placeholder="Search stores or items..."
+          showClearButton
+        />
+      </div>
     </div>
   );
 }

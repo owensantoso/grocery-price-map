@@ -63,6 +63,25 @@ export function CompareDashboard({
   const featuredEntry = entries[0] ?? null;
   const selectedEntry =
     entries.find((entry) => entry.store.id === selectedStoreId) ?? featuredEntry;
+  const selectedHistoryEntries =
+    selectedEntry && selectedEntry.history.length > 0
+      ? selectedEntry.history
+      : selectedEntry
+        ? [
+            {
+              canEdit: false,
+              item: selectedEntry.item,
+              log: selectedEntry.latestLog,
+              store: selectedEntry.store,
+              voteSummary: {
+                downvotes: 0,
+                score: 0,
+                upvotes: 0,
+                viewerVote: 0 as const,
+              },
+            },
+          ]
+        : [];
 
   function navigateToItem(itemId: string) {
     startTransition(() => {
@@ -175,7 +194,7 @@ export function CompareDashboard({
                 <PriceLogFeed
                   disableVoting
                   emptyMessage="No logs yet for this store/item combination."
-                  entries={selectedEntry.history}
+                  entries={selectedHistoryEntries}
                 />
               </section>
             ) : null}

@@ -22,11 +22,12 @@ export default async function AccountPage() {
         <>
           <section className="panel hero hero-card">
             <div className="stack-sm">
-              <p className="eyebrow">Account</p>
-              <h1 className="hero-title">{snapshot.viewer?.email}</h1>
+              <p className="eyebrow">My logs</p>
+              <h1 className="hero-title">@{snapshot.viewer?.publicName}</h1>
               <p className="hero-copy">
                 Your own submitted logs live here, separate from the public shared feed.
               </p>
+              <p className="muted">{snapshot.viewer?.email}</p>
             </div>
             <div className="featured-result panel panel-muted">
               <p className="eyebrow">Your activity</p>
@@ -34,9 +35,14 @@ export default async function AccountPage() {
                 {snapshot.ownLogs.length}
               </strong>
               <p className="muted">logs submitted by you</p>
-              <Link className="button button-primary" href="/prices/new">
-                Add another log
-              </Link>
+              <div className="inline-actions">
+                <Link className="button button-primary" href="/prices/new">
+                  Add another log
+                </Link>
+                <Link className="button button-secondary" href="/settings">
+                  Account settings
+                </Link>
+              </div>
             </div>
           </section>
 

@@ -56,12 +56,7 @@ export default async function LogsPage({ searchParams }: LogsPageProps) {
             <form className="sort-control" method="get">
               <label className="form-field">
                 <span>Sort by</span>
-                <select
-                  className="select"
-                  defaultValue={selectedSort}
-                  name="sort"
-                  onChange={(event) => event.currentTarget.form?.requestSubmit()}
-                >
+                <select className="select" defaultValue={selectedSort} name="sort">
                   {SORT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -69,6 +64,9 @@ export default async function LogsPage({ searchParams }: LogsPageProps) {
                   ))}
                 </select>
               </label>
+              <button className="button button-secondary" type="submit">
+                Apply
+              </button>
             </form>
           </div>
           <PriceLogFeed

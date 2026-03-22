@@ -534,6 +534,15 @@ export async function getComparisonSnapshot(
         listing_url,
         photo_path,
         created_at,
+        items (
+          id,
+          name,
+          category,
+          comparison_unit,
+          comparison_basis_amount,
+          created_at,
+          created_by
+        ),
         stores (
           id,
           name,
