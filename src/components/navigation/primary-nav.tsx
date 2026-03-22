@@ -6,13 +6,11 @@ import { usePathname } from "next/navigation";
 const NAV_ITEMS: Array<{
   href: string;
   label: string;
-  primary?: boolean;
 }> = [
   { href: "/", label: "Compare" },
-  { href: "/stores", label: "Stores" },
-  { href: "/items", label: "Items" },
   { href: "/logs", label: "Logs" },
-  { href: "/prices/new", label: "Add Price", primary: true },
+  { href: "/items", label: "Items" },
+  { href: "/stores", label: "Stores" },
 ];
 
 export function PrimaryNav() {
@@ -29,12 +27,9 @@ export function PrimaryNav() {
         return (
           <Link
             key={item.href}
-            className={`main-nav__link ${item.primary ? "main-nav__link--primary" : ""} ${
-              isActive ? "is-active" : ""
-            }`}
+            className={`main-nav__link ${isActive ? "is-active" : ""}`}
             href={item.href}
           >
-            {item.primary ? <span className="main-nav__icon">+</span> : null}
             <span>{item.label}</span>
           </Link>
         );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { updatePriceLogAction } from "@/app/actions";
+import { deletePriceLogAction, updatePriceLogAction } from "@/app/actions";
 import { PriceLogForm } from "@/components/forms/price-log-form";
 import { getEditablePriceLogSnapshot } from "@/lib/queries";
 
@@ -41,6 +41,20 @@ export default async function EditLogPage({ params }: PageProps) {
         submitLabel="Save changes"
         title="Edit this price observation"
       />
+      <section className="panel stack-sm">
+        <div className="stack-xs">
+          <p className="eyebrow">Danger zone</p>
+          <h2 className="section-title">Delete this log</h2>
+          <p className="muted">
+            This permanently removes the log from rankings, feeds, and history.
+          </p>
+        </div>
+        <form action={deletePriceLogAction.bind(null, logId)}>
+          <button className="button button-danger" type="submit">
+            Delete log
+          </button>
+        </form>
+      </section>
     </div>
   );
 }

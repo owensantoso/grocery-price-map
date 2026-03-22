@@ -566,6 +566,61 @@ export async function updatePriceLogAction(
   }
 }
 
+export async function deletePriceLogAction(logId: string) {
+  try {
+    const { supabase, user } = await requireAuthedClient();
+
+    const { data: existing, error: existingError } = await supabase
+      .from("price_logs")
+      .select("submitted_by, photo_path")
+      .eq("id", logId)
+      .single();
+
+    if (existingError || !existing) {
+      throw new Error("This log no longer exists.");
+    }
+
+    if (existing.submitted_by !== user.id) {
+      throw new Error("Only the original submitter can delete this log.");
+    }
+
+    if (existing.photo_path) {
+      const { error: removePhotoError } = await supabase.storage
+        .from(PRICE_LOG_PHOTO_BUCKET)
+        .remove([existing.photo_path]);
+
+      if (removePhotoError) {
+        console.error("Photo remove failed during log delete", {
+          error: removePhotoError.message,
+          logId,
+          path: existing.photo_path,
+          userId: user.id,
+        });
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from("price_logs")
+      .delete()
+      .eq("id", logId)
+      .eq("submitted_by", user.id);
+
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/logs");
+    revalidatePath("/prices/new");
+    revalidatePath(`/logs/${logId}`);
+    revalidatePath(`/logs/${logId}/edit`);
+    redirect("/logs");
+  } catch (error) {
+    rethrowIfRedirectError(error);
+    throw error instanceof Error ? error : new Error("Could not delete this log.");
+  }
+}
+
 export async function voteOnPriceLogAction(
   logId: string,
   value: -1 | 0 | 1,

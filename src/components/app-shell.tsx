@@ -23,8 +23,14 @@ export function AppShell({ children, configured, viewer }: AppShellProps) {
                 Store-specific prices, normalized and kept as history.
               </span>
             </div>
+            <div className="header-top-actions">
+              <Link className="button button-primary header-add-price" href="/prices/new">
+                <span className="main-nav__icon">+</span>
+                <span>Add Price</span>
+              </Link>
             <div className="header-actions header-actions--mobile">
               <AccountMenu configured={configured} viewerEmail={viewer?.email ?? null} />
+            </div>
             </div>
           </div>
           <div className="app-header__bottom">

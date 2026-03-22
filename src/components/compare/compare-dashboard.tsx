@@ -63,7 +63,7 @@ export function CompareDashboard({
 
   function navigateToItem(itemId: string) {
     startTransition(() => {
-      router.replace(`/?item=${itemId}`);
+      router.replace(`/?item=${itemId}#price-map`);
     });
   }
 
@@ -89,7 +89,7 @@ export function CompareDashboard({
               }
 
               startTransition(() => {
-                router.replace(`/?item=${match.id}`);
+                router.replace(`/?item=${match.id}#price-map`);
               });
             }}
           >
@@ -142,7 +142,7 @@ export function CompareDashboard({
       ) : (
         <section className="compare-layout">
           <div className="stack-md">
-            <section className="panel map-panel stack-sm">
+            <section className="panel map-panel stack-sm" id="price-map">
               <div className="split-header">
                 <div className="stack-xs">
                   <h2 className="section-title">
