@@ -132,14 +132,9 @@ export default async function LogDetailPage({ params }: PageProps) {
             {detail.latestAcrossStores.map((entry) => (
               <article className="result-card" key={entry.store.id}>
                 <div className="stack-xs">
-                  <a
-                    className="store-link"
-                    href={entry.store.store_url}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
+                  <Link className="store-link" href={`/stores/${entry.store.id}`}>
                     {entry.store.name}
-                  </a>
+                  </Link>
                   <span className="muted">{entry.store.address_text}</span>
                 </div>
                 <Link className="price-pill" href={`/logs/${entry.latestLog.id}`}>

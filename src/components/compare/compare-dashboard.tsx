@@ -229,14 +229,9 @@ export function CompareDashboard({
                     </div>
                     <div className="result-card__top">
                       <div className="stack-xs">
-                        <a
-                          className="store-link"
-                          href={entry.store.store_url}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
+                        <Link className="store-link" href={`/stores/${entry.store.id}`}>
                           {index + 1}. {entry.store.name}
-                        </a>
+                        </Link>
                         <span className="muted">{entry.store.address_text}</span>
                       </div>
                       <Link className="price-pill" href={`/logs/${entry.latestLog.id}`}>
