@@ -22,9 +22,11 @@ const initialState: ActionState = {
 export function StoreForm({
   disabled,
   initialName = "",
+  returnTo,
 }: {
   disabled?: boolean;
   initialName?: string;
+  returnTo?: string;
 }) {
   const [state, formAction] = useActionState(createStoreAction, initialState);
   const [storeKind, setStoreKind] = useState<"physical" | "online">("physical");
@@ -37,6 +39,7 @@ export function StoreForm({
 
   return (
     <form action={formAction} className="panel panel-muted stack-md">
+      <input name="returnTo" type="hidden" value={returnTo ?? ""} />
       <div className="stack-xs">
         <h2 className="section-title">Add a store</h2>
         <p className="muted">

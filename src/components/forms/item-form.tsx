@@ -13,14 +13,17 @@ const initialState: ActionState = {
 export function ItemForm({
   disabled,
   initialName = "",
+  returnTo,
 }: {
   disabled?: boolean;
   initialName?: string;
+  returnTo?: string;
 }) {
   const [state, formAction] = useActionState(createItemAction, initialState);
 
   return (
     <form action={formAction} className="panel panel-muted stack-md">
+      <input name="returnTo" type="hidden" value={returnTo ?? ""} />
       <div className="stack-xs">
         <h2 className="section-title">Add a canonical item</h2>
         <p className="muted">

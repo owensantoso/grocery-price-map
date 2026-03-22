@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 type ItemsPageProps = {
   searchParams?: Promise<{
     prefillName?: string;
+    returnTo?: string;
   }>;
 };
 
@@ -33,7 +34,11 @@ export default async function ItemsPage({ searchParams }: ItemsPageProps) {
         </section>
       ) : null}
       {snapshot.viewer ? (
-        <ItemForm disabled={!configured} initialName={params.prefillName ?? ""} />
+        <ItemForm
+          disabled={!configured}
+          initialName={params.prefillName ?? ""}
+          returnTo={params.returnTo}
+        />
       ) : null}
       <section className="panel stack-md">
         <div className="stack-xs">

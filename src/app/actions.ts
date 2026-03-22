@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { z } from "zod";
 import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
 import {
@@ -144,6 +145,12 @@ function toActionState(error: unknown, fieldErrors?: Record<string, string[] | u
   };
 }
 
+function rethrowIfRedirectError(error: unknown) {
+  if (isRedirectError(error)) {
+    throw error;
+  }
+}
+
 async function requireAuthedClient() {
   const supabase = await createSupabaseServerClient();
 
@@ -167,6 +174,7 @@ const itemSchema = z.object({
   comparisonBasisAmount: z.coerce.number().positive(),
   comparisonUnit: z.enum(["count", "g", "ml"]),
   name: z.string().trim().min(1, "Name is required."),
+  returnTo: z.string().trim().optional(),
 });
 
 export async function createItemAction(
@@ -178,6 +186,7 @@ export async function createItemAction(
     comparisonBasisAmount: formData.get("comparisonBasisAmount"),
     comparisonUnit: formData.get("comparisonUnit"),
     name: formData.get("name"),
+    returnTo: formData.get("returnTo"),
   });
 
   if (!parsed.success) {
@@ -211,8 +220,14 @@ export async function createItemAction(
     revalidatePath("/logs");
     revalidatePath("/items");
     revalidatePath("/prices/new");
+
+    if (parsed.data.returnTo === "prices-new") {
+      redirect(`/prices/new?prefillItem=${encodeURIComponent(parsed.data.name)}`);
+    }
+
     redirect("/items");
   } catch (error) {
+    rethrowIfRedirectError(error);
     return toActionState(error);
   }
 }
@@ -225,6 +240,7 @@ const storeSchema = z
     longitude: z.coerce.number().nullable(),
     name: z.string().trim().min(1, "Store name is required."),
     notes: z.string().trim().optional(),
+    returnTo: z.string().trim().optional(),
     storeKind: z.enum(["physical", "online"]),
     storeUrl: z.string().trim().url("Store link must be a valid URL."),
   })
@@ -252,6 +268,7 @@ export async function createStoreAction(
     longitude: formData.get("longitude") ? Number(formData.get("longitude")) : null,
     name: formData.get("name"),
     notes: formData.get("notes"),
+    returnTo: formData.get("returnTo"),
     storeKind: formData.get("storeKind"),
     storeUrl: formData.get("storeUrl"),
   });
@@ -302,8 +319,14 @@ export async function createStoreAction(
     revalidatePath("/logs");
     revalidatePath("/stores");
     revalidatePath("/prices/new");
+
+    if (parsed.data.returnTo === "prices-new") {
+      redirect(`/prices/new?prefillStore=${encodeURIComponent(parsed.data.name)}`);
+    }
+
     redirect("/stores");
   } catch (error) {
+    rethrowIfRedirectError(error);
     return toActionState(error);
   }
 }
@@ -406,6 +429,7 @@ export async function createPriceLogAction(
     revalidatePath(`/logs/${insertedLog.id}`);
     redirect(`/logs/${insertedLog.id}`);
   } catch (error) {
+    rethrowIfRedirectError(error);
     return toActionState(error);
   }
 }
@@ -511,6 +535,7 @@ export async function updatePriceLogAction(
     revalidatePath("/prices/new");
     redirect(`/logs/${logId}`);
   } catch (error) {
+    rethrowIfRedirectError(error);
     return toActionState(error);
   }
 }

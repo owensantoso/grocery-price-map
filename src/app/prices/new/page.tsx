@@ -4,7 +4,15 @@ import { SetupNotice } from "@/components/setup-notice";
 import { getPriceEntrySnapshot } from "@/lib/queries";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export default async function NewPricePage() {
+type NewPricePageProps = {
+  searchParams?: Promise<{
+    prefillItem?: string;
+    prefillStore?: string;
+  }>;
+};
+
+export default async function NewPricePage({ searchParams }: NewPricePageProps) {
+  const params = (await searchParams) ?? {};
   const snapshot = await getPriceEntrySnapshot();
   const configured = isSupabaseConfigured();
 
@@ -39,6 +47,8 @@ export default async function NewPricePage() {
         <>
           <PriceLogForm
             disabled={!configured}
+            initialItemName={params.prefillItem ?? ""}
+            initialStoreName={params.prefillStore ?? ""}
             items={snapshot.items}
             stores={snapshot.stores}
           />

@@ -23,6 +23,8 @@ const initialState: ActionState = {
 type PriceLogFormProps = {
   disabled?: boolean;
   initialLog?: PriceLogRecord | null;
+  initialItemName?: string;
+  initialStoreName?: string;
   items: ItemRecord[];
   stores: StoreRecord[];
   submitAction?: (
@@ -55,6 +57,8 @@ function sanitizeDecimalInput(value: string) {
 export function PriceLogForm({
   disabled,
   initialLog,
+  initialItemName = "",
+  initialStoreName = "",
   items,
   stores,
   submitAction = createPriceLogAction,
@@ -62,9 +66,19 @@ export function PriceLogForm({
   title = "Log a price observation",
 }: PriceLogFormProps) {
   const router = useRouter();
+  const matchedInitialItem =
+    items.find((item) => item.name.toLowerCase() === initialItemName.trim().toLowerCase()) ??
+    null;
+  const matchedInitialStore =
+    stores.find((store) => store.name.toLowerCase() === initialStoreName.trim().toLowerCase()) ??
+    null;
   const [state, formAction] = useActionState(submitAction, initialState);
-  const [selectedItemId, setSelectedItemId] = useState(initialLog?.item_id ?? "");
-  const [selectedStoreId, setSelectedStoreId] = useState(initialLog?.store_id ?? "");
+  const [selectedItemId, setSelectedItemId] = useState(
+    initialLog?.item_id ?? matchedInitialItem?.id ?? "",
+  );
+  const [selectedStoreId, setSelectedStoreId] = useState(
+    initialLog?.store_id ?? matchedInitialStore?.id ?? "",
+  );
   const [priceValue, setPriceValue] = useState(
     initialLog ? stringifyNumber(initialLog.total_price_yen) : "",
   );
@@ -200,7 +214,9 @@ export function PriceLogForm({
           label="Store"
           name="storeId"
           onCreateAction={(query) => {
-            router.push(`/stores?prefillName=${encodeURIComponent(query)}`);
+            router.push(
+              `/stores?prefillName=${encodeURIComponent(query)}&returnTo=prices-new`,
+            );
           }}
           onClear={() => setSelectedStoreId("")}
           onCommit={() => itemFieldRef.current?.focus()}
@@ -218,7 +234,9 @@ export function PriceLogForm({
           label="Item"
           name="itemId"
           onCreateAction={(query) => {
-            router.push(`/items?prefillName=${encodeURIComponent(query)}`);
+            router.push(
+              `/items?prefillName=${encodeURIComponent(query)}&returnTo=prices-new`,
+            );
           }}
           onClear={() => {
             setSelectedItemId("");

@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 type StoresPageProps = {
   searchParams?: Promise<{
     prefillName?: string;
+    returnTo?: string;
   }>;
 };
 
@@ -31,7 +32,11 @@ export default async function StoresPage({ searchParams }: StoresPageProps) {
         </section>
       ) : null}
       {snapshot.viewer ? (
-        <StoreForm disabled={!configured} initialName={params.prefillName ?? ""} />
+        <StoreForm
+          disabled={!configured}
+          initialName={params.prefillName ?? ""}
+          returnTo={params.returnTo}
+        />
       ) : null}
       <section className="store-directory-grid">
         <section className="panel stack-md">
