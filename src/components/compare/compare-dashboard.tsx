@@ -98,10 +98,12 @@ export function CompareDashboard({
                 defaultOptionId={selectedItemId ?? undefined}
                 label="Item"
                 name="itemId"
+                onClear={() => setSelectedSearchItemId("")}
                 onCommit={(option) => navigateToItem(option.id)}
                 onSelect={(option) => setSelectedSearchItemId(option?.id ?? "")}
                 options={searchOptions}
                 placeholder="Eggs, chicken breast, pork mince..."
+                showClearButton
               />
             </div>
             <button className="button button-primary" type="submit">

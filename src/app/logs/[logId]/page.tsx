@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CommentThread } from "@/components/comments/comment-thread";
 import { LogVoteControls } from "@/components/logs/log-vote-controls";
+import { LogPhoto } from "@/components/logs/log-photo";
 import { formatCurrency, formatDate, formatPackage } from "@/lib/format";
+import { getPhotoUrl } from "@/lib/photos";
 import { getPriceLogDetail } from "@/lib/queries";
 
 type PageProps = {
@@ -17,6 +20,8 @@ export default async function LogDetailPage({ params }: PageProps) {
   if (!detail) {
     notFound();
   }
+
+  const photoUrl = getPhotoUrl(detail.log.photo_path);
 
   return (
     <div className="stack-lg">
@@ -48,16 +53,24 @@ export default async function LogDetailPage({ params }: PageProps) {
             </a>
             <p className="muted">{detail.store.address_text}</p>
           </div>
+          {photoUrl ? (
+            <LogPhoto
+              alt={`${detail.item.name} price log photo`}
+              className="log-photo--hero"
+              src={photoUrl}
+            />
+          ) : (
+            <div className="photo-placeholder">
+              <span className="eyebrow">Photo placeholder</span>
+              <p className="muted">
+                Log photos will appear here once a submission includes one.
+              </p>
+            </div>
+          )}
         </div>
         <div className="featured-result panel panel-muted current-log-panel log-hero__side">
           <div className="current-log-panel__content stack-sm">
             <p className="eyebrow">Current log</p>
-            <div className="photo-placeholder">
-              <span className="eyebrow">Photo placeholder</span>
-              <p className="muted">
-                Reserved for the future price-log photo feature.
-              </p>
-            </div>
             <p className="muted">
               paid {formatCurrency(detail.log.total_price_yen)} • ex tax{" "}
               {formatCurrency(detail.log.price_tax_excluded_yen)}
@@ -149,6 +162,8 @@ export default async function LogDetailPage({ params }: PageProps) {
           </div>
         </aside>
       </section>
+
+      <CommentThread comments={detail.comments} logId={detail.log.id} />
 
       <section className="panel stack-md">
         <div className="stack-xs">

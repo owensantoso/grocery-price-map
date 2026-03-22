@@ -1,10 +1,12 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
+import { dataUrlToBuffer, PRICE_LOG_PHOTO_BUCKET } from "@/lib/photos";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeExternalUrl } from "@/lib/urls";
 
@@ -18,6 +20,40 @@ type VoteActionState = {
   message: string;
   status: "error" | "idle";
 };
+
+async function uploadPhotoIfPresent(input: {
+  existingPath?: string | null;
+  photoDataUrl?: string | null;
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
+  userId: string;
+}) {
+  const { existingPath, photoDataUrl, supabase, userId } = input;
+
+  if (!photoDataUrl) {
+    return existingPath ?? null;
+  }
+
+  const { buffer, contentType } = dataUrlToBuffer(photoDataUrl);
+  const extension = contentType === "image/webp" ? "webp" : "jpg";
+  const path = `${userId}/${randomUUID()}.${extension}`;
+
+  const { error } = await supabase.storage
+    .from(PRICE_LOG_PHOTO_BUCKET)
+    .upload(path, buffer, {
+      contentType,
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (existingPath) {
+    await supabase.storage.from(PRICE_LOG_PHOTO_BUCKET).remove([existingPath]);
+  }
+
+  return path;
+}
 
 function toActionState(error: unknown, fieldErrors?: Record<string, string[] | undefined>) {
   return {
@@ -189,6 +225,7 @@ const priceLogSchema = z.object({
   notes: z.string().trim().optional(),
   observedAt: z.string().trim().min(1, "Observed date is required."),
   packageAmount: z.coerce.number().positive(),
+  photoDataUrl: z.string().trim().optional(),
   priceTaxExcludedYen: z.coerce.number().positive(),
   storeId: z.string().min(1),
   totalPriceYen: z.coerce.number().positive(),
@@ -204,6 +241,7 @@ export async function createPriceLogAction(
     notes: formData.get("notes"),
     observedAt: formData.get("observedAt"),
     packageAmount: formData.get("packageAmount"),
+    photoDataUrl: formData.get("photoDataUrl"),
     priceTaxExcludedYen: formData.get("priceTaxExcludedYen"),
     storeId: formData.get("storeId"),
     totalPriceYen: formData.get("totalPriceYen"),
@@ -235,6 +273,11 @@ export async function createPriceLogAction(
       packageUnit: item.comparison_unit as MeasurementUnit,
       totalPriceYen: parsed.data.totalPriceYen,
     });
+    const photoPath = await uploadPhotoIfPresent({
+      photoDataUrl: parsed.data.photoDataUrl || null,
+      supabase,
+      userId: user.id,
+    });
 
     const { data: insertedLog, error } = await supabase
       .from("price_logs")
@@ -248,6 +291,7 @@ export async function createPriceLogAction(
         observed_at: parsed.data.observedAt,
         package_amount: parsed.data.packageAmount,
         package_unit: item.comparison_unit,
+        photo_path: photoPath,
         price_tax_excluded_yen: parsed.data.priceTaxExcludedYen,
         store_id: parsed.data.storeId,
         submitted_by: user.id,
@@ -281,6 +325,7 @@ export async function updatePriceLogAction(
     notes: formData.get("notes"),
     observedAt: formData.get("observedAt"),
     packageAmount: formData.get("packageAmount"),
+    photoDataUrl: formData.get("photoDataUrl"),
     priceTaxExcludedYen: formData.get("priceTaxExcludedYen"),
     storeId: formData.get("storeId"),
     totalPriceYen: formData.get("totalPriceYen"),
@@ -315,7 +360,7 @@ export async function updatePriceLogAction(
 
     const { data: existing, error: existingError } = await supabase
       .from("price_logs")
-      .select("submitted_by")
+      .select("submitted_by, photo_path")
       .eq("id", logId)
       .single();
 
@@ -326,6 +371,13 @@ export async function updatePriceLogAction(
     if (existing.submitted_by !== user.id) {
       throw new Error("Only the original submitter can edit this log.");
     }
+
+    const photoPath = await uploadPhotoIfPresent({
+      existingPath: existing.photo_path,
+      photoDataUrl: parsed.data.photoDataUrl || null,
+      supabase,
+      userId: user.id,
+    });
 
     const { error } = await supabase
       .from("price_logs")
@@ -339,6 +391,7 @@ export async function updatePriceLogAction(
         observed_at: parsed.data.observedAt,
         package_amount: parsed.data.packageAmount,
         package_unit: item.comparison_unit,
+        photo_path: photoPath,
         price_tax_excluded_yen: parsed.data.priceTaxExcludedYen,
         store_id: parsed.data.storeId,
         total_price_yen: parsed.data.totalPriceYen,
@@ -397,6 +450,97 @@ export async function voteOnPriceLogAction(
     revalidatePath("/");
     revalidatePath("/logs");
     revalidatePath(`/logs/${logId}`);
+
+    return {
+      message: "",
+      status: "idle",
+    };
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : "Could not update vote.",
+      status: "error",
+    };
+  }
+}
+
+const commentSchema = z.object({
+  body: z.string().trim().min(1, "Comment cannot be empty."),
+});
+
+export async function createPriceLogCommentAction(
+  logId: string,
+  _previousState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = commentSchema.safeParse({
+    body: formData.get("body"),
+  });
+
+  if (!parsed.success) {
+    return toActionState(
+      new Error("Write a comment before posting."),
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  try {
+    const { supabase, user } = await requireAuthedClient();
+    const { error } = await supabase.from("price_log_comments").insert({
+      author_id: user.id,
+      body: parsed.data.body,
+      log_id: logId,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    revalidatePath(`/logs/${logId}`);
+
+    return {
+      message: "",
+      status: "idle",
+    };
+  } catch (error) {
+    return toActionState(error);
+  }
+}
+
+export async function voteOnCommentAction(
+  commentId: string,
+  value: -1 | 0 | 1,
+): Promise<VoteActionState> {
+  try {
+    const { supabase, user } = await requireAuthedClient();
+
+    if (value === 0) {
+      const { error: deleteError } = await supabase
+        .from("price_log_comment_votes")
+        .delete()
+        .eq("comment_id", commentId)
+        .eq("user_id", user.id);
+
+      if (deleteError) {
+        throw new Error(deleteError.message);
+      }
+    } else {
+      const { error: upsertError } = await supabase
+        .from("price_log_comment_votes")
+        .upsert(
+          {
+            comment_id: commentId,
+            user_id: user.id,
+            value,
+          },
+          {
+            onConflict: "comment_id,user_id",
+          },
+        );
+
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
+    }
 
     return {
       message: "",

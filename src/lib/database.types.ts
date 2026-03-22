@@ -116,6 +116,7 @@ export type Database = {
           observed_at: string;
           notes: string | null;
           listing_url: string | null;
+          photo_path: string | null;
           created_at: string;
         };
         Insert: {
@@ -131,6 +132,7 @@ export type Database = {
           observed_at: string;
           notes?: string | null;
           listing_url?: string | null;
+          photo_path?: string | null;
           created_at?: string;
         };
         Update: {
@@ -146,6 +148,7 @@ export type Database = {
           observed_at?: string;
           notes?: string | null;
           listing_url?: string | null;
+          photo_path?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -166,6 +169,51 @@ export type Database = {
         Update: {
           created_at?: string;
           log_id?: string;
+          user_id?: string;
+          value?: number;
+        };
+        Relationships: [];
+      };
+      price_log_comments: {
+        Row: {
+          author_id: string;
+          body: string;
+          created_at: string;
+          id: string;
+          log_id: string;
+        };
+        Insert: {
+          author_id: string;
+          body: string;
+          created_at?: string;
+          id?: string;
+          log_id: string;
+        };
+        Update: {
+          author_id?: string;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          log_id?: string;
+        };
+        Relationships: [];
+      };
+      price_log_comment_votes: {
+        Row: {
+          comment_id: string;
+          created_at: string;
+          user_id: string;
+          value: number;
+        };
+        Insert: {
+          comment_id: string;
+          created_at?: string;
+          user_id: string;
+          value: number;
+        };
+        Update: {
+          comment_id?: string;
+          created_at?: string;
           user_id?: string;
           value?: number;
         };

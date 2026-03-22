@@ -7,9 +7,12 @@ import {
   demoStores,
 } from "@/lib/demo-data";
 import type {
+  CommentThreadEntry,
   CompareEntry,
   ItemRecord,
   LogDetail,
+  PriceLogCommentRecord,
+  PriceLogCommentVoteRecord,
   PriceLogListEntry,
   PriceLogRecord,
   PriceLogVoteRecord,
@@ -47,6 +50,7 @@ type PriceLogWithRelations = {
   observed_at: string;
   package_amount: number;
   package_unit: ItemRecord["comparison_unit"];
+  photo_path: string | null;
   price_tax_excluded_yen: number;
   store_id: string;
   stores: StoreRecord | null;
@@ -55,6 +59,18 @@ type PriceLogWithRelations = {
 };
 
 type PriceLogDetailRow = PriceLogWithRelations;
+
+type PriceLogCommentWithProfile = {
+  author_id: string;
+  body: string;
+  created_at: string;
+  id: string;
+  log_id: string;
+  profiles: {
+    display_name: string | null;
+    email: string;
+  } | null;
+};
 
 function toViewer(user: User | null): Viewer | null {
   if (!user?.email) {
@@ -78,6 +94,7 @@ function stripRelations(log: PriceLogWithRelations): PriceLogRecord {
     observed_at: log.observed_at,
     package_amount: log.package_amount,
     package_unit: log.package_unit,
+    photo_path: log.photo_path,
     price_tax_excluded_yen: log.price_tax_excluded_yen,
     store_id: log.store_id,
     submitted_by: log.submitted_by,
@@ -125,6 +142,34 @@ function summarizeVotes(
 
     existing.score = existing.upvotes - existing.downvotes;
     summaries.set(vote.log_id, existing);
+  }
+
+  return summaries;
+}
+
+function summarizeCommentVotes(
+  voteRows: PriceLogCommentVoteRecord[],
+  viewerId: string | null,
+): Map<string, VoteSummary> {
+  const summaries = new Map<string, VoteSummary>();
+
+  for (const vote of voteRows) {
+    const existing = summaries.get(vote.comment_id) ?? createEmptyVoteSummary();
+
+    if (vote.value === 1) {
+      existing.upvotes += 1;
+    }
+
+    if (vote.value === -1) {
+      existing.downvotes += 1;
+    }
+
+    if (viewerId && vote.user_id === viewerId) {
+      existing.viewerVote = vote.value as VoteSummary["viewerVote"];
+    }
+
+    existing.score = existing.upvotes - existing.downvotes;
+    summaries.set(vote.comment_id, existing);
   }
 
   return summaries;
@@ -206,6 +251,62 @@ async function getVoteRowsForLogs(
   }
 
   return (data ?? []) as PriceLogVoteRecord[];
+}
+
+async function getVoteRowsForComments(
+  commentIds: string[],
+): Promise<PriceLogCommentVoteRecord[]> {
+  if (commentIds.length === 0) {
+    return [];
+  }
+
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("price_log_comment_votes")
+    .select("comment_id, user_id, value, created_at")
+    .in("comment_id", commentIds);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as PriceLogCommentVoteRecord[];
+}
+
+function buildCommentEntries(
+  comments: PriceLogCommentWithProfile[],
+  voteSummaries: Map<string, VoteSummary>,
+) {
+  return [...comments]
+    .sort((left, right) => {
+      const leftSummary = voteSummaries.get(left.id) ?? createEmptyVoteSummary();
+      const rightSummary = voteSummaries.get(right.id) ?? createEmptyVoteSummary();
+
+      if (leftSummary.score === rightSummary.score) {
+        return left.created_at.localeCompare(right.created_at);
+      }
+
+      return rightSummary.score - leftSummary.score;
+    })
+    .map((comment) => ({
+      authorLabel:
+        comment.profiles?.display_name?.trim() ||
+        comment.profiles?.email ||
+        comment.author_id,
+      comment: {
+        author_id: comment.author_id,
+        body: comment.body,
+        created_at: comment.created_at,
+        id: comment.id,
+        log_id: comment.log_id,
+      } satisfies PriceLogCommentRecord,
+      voteSummary: voteSummaries.get(comment.id) ?? createEmptyVoteSummary(),
+    } satisfies CommentThreadEntry));
 }
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -340,6 +441,7 @@ export async function getComparisonSnapshot(
         observed_at,
         notes,
         listing_url,
+        photo_path,
         created_at,
         stores (
           id,
@@ -456,6 +558,7 @@ export async function getPriceLogsSnapshot(): Promise<PriceLogsSnapshot> {
         observed_at,
         notes,
         listing_url,
+        photo_path,
         created_at,
         items (
           id,
@@ -548,6 +651,7 @@ export async function getEditablePriceLogSnapshot(logId: string): Promise<{
         observed_at,
         notes,
         listing_url,
+        photo_path,
         created_at
       `,
     )
@@ -599,6 +703,7 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
         observed_at,
         notes,
         listing_url,
+        photo_path,
         created_at,
         items (
           id,
@@ -653,6 +758,7 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
         observed_at,
         notes,
         listing_url,
+        photo_path,
         created_at,
         items (
           id,
@@ -687,6 +793,30 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
   const itemLogs = (historyData ?? []) as unknown as PriceLogWithRelations[];
   const voteRows = await getVoteRowsForLogs(itemLogs.map((entry) => entry.id));
   const voteSummaries = summarizeVotes(voteRows, viewer.id);
+  const { data: commentData, error: commentError } = await supabase
+    .from("price_log_comments")
+    .select(
+      `
+        id,
+        log_id,
+        author_id,
+        body,
+        created_at,
+        profiles!price_log_comments_author_id_fkey (
+          display_name,
+          email
+        )
+      `,
+    )
+    .eq("log_id", logId);
+
+  if (commentError) {
+    throw new Error(commentError.message);
+  }
+
+  const comments = (commentData ?? []) as unknown as PriceLogCommentWithProfile[];
+  const commentVoteRows = await getVoteRowsForComments(comments.map((comment) => comment.id));
+  const commentVoteSummaries = summarizeCommentVotes(commentVoteRows, viewer.id);
   const sameStoreHistory = itemLogs
     .filter((candidate) => candidate.store_id === log.store_id)
     .sort(sortLogsByRecency)
@@ -694,6 +824,7 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
 
   return {
     canEdit: viewer.id === log.submitted_by,
+    comments: buildCommentEntries(comments, commentVoteSummaries),
     item: log.items,
     latestAcrossStores: await getComparisonSnapshot(log.item_id).then(
       (snapshot) => snapshot.entries,

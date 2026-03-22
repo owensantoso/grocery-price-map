@@ -6,8 +6,10 @@ import {
   AutocompleteField,
   type AutocompleteOption,
 } from "@/components/forms/autocomplete-field";
+import { LogPhotoInput } from "@/components/forms/log-photo-input";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { type ItemRecord, type PriceLogRecord, type StoreRecord } from "@/lib/models";
+import { getPhotoUrl } from "@/lib/photos";
 import { excludedFromIncluded, includedFromExcluded } from "@/lib/pricing";
 
 const initialState: ActionState = {
@@ -222,6 +224,7 @@ export function PriceLogForm({
             type="url"
           />
         </label>
+        <LogPhotoInput existingPhotoUrl={getPhotoUrl(initialLog?.photo_path ?? null)} />
         <label className="form-field form-field--wide">
           <span>Notes</span>
           <textarea

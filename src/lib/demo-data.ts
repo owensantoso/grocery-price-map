@@ -1,7 +1,10 @@
 import type {
+  CommentThreadEntry,
   CompareEntry,
   ItemRecord,
   LogDetail,
+  PriceLogCommentRecord,
+  PriceLogCommentVoteRecord,
   PriceLogListEntry,
   PriceLogRecord,
   PriceLogVoteRecord,
@@ -144,6 +147,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 298,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-eggs-summit-old",
@@ -157,6 +161,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 318,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-eggs-hanamasa",
@@ -170,6 +175,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 272,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-eggs-gyomu",
@@ -183,6 +189,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 336,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-pork-summit",
@@ -196,6 +203,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 585,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-pork-hanamasa",
@@ -209,6 +217,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 1098,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-pork-rakuten",
@@ -222,6 +231,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 1188,
     listing_url: "https://www.rakuten.co.jp/search/pork-mince",
+    photo_path: null,
   }),
   createLog({
     id: "log-chicken-hanamasa",
@@ -235,6 +245,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 1800,
     listing_url: null,
+    photo_path: null,
   }),
   createLog({
     id: "log-chicken-summit",
@@ -248,6 +259,7 @@ export const demoPriceLogs: PriceLogRecord[] = [
     submitted_by: DEMO_USER_ID,
     total_price_yen: 800,
     listing_url: null,
+    photo_path: null,
   }),
 ];
 
@@ -284,6 +296,44 @@ export const demoPriceLogVotes: PriceLogVoteRecord[] = [
   },
 ];
 
+export const demoPriceLogComments: PriceLogCommentRecord[] = [
+  {
+    author_id: "demo-friend-a",
+    body: "Hanamasa is still the most reliable for chicken in my area too.",
+    created_at: "2026-03-21T07:00:00.000Z",
+    id: "comment-1",
+    log_id: "log-chicken-hanamasa",
+  },
+  {
+    author_id: DEMO_USER_ID,
+    body: "Good catch. Need to check whether this is still true next week.",
+    created_at: "2026-03-21T07:30:00.000Z",
+    id: "comment-2",
+    log_id: "log-chicken-hanamasa",
+  },
+];
+
+export const demoPriceLogCommentVotes: PriceLogCommentVoteRecord[] = [
+  {
+    comment_id: "comment-1",
+    created_at: "2026-03-21T08:00:00.000Z",
+    user_id: DEMO_USER_ID,
+    value: 1,
+  },
+  {
+    comment_id: "comment-1",
+    created_at: "2026-03-21T08:10:00.000Z",
+    user_id: "demo-friend-b",
+    value: 1,
+  },
+  {
+    comment_id: "comment-2",
+    created_at: "2026-03-21T08:20:00.000Z",
+    user_id: "demo-friend-a",
+    value: 1,
+  },
+];
+
 function getDemoVoteSummary(logId: string, viewerId: string | null): VoteSummary {
   const votes = demoPriceLogVotes.filter((vote) => vote.log_id === logId);
   const upvotes = votes.filter((vote) => vote.value === 1).length;
@@ -298,6 +348,36 @@ function getDemoVoteSummary(logId: string, viewerId: string | null): VoteSummary
     upvotes,
     viewerVote,
   };
+}
+
+function getDemoCommentVoteSummary(
+  commentId: string,
+  viewerId: string | null,
+): VoteSummary {
+  const votes = demoPriceLogCommentVotes.filter((vote) => vote.comment_id === commentId);
+  const upvotes = votes.filter((vote) => vote.value === 1).length;
+  const downvotes = votes.filter((vote) => vote.value === -1).length;
+  const viewerVote = (viewerId
+    ? (votes.find((vote) => vote.user_id === viewerId)?.value ?? 0)
+    : 0) as VoteSummary["viewerVote"];
+
+  return {
+    downvotes,
+    score: upvotes - downvotes,
+    upvotes,
+    viewerVote,
+  };
+}
+
+function getDemoComments(logId: string, viewerId: string | null): CommentThreadEntry[] {
+  return demoPriceLogComments
+    .filter((comment) => comment.log_id === logId)
+    .sort((left, right) => left.created_at.localeCompare(right.created_at))
+    .map((comment) => ({
+      authorLabel: comment.author_id === DEMO_USER_ID ? "demo-user" : comment.author_id,
+      comment,
+      voteSummary: getDemoCommentVoteSummary(comment.id, viewerId),
+    }));
 }
 
 export function getDemoLogsFeed(viewerId: string | null = null): PriceLogListEntry[] {
@@ -391,6 +471,7 @@ export function getDemoLogDetail(logId: string): LogDetail | null {
 
   return {
     canEdit: false,
+    comments: getDemoComments(log.id, null),
     item,
     latestAcrossStores: getDemoCompareEntries(item.id),
     log,

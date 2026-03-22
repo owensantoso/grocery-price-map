@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { LogVoteControls } from "@/components/logs/log-vote-controls";
+import { LogPhoto } from "@/components/logs/log-photo";
 import { formatCurrency, formatDate, formatPackage } from "@/lib/format";
 import type { PriceLogListEntry } from "@/lib/models";
+import { getPhotoUrl } from "@/lib/photos";
 
 type PriceLogCardProps = {
   entry: PriceLogListEntry;
@@ -9,6 +11,8 @@ type PriceLogCardProps = {
 };
 
 export function PriceLogCard({ entry, showEditLink }: PriceLogCardProps) {
+  const photoUrl = getPhotoUrl(entry.log.photo_path);
+
   return (
     <article className="result-card log-card">
       <div className="log-card__vote">
@@ -22,7 +26,7 @@ export function PriceLogCard({ entry, showEditLink }: PriceLogCardProps) {
       <div className="log-card__content stack-sm">
         <div className="result-card__top">
           <div className="stack-xs">
-            <Link className="store-link" href={`/logs/${entry.log.id}`}>
+            <Link className="store-link log-card__title" href={`/logs/${entry.log.id}`}>
               {entry.item.name}
             </Link>
             <a
@@ -51,6 +55,13 @@ export function PriceLogCard({ entry, showEditLink }: PriceLogCardProps) {
           <span className="tag">observed {formatDate(entry.log.observed_at)}</span>
         </div>
         {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
+        {photoUrl ? (
+          <LogPhoto
+            alt={`${entry.item.name} price log photo`}
+            className="log-photo--thumbnail"
+            src={photoUrl}
+          />
+        ) : null}
         <div className="result-card__actions">
           <Link className="button-inline" href={`/logs/${entry.log.id}`}>
             Open full log

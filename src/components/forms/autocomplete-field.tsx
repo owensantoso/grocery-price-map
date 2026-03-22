@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useId, useMemo, useState } from "react";
+import { useDeferredValue, useId, useMemo, useRef, useState } from "react";
 
 export type AutocompleteOption = {
   hint?: string;
@@ -14,9 +14,11 @@ type AutocompleteFieldProps = {
   error?: string;
   label: string;
   name: string;
+  onClear?: () => void;
   onCommit?: (option: AutocompleteOption) => void;
   onSelect?: (option: AutocompleteOption | null) => void;
   options: AutocompleteOption[];
+  showClearButton?: boolean;
   placeholder?: string;
 };
 
@@ -37,9 +39,11 @@ export function AutocompleteField({
   error,
   label,
   name,
+  onClear,
   onCommit,
   onSelect,
   options,
+  showClearButton,
   placeholder,
 }: AutocompleteFieldProps) {
   const inputId = useId();
@@ -50,6 +54,7 @@ export function AutocompleteField({
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const deferredQuery = useDeferredValue(query);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const filteredOptions = useMemo(() => {
     const trimmedQuery = deferredQuery.trim().toLowerCase();
@@ -83,79 +88,101 @@ export function AutocompleteField({
       <span>{label}</span>
       <input name={name} type="hidden" value={selectedId} />
       <div className={`autocomplete ${isOpen ? "is-open" : ""}`}>
-        <input
-          aria-autocomplete="list"
-          aria-controls={listId}
-          aria-expanded={isOpen}
-          aria-invalid={error ? "true" : "false"}
-          autoComplete="off"
-          className="input autocomplete__input"
-          disabled={disabled}
-          id={inputId}
-          onBlur={() => {
-            window.setTimeout(() => setIsOpen(false), 100);
-          }}
-          onChange={(event) => {
-            const nextQuery = event.target.value;
-            setQuery(nextQuery);
-            setIsOpen(true);
-            setHighlightedIndex(0);
-
-            const exactMatch =
-              options.find((option) => option.label.toLowerCase() === nextQuery.trim().toLowerCase()) ??
-              null;
-
-            setSelectedId(exactMatch?.id ?? "");
-            onSelect?.(exactMatch);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowDown") {
-              event.preventDefault();
+        <div className="autocomplete__input-wrap">
+          <input
+            aria-autocomplete="list"
+            aria-controls={listId}
+            aria-expanded={isOpen}
+            aria-invalid={error ? "true" : "false"}
+            autoComplete="off"
+            className="input autocomplete__input"
+            disabled={disabled}
+            id={inputId}
+            onBlur={() => {
+              window.setTimeout(() => setIsOpen(false), 100);
+            }}
+            onChange={(event) => {
+              const nextQuery = event.target.value;
+              setQuery(nextQuery);
               setIsOpen(true);
-              setHighlightedIndex((currentIndex) =>
-                isOpen
-                  ? Math.min(currentIndex + 1, Math.max(filteredOptions.length - 1, 0))
-                  : 0,
-              );
-              return;
-            }
+              setHighlightedIndex(0);
 
-            if (event.key === "ArrowUp") {
-              event.preventDefault();
-              setIsOpen(true);
-              setHighlightedIndex((currentIndex) =>
-                isOpen
-                  ? Math.max(currentIndex - 1, 0)
-                  : Math.max(filteredOptions.length - 1, 0),
-              );
-              return;
-            }
-
-            if (event.key === "Escape") {
-              setIsOpen(false);
-              return;
-            }
-
-            if (event.key === "Enter") {
-              const optionToCommit =
-                filteredOptions[highlightedIndex] ??
-                options.find(
-                  (option) => option.label.toLowerCase() === query.trim().toLowerCase(),
-                ) ??
+              const exactMatch =
+                options.find((option) => option.label.toLowerCase() === nextQuery.trim().toLowerCase()) ??
                 null;
 
-              if (optionToCommit) {
+              setSelectedId(exactMatch?.id ?? "");
+              onSelect?.(exactMatch);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowDown") {
                 event.preventDefault();
-                selectOption(optionToCommit, true);
+                setIsOpen(true);
+                setHighlightedIndex((currentIndex) =>
+                  isOpen
+                    ? Math.min(currentIndex + 1, Math.max(filteredOptions.length - 1, 0))
+                    : 0,
+                );
+                return;
               }
-            }
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-          role="combobox"
-          type="text"
-          value={query}
-        />
+
+              if (event.key === "ArrowUp") {
+                event.preventDefault();
+                setIsOpen(true);
+                setHighlightedIndex((currentIndex) =>
+                  isOpen
+                    ? Math.max(currentIndex - 1, 0)
+                    : Math.max(filteredOptions.length - 1, 0),
+                );
+                return;
+              }
+
+              if (event.key === "Escape") {
+                setIsOpen(false);
+                return;
+              }
+
+              if (event.key === "Enter") {
+                const optionToCommit =
+                  filteredOptions[highlightedIndex] ??
+                  options.find(
+                    (option) => option.label.toLowerCase() === query.trim().toLowerCase(),
+                  ) ??
+                  null;
+
+                if (optionToCommit) {
+                  event.preventDefault();
+                  selectOption(optionToCommit, true);
+                }
+              }
+            }}
+            onFocus={() => setIsOpen(true)}
+            placeholder={placeholder}
+            ref={inputRef}
+            role="combobox"
+            type="text"
+            value={query}
+          />
+          {showClearButton && query ? (
+            <button
+              aria-label={`Clear ${label}`}
+              className="autocomplete__clear"
+              onMouseDown={(event) => {
+                event.preventDefault();
+                setQuery("");
+                setSelectedId("");
+                setIsOpen(true);
+                setHighlightedIndex(0);
+                onSelect?.(null);
+                onClear?.();
+                inputRef.current?.focus();
+              }}
+              type="button"
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
         {isOpen && filteredOptions.length > 0 ? (
           <div className="autocomplete__menu" id={listId} role="listbox">
             {filteredOptions.map((option, index) => (
