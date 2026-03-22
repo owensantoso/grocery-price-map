@@ -31,6 +31,7 @@ export default async function LogDetailPage({ params }: PageProps) {
             disabled={!detail.viewer}
             key={`${detail.log.id}:${detail.voteSummary.score}:${detail.voteSummary.viewerVote}`}
             logId={detail.log.id}
+            showBreakdown={false}
             summary={detail.voteSummary}
           />
         </div>
@@ -78,6 +79,9 @@ export default async function LogDetailPage({ params }: PageProps) {
             <p className="muted">
               {formatPackage(detail.log.package_amount, detail.log.package_unit)} • observed{" "}
               {formatDate(detail.log.observed_at)}
+            </p>
+            <p className="field-help">
+              {detail.voteSummary.upvotes} up / {detail.voteSummary.downvotes} down
             </p>
             {detail.log.notes ? <p>{detail.log.notes}</p> : null}
             <div className="inline-actions">

@@ -1189,8 +1189,7 @@ body::before {
   .list-table__row,
   .form-grid,
   .log-hero,
-  .item-basis-grid,
-  .comment-row {
+  .item-basis-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1343,6 +1342,16 @@ body::before {
   .main-nav__icon {
     width: 1.2rem;
     height: 1.2rem;
+  }
+
+  .comment-row {
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .comment-vote-controls {
+    margin-top: 0.05rem;
   }
 
   .panel {

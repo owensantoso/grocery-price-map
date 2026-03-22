@@ -8,6 +8,7 @@ type LogVoteControlsProps = {
   compact?: boolean;
   disabled?: boolean;
   logId: string;
+  showBreakdown?: boolean;
   summary: VoteSummary;
 };
 
@@ -43,6 +44,7 @@ export function LogVoteControls({
   compact,
   disabled,
   logId,
+  showBreakdown = !compact,
   summary,
 }: LogVoteControlsProps) {
   const [localSummary, setLocalSummary] = useState(summary);
@@ -122,7 +124,7 @@ export function LogVoteControls({
           ▼
         </button>
       </div>
-      {!compact ? (
+      {showBreakdown ? (
         <span className="field-help">
           {localSummary.upvotes} up / {localSummary.downvotes} down
         </span>
