@@ -34,6 +34,17 @@ function stringifyNumber(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
+function sanitizeCurrencyInput(value: string) {
+  const stripped = value.replace(/[^\d.]/g, "");
+  const [whole = "", ...fractionParts] = stripped.split(".");
+
+  if (fractionParts.length === 0) {
+    return whole;
+  }
+
+  return `${whole}.${fractionParts.join("")}`;
+}
+
 export function PriceLogForm({
   disabled,
   initialLog,
@@ -85,25 +96,27 @@ export function PriceLogForm({
   }));
 
   function handleIncludedPriceChange(nextValue: string) {
-    setPriceIncluded(nextValue);
+    const sanitizedValue = sanitizeCurrencyInput(nextValue);
+    setPriceIncluded(sanitizedValue);
 
-    if (nextValue === "") {
+    if (sanitizedValue === "") {
       setPriceExcluded("");
       return;
     }
 
-    setPriceExcluded(stringifyNumber(excludedFromIncluded(Number(nextValue))));
+    setPriceExcluded(stringifyNumber(excludedFromIncluded(Number(sanitizedValue))));
   }
 
   function handleExcludedPriceChange(nextValue: string) {
-    setPriceExcluded(nextValue);
+    const sanitizedValue = sanitizeCurrencyInput(nextValue);
+    setPriceExcluded(sanitizedValue);
 
-    if (nextValue === "") {
+    if (sanitizedValue === "") {
       setPriceIncluded("");
       return;
     }
 
-    setPriceIncluded(stringifyNumber(includedFromExcluded(Number(nextValue))));
+    setPriceIncluded(stringifyNumber(includedFromExcluded(Number(sanitizedValue))));
   }
 
   return (
@@ -182,16 +195,17 @@ export function PriceLogForm({
             <input
               className="input input-prefix__control"
               disabled={disabled}
-              inputMode="numeric"
+              inputMode="decimal"
               min="0"
               name="totalPriceYen"
               onChange={(event) => handleIncludedPriceChange(event.target.value)}
               onInput={(event) =>
                 handleIncludedPriceChange((event.target as HTMLInputElement).value)
               }
+              pattern="[0-9]*"
               required
               step="1"
-              type="number"
+              type="text"
               value={priceIncluded}
             />
           </div>
@@ -203,16 +217,17 @@ export function PriceLogForm({
             <input
               className="input input-prefix__control"
               disabled={disabled}
-              inputMode="numeric"
+              inputMode="decimal"
               min="0"
               name="priceTaxExcludedYen"
               onChange={(event) => handleExcludedPriceChange(event.target.value)}
               onInput={(event) =>
                 handleExcludedPriceChange((event.target as HTMLInputElement).value)
               }
+              pattern="[0-9]*"
               required
               step="1"
-              type="number"
+              type="text"
               value={priceExcluded}
             />
           </div>

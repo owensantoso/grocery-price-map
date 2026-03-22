@@ -20,6 +20,19 @@ type ComparisonMapProps = {
 
 const TOKYO_CENTER: [number, number] = [35.6895, 139.6917];
 
+function bindMediaQuery(
+  mediaQuery: MediaQueryList,
+  listener: () => void,
+) {
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", listener);
+    return () => mediaQuery.removeEventListener("change", listener);
+  }
+
+  mediaQuery.addListener(listener);
+  return () => mediaQuery.removeListener(listener);
+}
+
 function FitBounds({ entries }: { entries: CompareEntry[] }) {
   const map = useMap();
 
@@ -40,6 +53,30 @@ function FitBounds({ entries }: { entries: CompareEntry[] }) {
 
     map.fitBounds(bounds, { padding: [48, 48] });
   }, [entries, map]);
+
+  return null;
+}
+
+function InvalidateMapSize() {
+  const map = useMap();
+
+  useEffect(() => {
+    const refresh = () => {
+      window.setTimeout(() => {
+        map.invalidateSize();
+      }, 0);
+    };
+
+    refresh();
+    window.setTimeout(refresh, 250);
+    window.addEventListener("resize", refresh);
+    window.addEventListener("orientationchange", refresh);
+
+    return () => {
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("orientationchange", refresh);
+    };
+  }, [map]);
 
   return null;
 }
@@ -81,11 +118,7 @@ export function ComparisonMap({
     const update = () => setShowPermanentLabels(!mediaQuery.matches);
 
     update();
-    mediaQuery.addEventListener("change", update);
-
-    return () => {
-      mediaQuery.removeEventListener("change", update);
-    };
+    return bindMediaQuery(mediaQuery, update);
   }, []);
 
   function locateUser() {
@@ -127,6 +160,7 @@ export function ComparisonMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <InvalidateMapSize />
         <FitBounds entries={mappedEntries} />
         <FlyToUserLocation userLocation={userLocation} />
         {userLocation ? (

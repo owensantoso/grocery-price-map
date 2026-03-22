@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useId, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 
 export type AutocompleteOption = {
   hint?: string;
@@ -33,6 +33,19 @@ function resolveDefaultOption(
   return options.find((option) => option.id === defaultOptionId) ?? null;
 }
 
+function bindMediaQuery(
+  mediaQuery: MediaQueryList,
+  listener: () => void,
+) {
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", listener);
+    return () => mediaQuery.removeEventListener("change", listener);
+  }
+
+  mediaQuery.addListener(listener);
+  return () => mediaQuery.removeListener(listener);
+}
+
 export function AutocompleteField({
   defaultOptionId,
   disabled,
@@ -53,8 +66,17 @@ export function AutocompleteField({
   const [selectedId, setSelectedId] = useState(defaultOption?.id ?? "");
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [isTouchLayout, setIsTouchLayout] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 720px), (pointer: coarse)");
+    const update = () => setIsTouchLayout(mediaQuery.matches);
+    update();
+
+    return bindMediaQuery(mediaQuery, update);
+  }, []);
 
   const filteredOptions = useMemo(() => {
     const trimmedQuery = deferredQuery.trim().toLowerCase();
@@ -94,8 +116,8 @@ export function AutocompleteField({
   }
 
   return (
-    <label className="form-field autocomplete-field">
-      <span>{label}</span>
+    <div className="form-field autocomplete-field">
+      <label htmlFor={inputId}>{label}</label>
       <input name={name} type="hidden" value={selectedId} />
       <div className={`autocomplete ${isOpen ? "is-open" : ""}`}>
         <div className="autocomplete__input-wrap">
@@ -109,6 +131,10 @@ export function AutocompleteField({
             disabled={disabled}
             id={inputId}
             onBlur={() => {
+              if (isTouchLayout) {
+                return;
+              }
+
               window.setTimeout(() => setIsOpen(false), 100);
             }}
             onChange={(event) => {
@@ -178,7 +204,7 @@ export function AutocompleteField({
               aria-label={`Clear ${label}`}
               className="autocomplete__clear"
               onClick={() => clearSelection()}
-              onPointerDown={(event) => {
+              onMouseDown={(event) => {
                 event.preventDefault();
               }}
               type="button"
@@ -188,7 +214,11 @@ export function AutocompleteField({
           ) : null}
         </div>
         {isOpen && filteredOptions.length > 0 ? (
-          <div className="autocomplete__menu" id={listId} role="listbox">
+          <div
+            className={`autocomplete__menu ${isTouchLayout ? "autocomplete__menu--inline" : ""}`}
+            id={listId}
+            role="listbox"
+          >
             {filteredOptions.map((option, index) => (
               <button
                 aria-selected={option.id === selectedId || index === highlightedIndex}
@@ -201,7 +231,7 @@ export function AutocompleteField({
                 onClick={() => {
                   selectOption(option, true);
                 }}
-                onPointerDown={(event) => {
+                onMouseDown={(event) => {
                   event.preventDefault();
                 }}
                 role="option"
@@ -215,6 +245,6 @@ export function AutocompleteField({
         ) : null}
       </div>
       {error ? <span className="field-error">{error}</span> : null}
-    </label>
+    </div>
   );
 }
