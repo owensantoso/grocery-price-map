@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PriceLogCard } from "@/components/logs/price-log-card";
+import { PriceLogFeed } from "@/components/logs/price-log-feed";
 import { SetupNotice } from "@/components/setup-notice";
 import { getPriceLogsSnapshot } from "@/lib/queries";
 
@@ -45,17 +45,11 @@ export default async function AccountPage() {
               <h2 className="section-title">Your logs</h2>
               <p className="muted">Owner-only editing lives here and on each log page.</p>
             </div>
-            {snapshot.ownLogs.length === 0 ? (
-              <div className="empty-state">
-                You have not submitted any logs yet.
-              </div>
-            ) : (
-              <div className="list-rows">
-                {snapshot.ownLogs.map((entry) => (
-                  <PriceLogCard entry={entry} key={entry.log.id} showEditLink />
-                ))}
-              </div>
-            )}
+            <PriceLogFeed
+              emptyMessage="You have not submitted any logs yet."
+              entries={snapshot.ownLogs}
+              showEditLink
+            />
           </section>
         </>
       )}

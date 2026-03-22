@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
-import { getViewer } from "@/lib/queries";
+import { getItems, getStores, getViewer } from "@/lib/queries";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
@@ -20,13 +20,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const viewer = await getViewer();
+  const [viewer, items, stores] = await Promise.all([getViewer(), getItems(), getStores()]);
   const configured = isSupabaseConfigured();
 
   return (
     <html lang="en">
       <body>
-        <AppShell viewer={viewer} configured={configured}>
+        <AppShell configured={configured} items={items} stores={stores} viewer={viewer}>
           {children}
         </AppShell>
       </body>

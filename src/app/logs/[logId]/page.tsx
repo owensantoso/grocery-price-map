@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CommentThread } from "@/components/comments/comment-thread";
+import { PriceLogFeed } from "@/components/logs/price-log-feed";
 import { LogVoteControls } from "@/components/logs/log-vote-controls";
 import { LogPhoto } from "@/components/logs/log-photo";
 import { formatCurrency, formatDate, formatPackage } from "@/lib/format";
@@ -108,34 +109,18 @@ export default async function LogDetailPage({ params }: PageProps) {
 
       <section className="compare-layout">
         <div className="panel stack-md">
-          <div className="stack-xs">
-            <h2 className="section-title">History at this store</h2>
-            <p className="muted">
-              Every recorded observation for this store and item pair.
-            </p>
-          </div>
-          <div className="history-list">
-            {detail.sameStoreHistory.map((log) => (
-              <div className="history-row" key={log.id}>
-                <div className="stack-xs">
-                  <Link className="store-link" href={`/logs/${log.id}`}>
-                    {formatCurrency(log.normalized_price_yen)} /{" "}
-                    {detail.item.comparison_basis_amount}
-                    {detail.item.comparison_unit}
-                  </Link>
-                  <span className="muted">
-                    paid {formatCurrency(log.total_price_yen)} • ex tax{" "}
-                    {formatCurrency(log.price_tax_excluded_yen)}
-                  </span>
-                </div>
-                <div className="stack-xs" style={{ alignItems: "flex-end" }}>
-                  <span className="tag">{formatPackage(log.package_amount, log.package_unit)}</span>
-                  <span className="muted">{formatDate(log.observed_at)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="stack-xs">
+          <h2 className="section-title">History at this store</h2>
+          <p className="muted">
+            Every recorded observation for this store and item pair.
+          </p>
         </div>
+        <PriceLogFeed
+          disableVoting={!detail.viewer}
+          emptyMessage="No logs yet at this store."
+          entries={detail.sameStoreHistory}
+        />
+      </div>
         <aside className="panel stack-md">
           <div className="stack-xs">
             <h2 className="section-title">Latest across stores</h2>
@@ -177,54 +162,11 @@ export default async function LogDetailPage({ params }: PageProps) {
             All submitted logs for {detail.item.name}, sorted by recency.
           </p>
         </div>
-        <div className="list-rows">
-          {detail.recentItemLogs.map((entry) => {
-            const photoPath = entry.log.photo_path;
-            const photoUrl = photoPath ? getPhotoUrl(photoPath) : null;
-
-            return (
-              <article className="result-card" key={entry.log.id}>
-                <div className="result-card__lead">
-                  <div className="result-card__media">
-                    {photoUrl ? (
-                    <LogPhoto
-                      alt={`${detail.item.name} photo from ${entry.store.name}`}
-                      className="log-photo log-photo--square"
-                      src={photoUrl}
-                    />
-                    ) : null}
-                  </div>
-                  <div className="result-card__top">
-                    <div className="stack-xs">
-                      <a
-                        className="store-link"
-                        href={entry.store.store_url}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        {entry.store.name}
-                      </a>
-                      <span className="muted">{entry.store.address_text}</span>
-                    </div>
-                    <Link className="price-pill" href={`/logs/${entry.log.id}`}>
-                      {formatCurrency(entry.log.normalized_price_yen)} /{" "}
-                      {detail.item.comparison_basis_amount}
-                      {detail.item.comparison_unit}
-                    </Link>
-                  </div>
-                </div>
-                <div className="meta-row">
-                  <span className="tag">
-                    {formatPackage(entry.log.package_amount, entry.log.package_unit)}
-                  </span>
-                  <span className="tag">observed {formatDate(entry.log.observed_at)}</span>
-                  <span className="tag">score {entry.voteSummary.score}</span>
-                </div>
-                {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
-              </article>
-            );
-          })}
-        </div>
+        <PriceLogFeed
+          disableVoting={!detail.viewer}
+          emptyMessage={`No logs yet for ${detail.item.name}.`}
+          entries={detail.recentItemLogs}
+        />
       </section>
     </div>
   );

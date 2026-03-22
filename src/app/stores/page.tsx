@@ -53,7 +53,9 @@ export default async function StoresPage({ searchParams }: StoresPageProps) {
               {snapshot.stores.map((store) => (
                 <div className="list-table__row" key={store.id}>
                   <div className="stack-xs">
-                    <strong>{store.name}</strong>
+                    <Link className="store-link" href={`/stores/${store.id}`}>
+                      {store.name}
+                    </Link>
                     <span className="muted">
                       {store.chain_name ?? "Independent store"} • {store.store_kind}
                     </span>

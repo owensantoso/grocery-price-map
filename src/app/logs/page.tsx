@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PriceLogCard } from "@/components/logs/price-log-card";
+import { PriceLogFeed } from "@/components/logs/price-log-feed";
 import { SetupNotice } from "@/components/setup-notice";
 import { getPriceLogsSnapshot } from "@/lib/queries";
 
@@ -33,21 +33,11 @@ export default async function LogsPage() {
             <h2 className="section-title">All logs</h2>
             <p className="muted">Sorted by observed date, newest first.</p>
           </div>
-          {snapshot.allLogs.length === 0 ? (
-            <div className="empty-state">
-              No logs exist yet. Add one after creating items and stores.
-            </div>
-          ) : (
-            <div className="list-rows">
-              {snapshot.allLogs.map((entry) => (
-                <PriceLogCard
-                  disableVoting={!snapshot.viewer}
-                  entry={entry}
-                  key={entry.log.id}
-                />
-              ))}
-            </div>
-          )}
+          <PriceLogFeed
+            disableVoting={!snapshot.viewer}
+            emptyMessage="No logs exist yet. Add one after creating items and stores."
+            entries={snapshot.allLogs}
+          />
         </section>
       </>
     </div>

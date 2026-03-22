@@ -15,6 +15,8 @@ import { useDebugFlag } from "@/components/debug/use-debug-flag";
 export type AutocompleteOption = {
   hint?: string;
   id: string;
+  kind?: "item" | "store";
+  kindLabel?: string;
   label: string;
 };
 
@@ -302,7 +304,16 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
                 role="option"
                 type="button"
               >
-                <span>{option.label}</span>
+                <span className="autocomplete__label-group">
+                  {option.kindLabel ? (
+                    <span
+                      className={`autocomplete__kind autocomplete__kind--${option.kind ?? "item"}`}
+                    >
+                      {option.kindLabel}
+                    </span>
+                  ) : null}
+                  <span>{option.label}</span>
+                </span>
                 {option.hint ? <span className="autocomplete__hint">{option.hint}</span> : null}
               </button>
             ))}

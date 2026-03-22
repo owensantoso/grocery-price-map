@@ -37,10 +37,22 @@ export type PriceLogListEntry = {
 };
 
 export type CompareEntry = {
-  history: PriceLogRecord[];
+  history: PriceLogListEntry[];
   item: ItemRecord;
   latestLog: PriceLogRecord;
   store: StoreRecord;
+};
+
+export type StorePhotoEntry = {
+  item: ItemRecord;
+  log: PriceLogRecord;
+};
+
+export type StoreDetail = {
+  photoGallery: StorePhotoEntry[];
+  recentLogs: PriceLogListEntry[];
+  store: StoreRecord;
+  viewer: Viewer | null;
 };
 
 export type LogDetail = {
@@ -50,7 +62,7 @@ export type LogDetail = {
   latestAcrossStores: CompareEntry[];
   log: PriceLogRecord;
   recentItemLogs: PriceLogListEntry[];
-  sameStoreHistory: PriceLogRecord[];
+  sameStoreHistory: PriceLogListEntry[];
   store: StoreRecord;
   viewer: Viewer | null;
   voteSummary: VoteSummary;

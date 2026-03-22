@@ -8,6 +8,7 @@ import {
   AutocompleteField,
   type AutocompleteOption,
 } from "@/components/forms/autocomplete-field";
+import { PriceLogFeed } from "@/components/logs/price-log-feed";
 import { LogPhoto } from "@/components/logs/log-photo";
 import {
   formatCurrency,
@@ -171,53 +172,11 @@ export function CompareDashboard({
                     Direct log links for this store and item combination.
                   </p>
                 </div>
-                <div className="history-list">
-                  {selectedEntry.history.map((log) => (
-                    (() => {
-                      const photoPath = log.photo_path;
-                      const photoUrl = photoPath ? getPhotoUrl(photoPath) : null;
-
-                      return (
-                        <div className="history-row" key={log.id}>
-                          <div className="history-row__media">
-                            {photoUrl ? (
-                              <LogPhoto
-                                alt={`${selectedEntry.item.name} photo from ${selectedEntry.store.name}`}
-                                className="log-photo log-photo--square"
-                                src={photoUrl}
-                              />
-                            ) : null}
-                          </div>
-                          <div className="stack-xs">
-                            <a
-                              className="store-link"
-                              href={selectedEntry.store.store_url}
-                              rel="noreferrer"
-                              target="_blank"
-                            >
-                              {selectedEntry.store.name}
-                            </a>
-                            <Link className="store-link" href={`/logs/${log.id}`}>
-                              {formatCurrency(log.normalized_price_yen)} /{" "}
-                              {selectedEntry.item.comparison_basis_amount}
-                              {selectedEntry.item.comparison_unit}
-                            </Link>
-                            <span className="muted">
-                              paid {formatCurrency(log.total_price_yen)} • ex tax{" "}
-                              {formatCurrency(log.price_tax_excluded_yen)}
-                            </span>
-                          </div>
-                          <div className="stack-xs" style={{ alignItems: "flex-end" }}>
-                            <span className="tag">
-                              {formatPackage(log.package_amount, log.package_unit)}
-                            </span>
-                            <span className="muted">{formatDate(log.observed_at)}</span>
-                          </div>
-                        </div>
-                      );
-                    })()
-                  ))}
-                </div>
+                <PriceLogFeed
+                  disableVoting
+                  emptyMessage="No logs yet for this store/item combination."
+                  entries={selectedEntry.history}
+                />
               </section>
             ) : null}
           </div>

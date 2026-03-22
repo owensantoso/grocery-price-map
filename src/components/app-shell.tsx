@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { signOutAction } from "@/app/actions";
 import { AccountMenu } from "@/components/navigation/account-menu";
+import { HeaderSearch } from "@/components/navigation/header-search";
 import { PrimaryNav } from "@/components/navigation/primary-nav";
-import type { Viewer } from "@/lib/models";
+import type { ItemRecord, StoreRecord, Viewer } from "@/lib/models";
 
 type AppShellProps = {
   children: React.ReactNode;
   configured: boolean;
+  items: ItemRecord[];
+  stores: StoreRecord[];
   viewer: Viewer | null;
 };
 
-export function AppShell({ children, configured, viewer }: AppShellProps) {
+export function AppShell({ children, configured, items, stores, viewer }: AppShellProps) {
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -33,6 +36,7 @@ export function AppShell({ children, configured, viewer }: AppShellProps) {
             </div>
             </div>
           </div>
+          <HeaderSearch items={items} stores={stores} />
           <div className="app-header__bottom">
             <PrimaryNav />
             <div className="header-actions header-actions--desktop">

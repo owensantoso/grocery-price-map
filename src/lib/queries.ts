@@ -4,6 +4,7 @@ import {
   getDemoCompareEntries,
   getDemoLogDetail,
   getDemoLogsFeed,
+  getDemoStoreDetail,
   demoStores,
 } from "@/lib/demo-data";
 import type {
@@ -17,6 +18,7 @@ import type {
   PriceLogRecord,
   PriceLogVoteRecord,
   PublicProfileRecord,
+  StoreDetail,
   StoreRecord,
   Viewer,
   VoteSummary,
@@ -172,7 +174,12 @@ function summarizeCommentVotes(
   return summaries;
 }
 
-function buildCompareEntries(logs: PriceLogWithRelations[], selectedItem: ItemRecord) {
+function buildCompareEntries(
+  logs: PriceLogWithRelations[],
+  selectedItem: ItemRecord,
+  voteSummaries: Map<string, VoteSummary>,
+  viewerId: string | null,
+) {
   const seenStores = new Set<string>();
   const entries: CompareEntry[] = [];
   const sortedLogs = [...logs].sort(sortLogsByRecency);
@@ -185,9 +192,11 @@ function buildCompareEntries(logs: PriceLogWithRelations[], selectedItem: ItemRe
     seenStores.add(log.store_id);
 
     entries.push({
-      history: sortedLogs
-        .filter((candidate) => candidate.store_id === log.store_id)
-        .map(stripRelations),
+      history: buildLogFeedEntries(
+        sortedLogs.filter((candidate) => candidate.store_id === log.store_id),
+        voteSummaries,
+        viewerId,
+      ),
       item: selectedItem,
       latestLog: stripRelations(log),
       store: log.stores,
@@ -462,9 +471,11 @@ export async function getComparisonSnapshot(
   }
 
   const logs = (data ?? []) as unknown as PriceLogWithRelations[];
+  const voteRows = await getVoteRowsForLogs(logs.map((log) => log.id));
+  const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
 
   return {
-    entries: buildCompareEntries(logs, selectedItem),
+    entries: buildCompareEntries(logs, selectedItem, voteSummaries, viewer?.id ?? null),
     isConfigured: true,
     isDemo: false,
     items,
@@ -799,10 +810,11 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
   );
   const commentVoteRows = await getVoteRowsForComments(comments.map((comment) => comment.id));
   const commentVoteSummaries = summarizeCommentVotes(commentVoteRows, viewer?.id ?? null);
-  const sameStoreHistory = itemLogs
-    .filter((candidate) => candidate.store_id === log.store_id)
-    .sort(sortLogsByRecency)
-    .map(stripRelations);
+  const sameStoreHistory = buildLogFeedEntries(
+    itemLogs.filter((candidate) => candidate.store_id === log.store_id),
+    voteSummaries,
+    viewer?.id ?? null,
+  );
 
   return {
     canEdit: viewer?.id === log.submitted_by,
@@ -817,5 +829,100 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
     store: log.stores,
     viewer: viewer ?? null,
     voteSummary: voteSummaries.get(log.id) ?? createEmptyVoteSummary(),
+  };
+}
+
+export async function getStoreDetail(storeId: string): Promise<StoreDetail | null> {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return getDemoStoreDetail(storeId);
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const viewer = toViewer(user);
+
+  const [stores, items] = await Promise.all([getStores(), getItems()]);
+  const store = stores.find((candidate) => candidate.id === storeId) ?? null;
+
+  if (!store) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("price_logs")
+    .select(
+      `
+        id,
+        store_id,
+        item_id,
+        submitted_by,
+        package_amount,
+        package_unit,
+        total_price_yen,
+        price_tax_excluded_yen,
+        normalized_price_yen,
+        observed_at,
+        notes,
+        listing_url,
+        photo_path,
+        created_at,
+        items (
+          id,
+          name,
+          category,
+          comparison_unit,
+          comparison_basis_amount,
+          created_at,
+          created_by
+        ),
+        stores (
+          id,
+          name,
+          chain_name,
+          store_kind,
+          store_url,
+          address_text,
+          latitude,
+          longitude,
+          notes,
+          created_at,
+          created_by
+        )
+      `,
+    )
+    .eq("store_id", storeId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const logs = (data ?? []) as unknown as PriceLogWithRelations[];
+  const voteRows = await getVoteRowsForLogs(logs.map((log) => log.id));
+  const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
+  const recentLogs = buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null);
+  const itemMap = new Map(items.map((item) => [item.id, item]));
+  const photoGallery = recentLogs.flatMap((entry) => {
+    if (!entry.log.photo_path) {
+      return [];
+    }
+
+    const item = itemMap.get(entry.log.item_id) ?? entry.item;
+
+    return [
+      {
+        item,
+        log: entry.log,
+      },
+    ];
+  });
+
+  return {
+    photoGallery,
+    recentLogs,
+    store,
+    viewer,
   };
 }

@@ -163,6 +163,19 @@ body::before {
   justify-content: flex-start;
 }
 
+.header-search {
+  max-width: 34rem;
+}
+
+.header-search .form-field {
+  gap: 0.3rem;
+}
+
+.header-search label {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
 .main-nav__link {
   display: inline-flex;
   align-items: center;
@@ -695,6 +708,35 @@ body::before {
   font-size: 1.1rem;
 }
 
+.autocomplete__label-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.autocomplete__kind {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.autocomplete__kind--item {
+  background: rgba(45, 122, 81, 0.14);
+  color: var(--accent-strong);
+}
+
+.autocomplete__kind--store {
+  background: rgba(236, 200, 106, 0.2);
+  color: #82591d;
+}
+
 .list-summary {
   color: var(--ink-muted);
   font-size: 0.95rem;
@@ -1003,6 +1045,11 @@ body::before {
   height: 4.5rem;
 }
 
+.log-photo--gallery {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
 .log-photo-preview,
 .log-photo__image,
 .lightbox__image {
@@ -1051,6 +1098,18 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+}
+
+.photo-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1rem;
+}
+
+.photo-gallery-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .comment-list {
@@ -1309,6 +1368,10 @@ body::before {
   .app-header__bottom {
     align-items: center;
     gap: 0.6rem;
+  }
+
+  .header-search {
+    max-width: none;
   }
 
   .brand-lockup__mark {

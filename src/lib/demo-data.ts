@@ -9,6 +9,8 @@ import type {
   PriceLogRecord,
   PriceLogVoteRecord,
   StoreRecord,
+  StoreDetail,
+  StorePhotoEntry,
   VoteSummary,
 } from "@/lib/models";
 import { normalizePriceForItem } from "@/lib/measurements";
@@ -409,7 +411,7 @@ export function getDemoLogsFeed(viewerId: string | null = null): PriceLogListEnt
     });
 }
 
-export function getDemoCompareEntries(itemId: string) {
+export function getDemoCompareEntries(itemId: string, viewerId: string | null = null) {
   const selectedItem = demoItems.find((item) => item.id === itemId) ?? demoItems[0];
 
   const logsForItem = demoPriceLogs
@@ -439,7 +441,9 @@ export function getDemoCompareEntries(itemId: string) {
     }
 
     entries.push({
-      history: logsForItem.filter((candidate) => candidate.store_id === log.store_id),
+      history: getDemoLogsFeed(viewerId).filter(
+        (entry) => entry.item.id === selectedItem.id && entry.store.id === log.store_id,
+      ),
       item: selectedItem,
       latestLog: log,
       store,
@@ -476,14 +480,37 @@ export function getDemoLogDetail(logId: string): LogDetail | null {
     latestAcrossStores: getDemoCompareEntries(item.id),
     log,
     recentItemLogs: getDemoLogsFeed(null).filter((entry) => entry.item.id === item.id),
-    sameStoreHistory: demoPriceLogs
-      .filter(
-        (candidate) =>
-          candidate.item_id === log.item_id && candidate.store_id === log.store_id,
-      )
-      .sort((left, right) => right.observed_at.localeCompare(left.observed_at)),
+    sameStoreHistory: getDemoLogsFeed(null).filter(
+      (entry) => entry.item.id === item.id && entry.store.id === store.id,
+    ),
     store,
     viewer: null,
     voteSummary: getDemoVoteSummary(log.id, null),
+  };
+}
+
+export function getDemoStoreDetail(storeId: string): StoreDetail | null {
+  const store = demoStores.find((candidate) => candidate.id === storeId);
+
+  if (!store) {
+    return null;
+  }
+
+  const recentLogs = getDemoLogsFeed(null).filter((entry) => entry.store.id === storeId);
+  const photoGallery = recentLogs
+    .filter((entry) => Boolean(entry.log.photo_path))
+    .map(
+      (entry) =>
+        ({
+          item: entry.item,
+          log: entry.log,
+        }) satisfies StorePhotoEntry,
+    );
+
+  return {
+    photoGallery,
+    recentLogs,
+    store,
+    viewer: null,
   };
 }
