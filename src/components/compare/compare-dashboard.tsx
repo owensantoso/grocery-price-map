@@ -150,8 +150,7 @@ export function CompareDashboard({
               at {featuredEntry.store.name}
             </a>
             <p className="muted">
-              {featuredEntry.store.address_text} • observed{" "}
-              {formatDate(featuredEntry.latestLog.observed_at)}
+              {featuredEntry.store.address_text} • {formatDate(featuredEntry.latestLog.observed_at)}
             </p>
           </article>
         ) : null}
@@ -225,7 +224,12 @@ export function CompareDashboard({
                           className="log-photo log-photo--square"
                           src={photoUrl}
                         />
-                      ) : null}
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="log-photo log-photo--square log-photo--placeholder"
+                        />
+                      )}
                     </div>
                     <div className="result-card__top">
                       <div className="stack-xs">
@@ -244,12 +248,9 @@ export function CompareDashboard({
                   <div className="meta-row">
                     <span className="tag">paid {formatCurrency(entry.latestLog.total_price_yen)}</span>
                     <span className="tag">
-                      ex tax {formatCurrency(entry.latestLog.price_tax_excluded_yen)}
-                    </span>
-                    <span className="tag">
                       {formatPackage(entry.latestLog.package_amount, entry.latestLog.package_unit)}
                     </span>
-                    <span className="tag">observed {formatDate(entry.latestLog.observed_at)}</span>
+                    <span className="tag">{formatDate(entry.latestLog.observed_at)}</span>
                   </div>
                   <div className="result-card__actions">
                     <button

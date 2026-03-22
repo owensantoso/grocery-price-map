@@ -164,6 +164,7 @@ body::before {
   align-items: end;
   gap: 0.75rem;
   margin-left: auto;
+  justify-content: flex-end;
 }
 
 .main-nav {
@@ -202,9 +203,23 @@ body::before {
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
-  color: var(--ink-muted);
+  color: rgba(31, 42, 31, 0.72);
   pointer-events: none;
-  font-size: 1rem;
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.header-search__icon svg,
+.header-search__toggle-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.header-search__toggle-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  color: rgba(31, 42, 31, 0.78);
 }
 
 .header-search .autocomplete__input {
@@ -729,6 +744,36 @@ body::before {
   backdrop-filter: blur(8px);
 }
 
+.compare-pin-icon {
+  background: transparent;
+  border: 0;
+}
+
+.compare-pin-icon__dot {
+  position: relative;
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px 999px 999px 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #f7be67, #dc8a1d);
+  box-shadow:
+    0 8px 18px rgba(31, 42, 31, 0.12),
+    0 0 0 2px rgba(255, 250, 242, 0.92);
+}
+
+.compare-pin-icon__dot::after {
+  content: "";
+  position: absolute;
+  inset: 0.23rem;
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.96);
+}
+
+.compare-pin-icon--selected .compare-pin-icon__dot {
+  background: linear-gradient(135deg, #4aa675, #2d7a51);
+}
+
 .compare-search {
   display: flex;
   gap: 0.75rem;
@@ -1027,7 +1072,7 @@ body::before {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
   grid-template-areas: "vote media content";
-  align-items: stretch;
+  align-items: start;
   gap: 1rem;
 }
 
@@ -1092,7 +1137,7 @@ body::before {
 .log-photo--square {
   width: 5.4rem;
   min-width: 5.4rem;
-  height: 100%;
+  height: 5.4rem;
   min-height: 5.4rem;
 }
 
@@ -1174,12 +1219,14 @@ body::before {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   gap: 1rem;
+  align-items: stretch;
 }
 
 .photo-gallery-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto min-content;
   gap: 0.6rem;
+  height: 100%;
 }
 
 .comment-list {
@@ -1530,6 +1577,8 @@ body::before {
 
   .header-search__icon {
     left: 0.85rem;
+    width: 1.2rem;
+    height: 1.2rem;
   }
 
   .header-search.is-open .header-search__panel {
@@ -1560,6 +1609,7 @@ body::before {
   .log-photo--square {
     width: 3.85rem;
     min-width: 3.85rem;
+    height: 3.85rem;
     min-height: 3.85rem;
   }
 

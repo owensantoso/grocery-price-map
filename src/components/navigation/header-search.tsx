@@ -86,13 +86,21 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
         }}
         type="button"
       >
-        <span aria-hidden="true">⌕</span>
+        <span aria-hidden="true" className="header-search__toggle-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="M16 16l4.5 4.5" strokeLinecap="round" />
+          </svg>
+        </span>
         <span>Search</span>
       </button>
       <div className="header-search__panel">
         <div className="header-search__field">
           <span aria-hidden="true" className="header-search__icon">
-            ⌕
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M16 16l4.5 4.5" strokeLinecap="round" />
+            </svg>
           </span>
           <AutocompleteField
             ref={autocompleteRef}

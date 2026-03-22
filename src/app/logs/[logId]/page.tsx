@@ -45,14 +45,9 @@ export default async function LogDetailPage({ params }: PageProps) {
             {detail.item.comparison_unit}
           </p>
           <div className="stack-xs">
-            <a
-              className="store-link"
-              href={detail.store.store_url}
-              rel="noreferrer"
-              target="_blank"
-            >
+            <Link className="store-link" href={`/stores/${detail.store.id}`}>
               {detail.store.name}
-            </a>
+            </Link>
             <p className="muted">{detail.store.address_text}</p>
           </div>
           {photoUrl ? (
@@ -78,7 +73,7 @@ export default async function LogDetailPage({ params }: PageProps) {
               {formatCurrency(detail.log.price_tax_excluded_yen)}
             </p>
             <p className="muted">
-              {formatPackage(detail.log.package_amount, detail.log.package_unit)} • observed{" "}
+              {formatPackage(detail.log.package_amount, detail.log.package_unit)} •{" "}
               {formatDate(detail.log.observed_at)}
             </p>
             <p className="field-help">

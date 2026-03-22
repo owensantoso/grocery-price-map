@@ -17,6 +17,7 @@ export function PriceLogCard({
   showEditLink,
 }: PriceLogCardProps) {
   const photoUrl = getPhotoUrl(entry.log.photo_path);
+  const storeHref = `/stores/${entry.store.id}`;
 
   return (
     <article className="result-card log-card">
@@ -49,14 +50,9 @@ export function PriceLogCard({
             <Link className="store-link log-card__title" href={`/logs/${entry.log.id}`}>
               {entry.item.name}
             </Link>
-            <a
-              className="muted"
-              href={entry.store.store_url}
-              rel="noreferrer"
-              target="_blank"
-            >
+            <Link className="muted" href={storeHref}>
               {entry.store.name}
-            </a>
+            </Link>
           </div>
           <Link className="price-pill" href={`/logs/${entry.log.id}`}>
             {formatCurrency(entry.log.normalized_price_yen)} /{" "}
@@ -69,10 +65,7 @@ export function PriceLogCard({
             {formatPackage(entry.log.package_amount, entry.log.package_unit)}
           </span>
           <span className="tag">paid {formatCurrency(entry.log.total_price_yen)}</span>
-          <span className="tag">
-            ex tax {formatCurrency(entry.log.price_tax_excluded_yen)}
-          </span>
-          <span className="tag">observed {formatDate(entry.log.observed_at)}</span>
+          <span className="tag">{formatDate(entry.log.observed_at)}</span>
         </div>
         {entry.log.notes ? <p className="muted">{entry.log.notes}</p> : null}
         <div className="result-card__actions">

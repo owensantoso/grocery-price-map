@@ -79,7 +79,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
                     <Link className="store-link" href={`/logs/${entry.log.id}`}>
                       {entry.item.name}
                     </Link>
-                    <span className="muted">observed {formatDate(entry.log.observed_at)}</span>
+                    <span className="muted">{formatDate(entry.log.observed_at)}</span>
                   </div>
                 </article>
               );

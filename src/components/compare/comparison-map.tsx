@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import {
   CircleMarker,
   MapContainer,
+  Marker,
   Popup,
   TileLayer,
   Tooltip,
   useMap,
 } from "react-leaflet";
+import L from "leaflet";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
 import { formatCurrency } from "@/lib/format";
 import type { CompareEntry } from "@/lib/models";
@@ -20,6 +22,20 @@ type ComparisonMapProps = {
 };
 
 const TOKYO_CENTER: [number, number] = [35.6895, 139.6917];
+
+const selectedStorePin = L.divIcon({
+  className: "compare-pin-icon compare-pin-icon--selected",
+  html: '<span class="compare-pin-icon__dot"></span>',
+  iconAnchor: [12, 28],
+  iconSize: [24, 28],
+});
+
+const storePin = L.divIcon({
+  className: "compare-pin-icon",
+  html: '<span class="compare-pin-icon__dot"></span>',
+  iconAnchor: [12, 28],
+  iconSize: [24, 28],
+});
 
 function bindMediaQuery(
   mediaQuery: MediaQueryList,
@@ -72,7 +88,18 @@ function InvalidateMapSize() {
   useEffect(() => {
     const refresh = () => {
       window.setTimeout(() => {
-        map.invalidateSize();
+        try {
+          const container = map.getContainer?.();
+          const maybeMap = map as typeof map & { _loaded?: boolean };
+
+          if (!maybeMap._loaded || !container || !container.isConnected) {
+            return;
+          }
+
+          map.invalidateSize();
+        } catch {
+          // Leaflet can briefly tear down internals during mount/unmount cycles.
+        }
       }, 0);
     };
 
@@ -257,21 +284,15 @@ export function ComparisonMap({
           const isSelected = entry.store.id === selectedStoreId;
 
           return (
-            <CircleMarker
+            <Marker
               key={entry.store.id}
-              center={[entry.store.latitude!, entry.store.longitude!]}
+              icon={isSelected ? selectedStorePin : storePin}
+              position={[entry.store.latitude!, entry.store.longitude!]}
               eventHandlers={{
                 click() {
                   onSelectStore(entry.store.id);
                 },
               }}
-              fillColor={isSelected ? "#2d7a51" : "#f0a23b"}
-              fillOpacity={0.84}
-              pathOptions={{
-                color: isSelected ? "#235f40" : "#855a13",
-              }}
-              radius={isSelected ? 14 : 11}
-              stroke
             >
               <Tooltip
                 className="map-label"
@@ -296,7 +317,7 @@ export function ComparisonMap({
                 {entry.item.comparison_basis_amount}
                 {entry.item.comparison_unit}
               </Popup>
-            </CircleMarker>
+            </Marker>
           );
         })}
       </MapContainer>

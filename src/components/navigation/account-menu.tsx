@@ -74,7 +74,7 @@ export function AccountMenu({ configured, viewerEmail, viewerName }: AccountMenu
             onClick={() => setIsOpen(false)}
             role="menuitem"
           >
-            <span className="account-menu__meta">Account</span>
+            <span className="account-menu__meta">Account settings</span>
             <strong>{viewerName ?? viewerEmail}</strong>
           </Link>
           <Link

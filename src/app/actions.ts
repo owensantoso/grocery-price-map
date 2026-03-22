@@ -321,8 +321,10 @@ export async function updateAccountSettingsAction(
     }
 
     revalidatePath("/", "layout");
+    revalidatePath("/logs");
     revalidatePath("/account");
     revalidatePath("/settings");
+    revalidatePath("/stores");
     redirect(`/settings?saved=1&updated=${Date.now()}`);
   } catch (error) {
     rethrowIfRedirectError(error);
