@@ -637,8 +637,22 @@ body::before {
 }
 
 .input-date {
+  display: block;
+  inline-size: 100%;
   max-width: 100%;
   min-width: 0;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input-date::-webkit-date-and-time-value {
+  min-height: 1.2em;
+  text-align: left;
+}
+
+.input-date::-webkit-calendar-picker-indicator {
+  margin: 0;
 }
 
 .input-prefix {

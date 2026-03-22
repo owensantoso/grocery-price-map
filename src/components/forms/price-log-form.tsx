@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useRef, useState, type RefObject } from "react";
 import { createPriceLogAction, type ActionState } from "@/app/actions";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
 import {
@@ -47,6 +47,10 @@ function sanitizeCurrencyInput(value: string) {
   return `${whole}.${fractionParts.join("")}`;
 }
 
+function sanitizeDecimalInput(value: string) {
+  return sanitizeCurrencyInput(value);
+}
+
 export function PriceLogForm({
   disabled,
   initialLog,
@@ -76,6 +80,7 @@ export function PriceLogForm({
   const packageAmountRef = useRef<HTMLInputElement | null>(null);
   const totalPriceRef = useRef<HTMLInputElement | null>(null);
   const exTaxPriceRef = useRef<HTMLInputElement | null>(null);
+  const lastAutoFocusTarget = useRef<string | null>(null);
 
   const selectedItem =
     items.find((item) => item.id === selectedItemId) ??
@@ -121,6 +126,52 @@ export function PriceLogForm({
     }
 
     setPriceIncluded(stringifyNumber(includedFromExcluded(Number(sanitizedValue))));
+  }
+
+  function focusField(
+    ref: RefObject<HTMLInputElement | null>,
+    targetName: string,
+  ) {
+    const node = ref.current;
+
+    if (!node) {
+      return;
+    }
+
+    lastAutoFocusTarget.current = targetName;
+
+    window.setTimeout(() => {
+      node.focus({ preventScroll: true });
+      window.setTimeout(() => {
+        node.scrollIntoView({
+          block: "nearest",
+          inline: "nearest",
+        });
+      }, 120);
+    }, 0);
+  }
+
+  function advanceOnBlur(
+    ref: RefObject<HTMLInputElement | null>,
+    targetName: string,
+    currentValue: string,
+  ) {
+    window.setTimeout(() => {
+      const activeElement = document.activeElement;
+
+      if (
+        currentValue.trim().length === 0 ||
+        lastAutoFocusTarget.current === targetName ||
+        (activeElement instanceof HTMLElement &&
+          activeElement !== document.body &&
+          activeElement.tagName !== "BODY")
+      ) {
+        lastAutoFocusTarget.current = null;
+        return;
+      }
+
+      focusField(ref, targetName);
+    }, 40);
   }
 
   return (
@@ -183,20 +234,21 @@ export function PriceLogForm({
             className="input"
             disabled={disabled}
             inputMode="decimal"
-            min="0.01"
             name="packageAmount"
-            onChange={(event) => setPackageAmount(event.target.value)}
+            onBlur={() => advanceOnBlur(totalPriceRef, "totalPrice", packageAmount)}
+            onChange={(event) => setPackageAmount(sanitizeDecimalInput(event.target.value))}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                totalPriceRef.current?.focus();
+                focusField(totalPriceRef, "totalPrice");
               }
             }}
+            enterKeyHint="next"
+            pattern="[0-9]*[.]?[0-9]*"
             placeholder={selectedItem ? `${selectedItem.comparison_basis_amount}` : "e.g. 500"}
             ref={packageAmountRef}
             required
-            step="0.01"
-            type="number"
+            type="text"
             value={packageAmount}
           />
           {state.fieldErrors?.packageAmount?.[0] ? (
@@ -224,6 +276,7 @@ export function PriceLogForm({
               inputMode="decimal"
               min="0"
               name="totalPriceYen"
+              onBlur={() => advanceOnBlur(exTaxPriceRef, "exTaxPrice", priceIncluded)}
               onChange={(event) => handleIncludedPriceChange(event.target.value)}
               onInput={(event) =>
                 handleIncludedPriceChange((event.target as HTMLInputElement).value)
@@ -231,9 +284,10 @@ export function PriceLogForm({
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  exTaxPriceRef.current?.focus();
+                  focusField(exTaxPriceRef, "exTaxPrice");
                 }
               }}
+              enterKeyHint="next"
               pattern="[0-9]*"
               placeholder="e.g. 328"
               ref={totalPriceRef}
@@ -258,6 +312,7 @@ export function PriceLogForm({
               onInput={(event) =>
                 handleExcludedPriceChange((event.target as HTMLInputElement).value)
               }
+              enterKeyHint="done"
               pattern="[0-9]*"
               placeholder="e.g. 298"
               ref={exTaxPriceRef}
