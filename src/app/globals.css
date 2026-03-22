@@ -695,7 +695,7 @@ body::before {
   text-decoration: underline;
 }
 
-.map-tooltip .leaflet-tooltip {
+.leaflet-tooltip.map-tooltip {
   background: rgba(255, 250, 242, 0.52);
   border: 1px solid rgba(31, 42, 31, 0.1);
   box-shadow: 0 10px 26px rgba(31, 42, 31, 0.08);
