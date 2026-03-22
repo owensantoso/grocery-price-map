@@ -10,7 +10,13 @@ const initialState: ActionState = {
   status: "idle",
 };
 
-export function ItemForm({ disabled }: { disabled?: boolean }) {
+export function ItemForm({
+  disabled,
+  initialName = "",
+}: {
+  disabled?: boolean;
+  initialName?: string;
+}) {
   const [state, formAction] = useActionState(createItemAction, initialState);
 
   return (
@@ -25,7 +31,13 @@ export function ItemForm({ disabled }: { disabled?: boolean }) {
       <div className="form-grid">
         <label className="form-field">
           <span>Name</span>
-          <input className="input" disabled={disabled} name="name" required />
+          <input
+            className="input"
+            defaultValue={initialName}
+            disabled={disabled}
+            name="name"
+            required
+          />
           {state.fieldErrors?.name?.[0] ? (
             <span className="field-error">{state.fieldErrors.name[0]}</span>
           ) : null}

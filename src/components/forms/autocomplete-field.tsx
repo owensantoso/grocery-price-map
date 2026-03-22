@@ -19,11 +19,13 @@ export type AutocompleteOption = {
 };
 
 type AutocompleteFieldProps = {
+  createActionLabel?: string;
   defaultOptionId?: string;
   disabled?: boolean;
   error?: string;
   label: string;
   name: string;
+  onCreateAction?: (query: string) => void;
   onClear?: () => void;
   onCommit?: (option: AutocompleteOption) => void;
   onSelect?: (option: AutocompleteOption | null) => void;
@@ -62,11 +64,13 @@ function bindMediaQuery(
 }
 
 export const AutocompleteField = forwardRef<AutocompleteFieldHandle, AutocompleteFieldProps>(function AutocompleteField({
+  createActionLabel,
   defaultOptionId,
   disabled,
   error,
   label,
   name,
+  onCreateAction,
   onClear,
   onCommit,
   onSelect,
@@ -110,6 +114,15 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
       })
       .slice(0, 8);
   }, [deferredQuery, options]);
+
+  const trimmedQuery = query.trim();
+  const hasExactMatch = options.some(
+    (option) => option.label.toLowerCase() === trimmedQuery.toLowerCase(),
+  );
+  const showCreateAction =
+    Boolean(onCreateAction && createActionLabel) &&
+    trimmedQuery.length > 0 &&
+    !hasExactMatch;
 
   function selectOption(option: AutocompleteOption, shouldCommit?: boolean) {
     setQuery(option.label);
@@ -280,6 +293,41 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
                 {option.hint ? <span className="autocomplete__hint">{option.hint}</span> : null}
               </button>
             ))}
+            {showCreateAction ? (
+              <button
+                className="autocomplete__option autocomplete__option--create"
+                onClick={() => onCreateAction?.(trimmedQuery)}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                }}
+                type="button"
+              >
+                <span>
+                  Add new {createActionLabel} &quot;{trimmedQuery}&quot;
+                </span>
+                <span className="autocomplete__create-icon">+</span>
+              </button>
+            ) : null}
+          </div>
+        ) : isOpen && showCreateAction ? (
+          <div
+            className={`autocomplete__menu ${isTouchLayout ? "autocomplete__menu--inline" : ""}`}
+            id={listId}
+            role="listbox"
+          >
+            <button
+              className="autocomplete__option autocomplete__option--create"
+              onClick={() => onCreateAction?.(trimmedQuery)}
+              onMouseDown={(event) => {
+                event.preventDefault();
+              }}
+              type="button"
+            >
+              <span>
+                Add new {createActionLabel} &quot;{trimmedQuery}&quot;
+              </span>
+              <span className="autocomplete__create-icon">+</span>
+            </button>
           </div>
         ) : null}
       </div>

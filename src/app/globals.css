@@ -745,6 +745,23 @@ body::before {
   background: var(--surface-muted);
 }
 
+.autocomplete__option--create {
+  border: 1px dashed rgba(45, 122, 81, 0.35);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.autocomplete__create-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+
 .autocomplete__hint {
   color: var(--ink-muted);
   font-size: 0.9rem;

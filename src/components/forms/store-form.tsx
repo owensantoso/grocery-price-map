@@ -19,7 +19,13 @@ const initialState: ActionState = {
   status: "idle",
 };
 
-export function StoreForm({ disabled }: { disabled?: boolean }) {
+export function StoreForm({
+  disabled,
+  initialName = "",
+}: {
+  disabled?: boolean;
+  initialName?: string;
+}) {
   const [state, formAction] = useActionState(createStoreAction, initialState);
   const [storeKind, setStoreKind] = useState<"physical" | "online">("physical");
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null }>({
@@ -42,7 +48,13 @@ export function StoreForm({ disabled }: { disabled?: boolean }) {
       <div className="form-grid">
         <label className="form-field">
           <span>Store name</span>
-          <input className="input" disabled={disabled} name="name" required />
+          <input
+            className="input"
+            defaultValue={initialName}
+            disabled={disabled}
+            name="name"
+            required
+          />
           {state.fieldErrors?.name?.[0] ? (
             <span className="field-error">{state.fieldErrors.name[0]}</span>
           ) : null}

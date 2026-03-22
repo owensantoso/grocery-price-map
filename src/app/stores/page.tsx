@@ -5,7 +5,14 @@ import { StoreDirectoryMap } from "@/components/stores/store-directory-map";
 import { getStoresSnapshot } from "@/lib/queries";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export default async function StoresPage() {
+type StoresPageProps = {
+  searchParams?: Promise<{
+    prefillName?: string;
+  }>;
+};
+
+export default async function StoresPage({ searchParams }: StoresPageProps) {
+  const params = (await searchParams) ?? {};
   const snapshot = await getStoresSnapshot();
   const configured = isSupabaseConfigured();
 
@@ -23,7 +30,9 @@ export default async function StoresPage() {
           </div>
         </section>
       ) : null}
-      {snapshot.viewer ? <StoreForm disabled={!configured} /> : null}
+      {snapshot.viewer ? (
+        <StoreForm disabled={!configured} initialName={params.prefillName ?? ""} />
+      ) : null}
       <section className="store-directory-grid">
         <section className="panel stack-md">
           <div className="stack-xs">

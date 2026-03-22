@@ -5,7 +5,14 @@ import { formatUnitValue } from "@/lib/format";
 import { getItemsSnapshot } from "@/lib/queries";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export default async function ItemsPage() {
+type ItemsPageProps = {
+  searchParams?: Promise<{
+    prefillName?: string;
+  }>;
+};
+
+export default async function ItemsPage({ searchParams }: ItemsPageProps) {
+  const params = (await searchParams) ?? {};
   const snapshot = await getItemsSnapshot();
   const configured = isSupabaseConfigured();
 
@@ -25,7 +32,9 @@ export default async function ItemsPage() {
           </div>
         </section>
       ) : null}
-      {snapshot.viewer ? <ItemForm disabled={!configured} /> : null}
+      {snapshot.viewer ? (
+        <ItemForm disabled={!configured} initialName={params.prefillName ?? ""} />
+      ) : null}
       <section className="panel stack-md">
         <div className="stack-xs">
           <p className="eyebrow">Current item catalog</p>

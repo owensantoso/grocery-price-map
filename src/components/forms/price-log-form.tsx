@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState, type RefObject } from "react";
+import { useRouter } from "next/navigation";
 import { createPriceLogAction, type ActionState } from "@/app/actions";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
 import {
@@ -60,6 +61,7 @@ export function PriceLogForm({
   submitLabel = "Add log",
   title = "Log a price observation",
 }: PriceLogFormProps) {
+  const router = useRouter();
   const [state, formAction] = useActionState(submitAction, initialState);
   const [selectedItemId, setSelectedItemId] = useState(initialLog?.item_id ?? "");
   const [selectedStoreId, setSelectedStoreId] = useState(initialLog?.store_id ?? "");
@@ -192,11 +194,15 @@ export function PriceLogForm({
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
       <div className="form-grid">
         <AutocompleteField
+          createActionLabel="store"
           defaultOptionId={selectedStore?.id ?? undefined}
           disabled={disabled}
           error={state.fieldErrors?.storeId?.[0]}
           label="Store"
           name="storeId"
+          onCreateAction={(query) => {
+            router.push(`/stores?prefillName=${encodeURIComponent(query)}`);
+          }}
           onClear={() => setSelectedStoreId("")}
           onCommit={() => itemFieldRef.current?.focus()}
           onSelect={(option) => setSelectedStoreId(option?.id ?? "")}
@@ -206,11 +212,15 @@ export function PriceLogForm({
           showClearButton
         />
         <AutocompleteField
+          createActionLabel="item"
           defaultOptionId={selectedItem?.id ?? undefined}
           disabled={disabled}
           error={state.fieldErrors?.itemId?.[0]}
           label="Item"
           name="itemId"
+          onCreateAction={(query) => {
+            router.push(`/items?prefillName=${encodeURIComponent(query)}`);
+          }}
           onClear={() => {
             setSelectedItemId("");
             setPackageAmount("");
