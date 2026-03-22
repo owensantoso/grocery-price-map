@@ -3,9 +3,10 @@
 
 import { useRef, useState } from "react";
 import {
+  JPEG_FALLBACK_QUALITY,
   MAX_PHOTO_BYTES,
   MAX_PHOTO_WIDTH,
-  PHOTO_QUALITY,
+  WEBP_PHOTO_QUALITY,
   SERVER_ACTION_BODY_BYTES,
 } from "@/lib/photos";
 
@@ -74,7 +75,7 @@ async function compressImage(file: File): Promise<CompressedImageResult> {
   context.drawImage(image, 0, 0, width, height);
 
   const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, "image/webp", PHOTO_QUALITY);
+    canvas.toBlob(resolve, "image/webp", WEBP_PHOTO_QUALITY);
   }).catch(() => null);
 
   if (blob && blob.type === "image/webp") {
@@ -87,22 +88,53 @@ async function compressImage(file: File): Promise<CompressedImageResult> {
     };
   }
 
-  const fallbackDataUrl = canvas.toDataURL("image/webp", PHOTO_QUALITY);
+  const fallbackDataUrl = canvas.toDataURL("image/webp", WEBP_PHOTO_QUALITY);
   const fallbackMimeType = getMimeTypeFromDataUrl(fallbackDataUrl);
 
-  if (fallbackMimeType !== "image/webp") {
-    throw new Error("This browser cannot encode WebP images from canvas.");
+  if (fallbackMimeType === "image/webp") {
+    const payload = fallbackDataUrl.split(",", 2)[1] ?? "";
+    const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
+    const byteLength = Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
+
+    return {
+      byteLength,
+      dataUrl: fallbackDataUrl,
+      height,
+      mimeType: fallbackMimeType,
+      width,
+    };
   }
 
-  const payload = fallbackDataUrl.split(",", 2)[1] ?? "";
+  const jpegBlob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/jpeg", JPEG_FALLBACK_QUALITY);
+  }).catch(() => null);
+
+  if (jpegBlob && jpegBlob.type === "image/jpeg") {
+    return {
+      byteLength: jpegBlob.size,
+      dataUrl: await blobToDataUrl(jpegBlob),
+      height,
+      mimeType: jpegBlob.type,
+      width,
+    };
+  }
+
+  const jpegDataUrl = canvas.toDataURL("image/jpeg", JPEG_FALLBACK_QUALITY);
+  const jpegMimeType = getMimeTypeFromDataUrl(jpegDataUrl);
+
+  if (jpegMimeType !== "image/jpeg") {
+    throw new Error("This browser could not produce a compressed upload image.");
+  }
+
+  const payload = jpegDataUrl.split(",", 2)[1] ?? "";
   const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
   const byteLength = Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
 
   return {
     byteLength,
-    dataUrl: fallbackDataUrl,
+    dataUrl: jpegDataUrl,
     height,
-    mimeType: fallbackMimeType,
+    mimeType: jpegMimeType,
     width,
   };
 }
@@ -163,7 +195,9 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
               setStatusMessage(
                 nextCompressedBytes > MAX_PHOTO_BYTES
                   ? "Compressed image still looks too large. Try a tighter crop or a simpler photo."
-                  : "Compressed to WebP for upload.",
+                  : compressed.mimeType === "image/webp"
+                    ? "Compressed to WebP for upload."
+                    : "Compressed to JPEG for upload because this browser could not encode WebP.",
               );
             } catch (error) {
               setOriginalFileSize(file.size);

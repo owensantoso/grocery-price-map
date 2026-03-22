@@ -1,6 +1,7 @@
 export const PRICE_LOG_PHOTO_BUCKET = "price-log-photos";
 export const MAX_PHOTO_WIDTH = 400;
-export const PHOTO_QUALITY = 0.3;
+export const WEBP_PHOTO_QUALITY = 0.3;
+export const JPEG_FALLBACK_QUALITY = 0.45;
 export const MAX_PHOTO_BYTES = 1_000_000;
 export const SERVER_ACTION_BODY_SIZE_LIMIT = "3mb";
 export const SERVER_ACTION_BODY_BYTES = 3 * 1024 * 1024;
