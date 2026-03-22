@@ -120,7 +120,15 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
     onSelect?.(option);
 
     if (shouldCommit) {
-      onCommit?.(option);
+      if (isTouchLayout) {
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            onCommit?.(option);
+          });
+        });
+      } else {
+        onCommit?.(option);
+      }
     }
   }
 
