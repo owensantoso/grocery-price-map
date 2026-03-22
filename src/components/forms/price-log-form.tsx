@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { createPriceLogAction, type ActionState } from "@/app/actions";
+import { useDebugFlag } from "@/components/debug/use-debug-flag";
 import {
   AutocompleteField,
   type AutocompleteOption,
@@ -70,6 +71,7 @@ export function PriceLogForm({
         ? stringifyNumber(items[0].comparison_basis_amount)
         : "",
   );
+  const debugEnabled = useDebugFlag();
 
   const selectedItem =
     items.find((item) => item.id === selectedItemId) ??
@@ -269,6 +271,16 @@ export function PriceLogForm({
           Selected store link will be attached to this log. Add an item listing URL
           too if this is an online listing.
         </p>
+      ) : null}
+      {debugEnabled ? (
+        <div className="debug-panel">
+          <strong>Price form debug</strong>
+          <span>selectedStoreId: {selectedStoreId || "(none)"}</span>
+          <span>selectedItemId: {selectedItemId || "(none)"}</span>
+          <span>packageAmount: {packageAmount || "(empty)"}</span>
+          <span>priceIncluded: {priceIncluded || "(empty)"}</span>
+          <span>priceExcluded: {priceExcluded || "(empty)"}</span>
+        </div>
       ) : null}
       <SubmitButton block>{submitLabel}</SubmitButton>
     </form>

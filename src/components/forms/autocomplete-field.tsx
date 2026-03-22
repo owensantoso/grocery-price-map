@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useDebugFlag } from "@/components/debug/use-debug-flag";
 
 export type AutocompleteOption = {
   hint?: string;
@@ -67,8 +68,11 @@ export function AutocompleteField({
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isTouchLayout, setIsTouchLayout] = useState(false);
+  const [clearCount, setClearCount] = useState(0);
+  const [lastAction, setLastAction] = useState("idle");
   const deferredQuery = useDeferredValue(query);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const debugEnabled = useDebugFlag();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 720px), (pointer: coarse)");
@@ -98,6 +102,7 @@ export function AutocompleteField({
     setSelectedId(option.id);
     setIsOpen(false);
     setHighlightedIndex(0);
+    setLastAction(`selected:${option.id}${shouldCommit ? ":commit" : ""}`);
     onSelect?.(option);
 
     if (shouldCommit) {
@@ -110,6 +115,8 @@ export function AutocompleteField({
     setSelectedId("");
     setIsOpen(true);
     setHighlightedIndex(0);
+    setClearCount((count) => count + 1);
+    setLastAction("clear");
     onSelect?.(null);
     onClear?.();
     inputRef.current?.focus();
@@ -142,6 +149,7 @@ export function AutocompleteField({
               setQuery(nextQuery);
               setIsOpen(true);
               setHighlightedIndex(0);
+              setLastAction(`change:${nextQuery}`);
 
               const exactMatch =
                 options.find((option) => option.label.toLowerCase() === nextQuery.trim().toLowerCase()) ??
@@ -245,6 +253,20 @@ export function AutocompleteField({
         ) : null}
       </div>
       {error ? <span className="field-error">{error}</span> : null}
+      {debugEnabled ? (
+        <div className="debug-panel">
+          <strong>Autocomplete debug: {label}</strong>
+          <span>query: {query || "(empty)"}</span>
+          <span>selectedId: {selectedId || "(none)"}</span>
+          <span>isOpen: {String(isOpen)}</span>
+          <span>filteredOptions: {filteredOptions.length}</span>
+          <span>highlightedIndex: {highlightedIndex}</span>
+          <span>isTouchLayout: {String(isTouchLayout)}</span>
+          <span>clearCount: {clearCount}</span>
+          <span>lastAction: {lastAction}</span>
+          <span>showClearButton: {String(Boolean(showClearButton && query))}</span>
+        </div>
+      ) : null}
     </div>
   );
 }

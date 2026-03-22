@@ -956,6 +956,27 @@ body::before {
   text-align: center;
 }
 
+.debug-panel {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed rgba(45, 122, 81, 0.45);
+  background: rgba(255, 250, 242, 0.92);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.78rem;
+}
+
+.debug-panel--overlay {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 950;
+  background: rgba(255, 250, 242, 0.96);
+}
+
 .list-table {
   display: grid;
   gap: 0.85rem;
