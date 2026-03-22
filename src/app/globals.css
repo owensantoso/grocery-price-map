@@ -264,6 +264,10 @@ body::before {
   color: var(--ink-muted);
 }
 
+.field-help--warning {
+  color: var(--danger);
+}
+
 .eyebrow {
   font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
   font-size: 0.85rem;
@@ -934,6 +938,12 @@ body::before {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
+}
+
+.photo-debug {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .comment-list {

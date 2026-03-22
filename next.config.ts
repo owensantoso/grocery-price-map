@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
+const SERVER_ACTION_BODY_SIZE_LIMIT = "3mb";
+
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: SERVER_ACTION_BODY_SIZE_LIMIT,
+    },
+  },
   async headers() {
     return [
       {

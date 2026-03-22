@@ -110,31 +110,57 @@ async function uploadPhotoIfPresent(input: {
     return existingPath ?? null;
   }
 
-  // Guard against oversized payloads before base64 decode to keep memory use bounded.
-  if (photoDataUrl.length > Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000) {
-    throw new Error("Photo payload is too large.");
-  }
+  const payloadLimit = Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000;
 
-  const { buffer, contentType } = dataUrlToBuffer(photoDataUrl);
-  const extension = contentType === "image/webp" ? "webp" : "jpg";
-  const path = `${userId}/${randomUUID()}.${extension}`;
+  try {
+    // Guard against oversized payloads before base64 decode to keep memory use bounded.
+    if (photoDataUrl.length > payloadLimit) {
+      throw new Error(
+        "Photo payload is too large for upload. Try a tighter crop or a simpler image.",
+      );
+    }
 
-  const { error } = await supabase.storage
-    .from(PRICE_LOG_PHOTO_BUCKET)
-    .upload(path, buffer, {
-      contentType,
-      upsert: false,
+    const { buffer, contentType } = dataUrlToBuffer(photoDataUrl);
+    const extension = contentType === "image/webp" ? "webp" : "jpg";
+    const path = `${userId}/${randomUUID()}.${extension}`;
+
+    const { error } = await supabase.storage
+      .from(PRICE_LOG_PHOTO_BUCKET)
+      .upload(path, buffer, {
+        contentType,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Photo storage upload failed", {
+        bodyPayloadLength: photoDataUrl.length,
+        bucket: PRICE_LOG_PHOTO_BUCKET,
+        contentType,
+        decodedBytes: buffer.byteLength,
+        error: error.message,
+        path,
+        userId,
+      });
+      throw new Error(`Photo upload failed: ${error.message}`);
+    }
+
+    if (existingPath) {
+      await supabase.storage.from(PRICE_LOG_PHOTO_BUCKET).remove([existingPath]);
+    }
+
+    return path;
+  } catch (error) {
+    console.error("Photo decode/upload failed", {
+      bodyPayloadLength: photoDataUrl.length,
+      existingPath: existingPath ?? null,
+      message: error instanceof Error ? error.message : "Unknown photo error",
+      payloadLimit,
+      userId,
     });
-
-  if (error) {
-    throw new Error(error.message);
+    throw error instanceof Error
+      ? error
+      : new Error("Photo upload failed before it could be saved.");
   }
-
-  if (existingPath) {
-    await supabase.storage.from(PRICE_LOG_PHOTO_BUCKET).remove([existingPath]);
-  }
-
-  return path;
 }
 
 function toActionState(error: unknown, fieldErrors?: Record<string, string[] | undefined>) {
