@@ -83,6 +83,16 @@ export function AutocompleteField({
     }
   }
 
+  function clearSelection() {
+    setQuery("");
+    setSelectedId("");
+    setIsOpen(true);
+    setHighlightedIndex(0);
+    onSelect?.(null);
+    onClear?.();
+    inputRef.current?.focus();
+  }
+
   return (
     <label className="form-field autocomplete-field">
       <span>{label}</span>
@@ -167,15 +177,9 @@ export function AutocompleteField({
             <button
               aria-label={`Clear ${label}`}
               className="autocomplete__clear"
-              onMouseDown={(event) => {
+              onClick={() => clearSelection()}
+              onPointerDown={(event) => {
                 event.preventDefault();
-                setQuery("");
-                setSelectedId("");
-                setIsOpen(true);
-                setHighlightedIndex(0);
-                onSelect?.(null);
-                onClear?.();
-                inputRef.current?.focus();
               }}
               type="button"
             >
@@ -194,9 +198,11 @@ export function AutocompleteField({
                     : ""
                 }`}
                 key={option.id}
-                onMouseDown={(event) => {
-                  event.preventDefault();
+                onClick={() => {
                   selectOption(option, true);
+                }}
+                onPointerDown={(event) => {
+                  event.preventDefault();
                 }}
                 role="option"
                 type="button"

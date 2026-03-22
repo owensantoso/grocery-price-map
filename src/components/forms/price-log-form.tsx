@@ -84,6 +84,28 @@ export function PriceLogForm({
     label: store.name,
   }));
 
+  function handleIncludedPriceChange(nextValue: string) {
+    setPriceIncluded(nextValue);
+
+    if (nextValue === "") {
+      setPriceExcluded("");
+      return;
+    }
+
+    setPriceExcluded(stringifyNumber(excludedFromIncluded(Number(nextValue))));
+  }
+
+  function handleExcludedPriceChange(nextValue: string) {
+    setPriceExcluded(nextValue);
+
+    if (nextValue === "") {
+      setPriceIncluded("");
+      return;
+    }
+
+    setPriceIncluded(stringifyNumber(includedFromExcluded(Number(nextValue))));
+  }
+
   return (
     <form action={formAction} className="panel panel-muted stack-md">
       <div className="stack-xs">
@@ -163,19 +185,10 @@ export function PriceLogForm({
               inputMode="numeric"
               min="0"
               name="totalPriceYen"
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setPriceIncluded(nextValue);
-
-                if (nextValue === "") {
-                  setPriceExcluded("");
-                  return;
-                }
-
-                setPriceExcluded(
-                  stringifyNumber(excludedFromIncluded(Number(nextValue))),
-                );
-              }}
+              onChange={(event) => handleIncludedPriceChange(event.target.value)}
+              onInput={(event) =>
+                handleIncludedPriceChange((event.target as HTMLInputElement).value)
+              }
               required
               step="1"
               type="number"
@@ -193,19 +206,10 @@ export function PriceLogForm({
               inputMode="numeric"
               min="0"
               name="priceTaxExcludedYen"
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setPriceExcluded(nextValue);
-
-                if (nextValue === "") {
-                  setPriceIncluded("");
-                  return;
-                }
-
-                setPriceIncluded(
-                  stringifyNumber(includedFromExcluded(Number(nextValue))),
-                );
-              }}
+              onChange={(event) => handleExcludedPriceChange(event.target.value)}
+              onInput={(event) =>
+                handleExcludedPriceChange((event.target as HTMLInputElement).value)
+              }
               required
               step="1"
               type="number"

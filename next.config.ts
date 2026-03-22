@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
               "form-action 'self' https: http://localhost:3000",
               "script-src 'self'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://*.supabase.co https://*.tile.openstreetmap.org",
+              "img-src 'self' data: blob: https://*.supabase.co https://tile.openstreetmap.org https://*.tile.openstreetmap.org",
               "connect-src 'self' https://*.supabase.co",
               "font-src 'self'",
               "worker-src 'self' blob:",

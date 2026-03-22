@@ -71,9 +71,22 @@ export function ComparisonMap({
 }: ComparisonMapProps) {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locationError, setLocationError] = useState("");
+  const [showPermanentLabels, setShowPermanentLabels] = useState(true);
   const mappedEntries = entries.filter(
     (entry) => entry.store.latitude !== null && entry.store.longitude !== null,
   );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 720px)");
+    const update = () => setShowPermanentLabels(!mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener("change", update);
+
+    return () => {
+      mediaQuery.removeEventListener("change", update);
+    };
+  }, []);
 
   function locateUser() {
     if (!navigator.geolocation) {
@@ -125,7 +138,7 @@ export function ComparisonMap({
             radius={9}
             stroke
           >
-            <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent>
+            <Tooltip direction="top" offset={[0, -10]} opacity={1} permanent={showPermanentLabels}>
               <div className="map-tooltip__content">
                 <strong>Your location</strong>
               </div>
@@ -152,7 +165,13 @@ export function ComparisonMap({
               radius={isSelected ? 14 : 11}
               stroke
             >
-              <Tooltip className="map-tooltip" direction="top" offset={[0, -10]} opacity={1} permanent>
+              <Tooltip
+                className="map-tooltip"
+                direction="top"
+                offset={[0, -10]}
+                opacity={1}
+                permanent={showPermanentLabels}
+              >
                 <div className="map-tooltip__content">
                   <strong>{entry.store.name}</strong>
                   <span>
