@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PriceLogFeed } from "@/components/logs/price-log-feed";
+import { LogSortControl } from "@/components/logs/log-sort-control";
 import { SetupNotice } from "@/components/setup-notice";
 import { getPriceLogsSnapshot, type PriceLogSort } from "@/lib/queries";
 
@@ -50,24 +51,10 @@ export default async function LogsPage({ searchParams }: LogsPageProps) {
         <section className="panel stack-md">
           <div className="split-header">
             <div className="stack-xs">
-            <h2 className="section-title">All logs</h2>
+              <h2 className="section-title">All logs</h2>
               <p className="muted">Browse the shared feed in whatever order is most useful.</p>
             </div>
-            <form className="sort-control" method="get">
-              <label className="form-field">
-                <span>Sort by</span>
-                <select className="select" defaultValue={selectedSort} name="sort">
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button className="button button-secondary" type="submit">
-                Apply
-              </button>
-            </form>
+            <LogSortControl options={SORT_OPTIONS} selectedSort={selectedSort} />
           </div>
           <PriceLogFeed
             disableVoting={!snapshot.viewer}
