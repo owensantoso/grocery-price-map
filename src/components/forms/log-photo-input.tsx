@@ -37,6 +37,11 @@ async function blobToDataUrl(blob: Blob) {
   });
 }
 
+function getMimeTypeFromDataUrl(dataUrl: string) {
+  const mimeMatch = dataUrl.match(/^data:(.+);base64,/);
+  return mimeMatch?.[1] ?? null;
+}
+
 async function loadImageElement(file: File) {
   const objectUrl = URL.createObjectURL(file);
 
@@ -70,21 +75,34 @@ async function compressImage(file: File): Promise<CompressedImageResult> {
 
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob(resolve, "image/webp", PHOTO_QUALITY);
-  });
+  }).catch(() => null);
 
-  if (!blob) {
-    throw new Error("Could not encode this image as WebP.");
+  if (blob && blob.type === "image/webp") {
+    return {
+      byteLength: blob.size,
+      dataUrl: await blobToDataUrl(blob),
+      height,
+      mimeType: blob.type,
+      width,
+    };
   }
 
-  if (blob.type !== "image/webp") {
-    throw new Error("This browser did not produce a WebP image.");
+  const fallbackDataUrl = canvas.toDataURL("image/webp", PHOTO_QUALITY);
+  const fallbackMimeType = getMimeTypeFromDataUrl(fallbackDataUrl);
+
+  if (fallbackMimeType !== "image/webp") {
+    throw new Error("This browser cannot encode WebP images from canvas.");
   }
+
+  const payload = fallbackDataUrl.split(",", 2)[1] ?? "";
+  const padding = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
+  const byteLength = Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
 
   return {
-    byteLength: blob.size,
-    dataUrl: await blobToDataUrl(blob),
+    byteLength,
+    dataUrl: fallbackDataUrl,
     height,
-    mimeType: blob.type,
+    mimeType: fallbackMimeType,
     width,
   };
 }
@@ -147,12 +165,14 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
                   ? "Compressed image still looks too large. Try a tighter crop or a simpler photo."
                   : "Compressed to WebP for upload.",
               );
-            } catch {
+            } catch (error) {
               setOriginalFileSize(file.size);
               setCompressedBytes(null);
               setCompressedType(null);
               setOutputDimensions("");
-              setStatusMessage("Could not process this image.");
+              setStatusMessage(
+                error instanceof Error ? error.message : "Could not process this image.",
+              );
             }
           }}
           ref={inputRef}
