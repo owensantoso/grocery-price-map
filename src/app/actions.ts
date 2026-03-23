@@ -178,11 +178,11 @@ function rethrowIfRedirectError(error: unknown) {
 }
 
 function revalidateSharedItems() {
-  revalidateTag("items");
+  revalidateTag("items", "max");
 }
 
 function revalidateSharedStores() {
-  revalidateTag("stores");
+  revalidateTag("stores", "max");
 }
 
 function revalidatePriceLogCaches(input?: {
@@ -190,18 +190,18 @@ function revalidatePriceLogCaches(input?: {
   logId?: string | null;
   storeId?: string | null;
 }) {
-  revalidateTag("price-logs");
+  revalidateTag("price-logs", "max");
 
   if (input?.itemId) {
-    revalidateTag(`price-logs:item:${input.itemId}`);
+    revalidateTag(`price-logs:item:${input.itemId}`, "max");
   }
 
   if (input?.storeId) {
-    revalidateTag(`price-logs:store:${input.storeId}`);
+    revalidateTag(`price-logs:store:${input.storeId}`, "max");
   }
 
   if (input?.logId) {
-    revalidateTag(`price-log:${input.logId}`);
+    revalidateTag(`price-log:${input.logId}`, "max");
   }
 }
 
@@ -693,7 +693,7 @@ export async function deletePriceLogAction(logId: string) {
 
     const { data: existing, error: existingError } = await supabase
       .from("price_logs")
-      .select("submitted_by, photo_path")
+      .select("submitted_by, photo_path, item_id, store_id")
       .eq("id", logId)
       .single();
 
