@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import {
   demoItems,
@@ -24,7 +26,47 @@ import type {
   Viewer,
   VoteSummary,
 } from "@/lib/models";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const PRICE_LOG_SELECT = `
+  id,
+  store_id,
+  item_id,
+  submitted_by,
+  package_amount,
+  package_unit,
+  total_price_yen,
+  price_tax_excluded_yen,
+  normalized_price_yen,
+  observed_at,
+  notes,
+  listing_url,
+  photo_path,
+  created_at,
+  items (
+    id,
+    name,
+    category,
+    comparison_unit,
+    comparison_basis_amount,
+    created_at,
+    created_by
+  ),
+  stores (
+    id,
+    name,
+    chain_name,
+    store_kind,
+    store_url,
+    address_text,
+    latitude,
+    longitude,
+    notes,
+    created_at,
+    created_by
+  )
+`;
 
 type ComparisonSnapshot = {
   entries: CompareEntry[];
@@ -417,7 +459,7 @@ async function getPublicProfileLabels(
   );
 }
 
-export async function getViewer(): Promise<Viewer | null> {
+const getViewerCached = cache(async (): Promise<Viewer | null> => {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -439,44 +481,186 @@ export async function getViewer(): Promise<Viewer | null> {
     .maybeSingle();
 
   return toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null);
+});
+
+const getCachedItems = unstable_cache(
+  async (): Promise<ItemRecord[]> => {
+    const supabase = createSupabasePublicClient();
+
+    if (!supabase) {
+      return demoItems;
+    }
+
+    const { data, error } = await supabase
+      .from("items")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []) as ItemRecord[];
+  },
+  ["items"],
+  {
+    revalidate: 300,
+    tags: ["items"],
+  },
+);
+
+const getCachedStores = unstable_cache(
+  async (): Promise<StoreRecord[]> => {
+    const supabase = createSupabasePublicClient();
+
+    if (!supabase) {
+      return demoStores;
+    }
+
+    const { data, error } = await supabase
+      .from("stores")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []) as StoreRecord[];
+  },
+  ["stores"],
+  {
+    revalidate: 300,
+    tags: ["stores"],
+  },
+);
+
+function getCachedPriceLogsByItem(itemId: string) {
+  return unstable_cache(
+    async (): Promise<PriceLogWithRelations[]> => {
+      const supabase = createSupabasePublicClient();
+
+      if (!supabase) {
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from("price_logs")
+        .select(PRICE_LOG_SELECT)
+        .eq("item_id", itemId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return (data ?? []) as unknown as PriceLogWithRelations[];
+    },
+    ["price-logs:item", itemId],
+    {
+      revalidate: 30,
+      tags: ["price-logs", `price-logs:item:${itemId}`],
+    },
+  )();
+}
+
+function getCachedPriceLogsByStore(storeId: string) {
+  return unstable_cache(
+    async (): Promise<PriceLogWithRelations[]> => {
+      const supabase = createSupabasePublicClient();
+
+      if (!supabase) {
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from("price_logs")
+        .select(PRICE_LOG_SELECT)
+        .eq("store_id", storeId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return (data ?? []) as unknown as PriceLogWithRelations[];
+    },
+    ["price-logs:store", storeId],
+    {
+      revalidate: 30,
+      tags: ["price-logs", `price-logs:store:${storeId}`],
+    },
+  )();
+}
+
+const getCachedAllPriceLogs = unstable_cache(
+  async (): Promise<PriceLogWithRelations[]> => {
+    const supabase = createSupabasePublicClient();
+
+    if (!supabase) {
+      return [];
+    }
+
+    const { data, error } = await supabase.from("price_logs").select(PRICE_LOG_SELECT);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []) as unknown as PriceLogWithRelations[];
+  },
+  ["price-logs:all"],
+  {
+    revalidate: 30,
+    tags: ["price-logs"],
+  },
+);
+
+function getCachedPriceLogById(logId: string) {
+  return unstable_cache(
+    async (): Promise<PriceLogDetailRow | null> => {
+      const supabase = createSupabasePublicClient();
+
+      if (!supabase) {
+        return null;
+      }
+
+      const { data, error } = await supabase
+        .from("price_logs")
+        .select(PRICE_LOG_SELECT)
+        .eq("id", logId)
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return (data ?? null) as unknown as PriceLogDetailRow | null;
+    },
+    ["price-log", logId],
+    {
+      revalidate: 30,
+      tags: ["price-logs", `price-log:${logId}`],
+    },
+  )();
+}
+
+export async function getViewer(): Promise<Viewer | null> {
+  return getViewerCached();
 }
 
 export async function getItems(): Promise<ItemRecord[]> {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
+  if (!createSupabasePublicClient()) {
     return demoItems;
   }
 
-  const { data, error } = await supabase
-    .from("items")
-    .select("*")
-    .order("name", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []) as ItemRecord[];
+  return getCachedItems();
 }
 
 export async function getStores(): Promise<StoreRecord[]> {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
+  if (!createSupabasePublicClient()) {
     return demoStores;
   }
 
-  const { data, error } = await supabase
-    .from("stores")
-    .select("*")
-    .order("name", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return (data ?? []) as StoreRecord[];
+  return getCachedStores();
 }
 
 export async function getComparisonSnapshot(
@@ -516,55 +700,7 @@ export async function getComparisonSnapshot(
     };
   }
 
-  const { data, error } = await supabase
-    .from("price_logs")
-    .select(
-      `
-        id,
-        store_id,
-        item_id,
-        submitted_by,
-        package_amount,
-        package_unit,
-        total_price_yen,
-        price_tax_excluded_yen,
-        normalized_price_yen,
-        observed_at,
-        notes,
-        listing_url,
-        photo_path,
-        created_at,
-        items (
-          id,
-          name,
-          category,
-          comparison_unit,
-          comparison_basis_amount,
-          created_at,
-          created_by
-        ),
-        stores (
-          id,
-          name,
-          chain_name,
-          store_kind,
-          store_url,
-          address_text,
-          latitude,
-          longitude,
-          notes,
-          created_at,
-          created_by
-        )
-      `,
-    )
-    .eq("item_id", selectedItem.id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const logs = (data ?? []) as unknown as PriceLogWithRelations[];
+  const logs = await getCachedPriceLogsByItem(selectedItem.id);
   const voteRows = await getVoteRowsForLogs(logs.map((log) => log.id));
   const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
 
@@ -643,54 +779,7 @@ export async function getPriceLogsSnapshot(sort: PriceLogSort = "recent"): Promi
     : null;
   const viewer = toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null);
 
-  const { data, error } = await supabase
-    .from("price_logs")
-    .select(
-      `
-        id,
-        store_id,
-        item_id,
-        submitted_by,
-        package_amount,
-        package_unit,
-        total_price_yen,
-        price_tax_excluded_yen,
-        normalized_price_yen,
-        observed_at,
-        notes,
-        listing_url,
-        photo_path,
-        created_at,
-        items (
-          id,
-          name,
-          category,
-          comparison_unit,
-          comparison_basis_amount,
-          created_at,
-          created_by
-        ),
-        stores (
-          id,
-          name,
-          chain_name,
-          store_kind,
-          store_url,
-          address_text,
-          latitude,
-          longitude,
-          notes,
-          created_at,
-          created_by
-        )
-      `,
-    );
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const logs = (data ?? []) as unknown as PriceLogWithRelations[];
+  const logs = await getCachedAllPriceLogs();
   const votes = await getVoteRowsForLogs(logs.map((log) => log.id));
   const voteSummaries = summarizeVotes(votes, viewer?.id ?? null);
   const allLogs = sortFeedEntries(
@@ -827,110 +916,13 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
   } = await supabase.auth.getUser();
   const viewer = toViewer(user);
 
-  const { data, error } = await supabase
-    .from("price_logs")
-    .select(
-      `
-        id,
-        store_id,
-        item_id,
-        submitted_by,
-        package_amount,
-        package_unit,
-        total_price_yen,
-        price_tax_excluded_yen,
-        normalized_price_yen,
-        observed_at,
-        notes,
-        listing_url,
-        photo_path,
-        created_at,
-        items (
-          id,
-          name,
-          category,
-          comparison_unit,
-          comparison_basis_amount,
-          created_at,
-          created_by
-        ),
-        stores (
-          id,
-          name,
-          chain_name,
-          store_kind,
-          store_url,
-          address_text,
-          latitude,
-          longitude,
-          notes,
-          created_at,
-          created_by
-        )
-      `,
-    )
-    .eq("id", logId)
-    .single();
+  const log = await getCachedPriceLogById(logId);
 
-  if (error || !data) {
+  if (!log || !log.items || !log.stores) {
     return null;
   }
 
-  const log = data as unknown as PriceLogDetailRow;
-
-  if (!log.items || !log.stores) {
-    return null;
-  }
-
-  const { data: historyData, error: historyError } = await supabase
-    .from("price_logs")
-    .select(
-      `
-        id,
-        store_id,
-        item_id,
-        submitted_by,
-        package_amount,
-        package_unit,
-        total_price_yen,
-        price_tax_excluded_yen,
-        normalized_price_yen,
-        observed_at,
-        notes,
-        listing_url,
-        photo_path,
-        created_at,
-        items (
-          id,
-          name,
-          category,
-          comparison_unit,
-          comparison_basis_amount,
-          created_at,
-          created_by
-        ),
-        stores (
-          id,
-          name,
-          chain_name,
-          store_kind,
-          store_url,
-          address_text,
-          latitude,
-          longitude,
-          notes,
-          created_at,
-          created_by
-        )
-      `,
-    )
-    .eq("item_id", log.item_id);
-
-  if (historyError) {
-    throw new Error(historyError.message);
-  }
-
-  const itemLogs = (historyData ?? []) as unknown as PriceLogWithRelations[];
+  const itemLogs = await getCachedPriceLogsByItem(log.item_id);
   const voteRows = await getVoteRowsForLogs(itemLogs.map((entry) => entry.id));
   const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
   const { data: commentData, error: commentError } = await supabase
@@ -997,55 +989,7 @@ export async function getStoreDetail(storeId: string): Promise<StoreDetail | nul
     return null;
   }
 
-  const { data, error } = await supabase
-    .from("price_logs")
-    .select(
-      `
-        id,
-        store_id,
-        item_id,
-        submitted_by,
-        package_amount,
-        package_unit,
-        total_price_yen,
-        price_tax_excluded_yen,
-        normalized_price_yen,
-        observed_at,
-        notes,
-        listing_url,
-        photo_path,
-        created_at,
-        items (
-          id,
-          name,
-          category,
-          comparison_unit,
-          comparison_basis_amount,
-          created_at,
-          created_by
-        ),
-        stores (
-          id,
-          name,
-          chain_name,
-          store_kind,
-          store_url,
-          address_text,
-          latitude,
-          longitude,
-          notes,
-          created_at,
-          created_by
-        )
-      `,
-    )
-    .eq("store_id", storeId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const logs = (data ?? []) as unknown as PriceLogWithRelations[];
+  const logs = await getCachedPriceLogsByStore(storeId);
   const voteRows = await getVoteRowsForLogs(logs.map((log) => log.id));
   const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
   const recentLogs = buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null);

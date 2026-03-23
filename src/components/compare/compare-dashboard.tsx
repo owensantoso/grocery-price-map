@@ -61,8 +61,12 @@ export function CompareDashboard({
   }));
 
   const featuredEntry = entries[0] ?? null;
+  const effectiveSelectedStoreId =
+    selectedStoreId && entries.some((entry) => entry.store.id === selectedStoreId)
+      ? selectedStoreId
+      : entries[0]?.store.id ?? null;
   const selectedEntry =
-    entries.find((entry) => entry.store.id === selectedStoreId) ?? featuredEntry;
+    entries.find((entry) => entry.store.id === effectiveSelectedStoreId) ?? featuredEntry;
   const selectedHistoryEntries =
     selectedEntry && selectedEntry.history.length > 0
       ? selectedEntry.history
@@ -141,14 +145,9 @@ export function CompareDashboard({
               {featuredEntry.item.comparison_basis_amount}
               {featuredEntry.item.comparison_unit}
             </Link>
-            <a
-              className="featured-result__store"
-              href={featuredEntry.store.store_url}
-              rel="noreferrer"
-              target="_blank"
-            >
+            <Link className="featured-result__store" href={`/stores/${featuredEntry.store.id}`} prefetch>
               at {featuredEntry.store.name}
-            </a>
+            </Link>
             <p className="muted">
               {featuredEntry.store.address_text} • {formatDate(featuredEntry.latestLog.observed_at)}
             </p>
@@ -178,7 +177,7 @@ export function CompareDashboard({
               <DynamicComparisonMap
                 entries={entries}
                 onSelectStore={setSelectedStoreId}
-                selectedStoreId={selectedStoreId}
+                selectedStoreId={effectiveSelectedStoreId}
               />
             </section>
             {selectedEntry ? (
@@ -212,7 +211,7 @@ export function CompareDashboard({
                   return (
                 <article
                   className={`result-card ${
-                    entry.store.id === selectedStoreId ? "is-selected" : ""
+                    entry.store.id === effectiveSelectedStoreId ? "is-selected" : ""
                   }`}
                   key={entry.store.id}
                 >
@@ -233,7 +232,7 @@ export function CompareDashboard({
                     </div>
                     <div className="result-card__top">
                       <div className="stack-xs">
-                        <Link className="store-link" href={`/stores/${entry.store.id}`}>
+                        <Link className="store-link" href={`/stores/${entry.store.id}`} prefetch>
                           {index + 1}. {entry.store.name}
                         </Link>
                         <span className="muted">{entry.store.address_text}</span>
@@ -246,7 +245,6 @@ export function CompareDashboard({
                     </div>
                   </div>
                   <div className="meta-row">
-                    <span className="tag">paid {formatCurrency(entry.latestLog.total_price_yen)}</span>
                     <span className="tag">
                       {formatPackage(entry.latestLog.package_amount, entry.latestLog.package_unit)}
                     </span>

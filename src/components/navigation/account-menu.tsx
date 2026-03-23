@@ -72,19 +72,21 @@ export function AccountMenu({ configured, viewerEmail, viewerName }: AccountMenu
             className="account-menu__link"
             href="/settings"
             onClick={() => setIsOpen(false)}
+            prefetch
             role="menuitem"
           >
-            <span className="account-menu__meta">Account settings</span>
+            <span className="account-menu__meta">Account</span>
             <strong>{viewerName ?? viewerEmail}</strong>
           </Link>
           <Link
             className="account-menu__link"
             href="/account"
             onClick={() => setIsOpen(false)}
+            prefetch
             role="menuitem"
           >
             <span className="account-menu__meta">My Logs</span>
-            <strong>{viewerEmail}</strong>
+            <strong>@{viewerName ?? viewerEmail}</strong>
           </Link>
           <form action={signOutAction}>
             <button className="account-menu__signout" role="menuitem" type="submit">

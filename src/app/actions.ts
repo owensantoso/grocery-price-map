@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { z } from "zod";
@@ -177,6 +177,34 @@ function rethrowIfRedirectError(error: unknown) {
   }
 }
 
+function revalidateSharedItems() {
+  revalidateTag("items");
+}
+
+function revalidateSharedStores() {
+  revalidateTag("stores");
+}
+
+function revalidatePriceLogCaches(input?: {
+  itemId?: string | null;
+  logId?: string | null;
+  storeId?: string | null;
+}) {
+  revalidateTag("price-logs");
+
+  if (input?.itemId) {
+    revalidateTag(`price-logs:item:${input.itemId}`);
+  }
+
+  if (input?.storeId) {
+    revalidateTag(`price-logs:store:${input.storeId}`);
+  }
+
+  if (input?.logId) {
+    revalidateTag(`price-log:${input.logId}`);
+  }
+}
+
 async function requireAuthedClient() {
   const supabase = await createSupabaseServerClient();
 
@@ -253,6 +281,7 @@ export async function createItemAction(
       throw new Error(error.message);
     }
 
+    revalidateSharedItems();
     revalidatePath("/");
     revalidatePath("/logs");
     revalidatePath("/items");
@@ -286,12 +315,12 @@ export async function updateAccountSettingsAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
-    const normalizedPublicName = parsed.data.publicName.trim().toLowerCase();
+    const normalizedPublicName = parsed.data.publicName.trim();
 
     const { data: conflict } = await supabase
       .from("profiles")
       .select("id")
-      .eq("public_name", normalizedPublicName)
+      .ilike("public_name", normalizedPublicName)
       .neq("id", user.id)
       .maybeSingle();
 
@@ -299,15 +328,22 @@ export async function updateAccountSettingsAction(
       throw new Error("That username is already taken.");
     }
 
-    const { error } = await supabase
+    const { data: updatedProfile, error } = await supabase
       .from("profiles")
       .update({
         public_name: normalizedPublicName,
       })
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .select("id");
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (!updatedProfile || updatedProfile.length === 0) {
+      throw new Error(
+        "Profile update was blocked. Apply the latest Supabase migration for profile self-updates.",
+      );
     }
 
     const { error: metadataError } = await supabase.auth.updateUser({
@@ -415,6 +451,7 @@ export async function createStoreAction(
       throw new Error(error.message);
     }
 
+    revalidateSharedStores();
     revalidatePath("/");
     revalidatePath("/logs");
     revalidatePath("/stores");
@@ -523,6 +560,11 @@ export async function createPriceLogAction(
       throw new Error(error?.message ?? "Failed to create the price log.");
     }
 
+    revalidatePriceLogCaches({
+      itemId: parsed.data.itemId,
+      logId: insertedLog.id,
+      storeId: parsed.data.storeId,
+    });
     revalidatePath("/");
     revalidatePath("/logs");
     revalidatePath("/prices/new");
@@ -585,7 +627,7 @@ export async function updatePriceLogAction(
 
     const { data: existing, error: existingError } = await supabase
       .from("price_logs")
-      .select("submitted_by, photo_path")
+      .select("submitted_by, photo_path, item_id, store_id")
       .eq("id", logId)
       .single();
 
@@ -628,6 +670,11 @@ export async function updatePriceLogAction(
       throw new Error(error.message);
     }
 
+    revalidatePriceLogCaches({
+      itemId: parsed.data.itemId,
+      logId,
+      storeId: parsed.data.storeId,
+    });
     revalidatePath("/");
     revalidatePath("/logs");
     revalidatePath(`/logs/${logId}`);
@@ -683,6 +730,11 @@ export async function deletePriceLogAction(logId: string) {
       throw new Error(deleteError.message);
     }
 
+    revalidatePriceLogCaches({
+      itemId: existing.item_id,
+      logId,
+      storeId: existing.store_id,
+    });
     revalidatePath("/");
     revalidatePath("/logs");
     revalidatePath("/prices/new");

@@ -31,6 +31,7 @@ export function PrimaryNav() {
             key={item.href}
             className={`main-nav__link ${item.href === "/prices/new" ? "main-nav__link--accent" : ""} ${isActive ? "is-active" : ""}`}
             href={item.href}
+            prefetch
           >
             {item.icon ? <span className="main-nav__icon">{item.icon}</span> : null}
             <span>{item.label}</span>

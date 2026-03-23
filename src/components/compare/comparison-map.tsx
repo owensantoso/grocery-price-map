@@ -25,16 +25,16 @@ const TOKYO_CENTER: [number, number] = [35.6895, 139.6917];
 
 const selectedStorePin = L.divIcon({
   className: "compare-pin-icon compare-pin-icon--selected",
-  html: '<span class="compare-pin-icon__dot"></span>',
-  iconAnchor: [12, 28],
-  iconSize: [24, 28],
+  html: '<span class="compare-pin-icon__pin"><span class="compare-pin-icon__core"></span></span>',
+  iconAnchor: [14, 34],
+  iconSize: [28, 34],
 });
 
 const storePin = L.divIcon({
   className: "compare-pin-icon",
-  html: '<span class="compare-pin-icon__dot"></span>',
-  iconAnchor: [12, 28],
-  iconSize: [24, 28],
+  html: '<span class="compare-pin-icon__pin"><span class="compare-pin-icon__core"></span></span>',
+  iconAnchor: [14, 34],
+  iconSize: [28, 34],
 });
 
 function bindMediaQuery(
