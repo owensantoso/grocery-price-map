@@ -38,3 +38,4 @@ scripts/docs-meta new diag "<Title>" --domain <domain>
 ## Layout
 
 - Future `DIAG-*` diagnostic records should live in this folder unless the repo later creates a dedicated `diagnostics/` subfolder.
+- `map-manual-verification.md` records the repeatable manual checklist for Leaflet viewport, marker, geolocation, and keyboard checks.

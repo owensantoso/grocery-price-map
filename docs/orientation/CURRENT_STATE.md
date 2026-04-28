@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 02:17:24 JST +0900"
+updated_at: "2026-04-29 03:31:10 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -63,7 +63,7 @@ Source docs:
 
 ## Roadmap Position
 
-The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, and backend write-integrity hardening are in place. `PLAN-0003` is next and tracks contribution accessibility fixes before broad action/query refactors.
+The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, backend write-integrity hardening, and contribution accessibility fixes are in place. `PLAN-0004` is next and tracks read-scale diagnostics before broad action/query refactors.
 
 Source docs:
 
@@ -84,6 +84,7 @@ Source docs:
 - Existing docs were written during an audit and should be treated as source-of-truth working memory, not scratch text.
 - `npm` may not be available on PATH in Codex desktop shells. Use the bundled Node path shown in `AGENTS.md` if needed.
 - The database schema still has some legacy unit breadth while product flows intentionally expose only `count`, `g`, and `ml`.
+- Map surfaces have a manual verification checklist at `docs/repo-health/debugging/map-manual-verification.md`; `?debug=1` is wired only for the compare map.
 
 ## Verification Baseline
 

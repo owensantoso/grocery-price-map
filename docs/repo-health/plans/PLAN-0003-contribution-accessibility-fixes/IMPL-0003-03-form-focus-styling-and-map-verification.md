@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0003-03
 title: Form focus styling and map verification
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:29:33 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 03:31:10 JST +0900"
 parent_plan: PLAN-0003
 task_refs:
   - AUDT-0001#FINDING-014
@@ -18,7 +18,8 @@ depends_on:
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-form-focus-styling-and-map-verification.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -27,6 +28,7 @@ linked_paths:
   - src/components/compare/comparison-map.tsx
   - src/components/map/store-location-picker.tsx
   - src/components/stores/store-directory-map.tsx
+  - docs/repo-health/debugging/map-manual-verification.md
 repo_state:
   based_on_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
@@ -92,6 +94,13 @@ Required checklist coverage:
 - Link the checklist from `AUDT-0001` when resolving or deferring the map verification finding.
 - Include required route/data setup so the checklist can be repeated by another agent.
 
+## Implementation Notes
+
+- Added shared `.input`, `.select`, and `.textarea` `:focus-visible` styling in `src/app/globals.css`.
+- Created `docs/repo-health/debugging/map-manual-verification.md` with repeatable desktop/mobile checks for compare, store directory, and the signed-in `/stores` store picker maps.
+- Verified from code that `?debug=1` is available for the compare map via `useDebugFlag()` and is not wired into the store directory or store picker maps.
+- Updated `AUDT-0001#FINDING-014` and `AUDT-0001#FINDING-019` to `resolved`.
+
 ## Verification
 
 ```bash
@@ -108,7 +117,7 @@ Manual:
 
 ## Done Checklist
 
-- [ ] Form focus-visible styling added.
-- [ ] Map verification checklist exists.
-- [ ] Manual checks documented.
-- [ ] `AUDT-0001#FINDING-014` and `AUDT-0001#FINDING-019` updated.
+- [x] Form focus-visible styling added.
+- [x] Map verification checklist exists.
+- [x] Manual checks documented.
+- [x] `AUDT-0001#FINDING-014` and `AUDT-0001#FINDING-019` updated.

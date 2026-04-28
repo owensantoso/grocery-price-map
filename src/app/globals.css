@@ -883,6 +883,15 @@ body::before {
   padding: 0.85rem 0.95rem;
 }
 
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px rgba(45, 122, 81, 0.22);
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
 .input-date {
   display: block;
   inline-size: 100%;

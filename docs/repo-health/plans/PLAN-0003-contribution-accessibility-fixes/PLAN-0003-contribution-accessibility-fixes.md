@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0003
 title: Contribution accessibility fixes
 domain: repo-health
-status: in_progress
+status: completed
 created_at: "2026-04-29 00:29:22 JST +0900"
-updated_at: "2026-04-29 03:23:30 JST +0900"
+updated_at: "2026-04-29 03:31:10 JST +0900"
 owner: 
 sequence:
   roadmap: "3"
@@ -20,6 +20,7 @@ related_adrs: []
 related_sessions:
   - docs/repo-health/session-logs/2026-04-29-keyboard-accessible-store-location-entry.md
   - docs/repo-health/session-logs/2026-04-29-combobox-and-vote-control-semantics.md
+  - docs/repo-health/session-logs/2026-04-29-form-focus-styling-and-map-verification.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -29,6 +30,7 @@ linked_paths:
   - src/components/forms/autocomplete-field.tsx
   - src/components/comments/comment-vote-controls.tsx
   - src/app/globals.css
+  - docs/repo-health/debugging/map-manual-verification.md
 repo_state:
   based_on_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
@@ -76,8 +78,8 @@ Recommended order:
 
 - [x] `IMPL-0003-01` - add keyboard-accessible physical store location entry.
 - [x] `IMPL-0003-02` - improve autocomplete and comment vote semantics.
-- [ ] `IMPL-0003-03` - add focus-visible styling and a lightweight map/manual verification checklist.
-- [ ] Update `AUDT-0001` findings after each slice completes.
+- [x] `IMPL-0003-03` - add focus-visible styling and a lightweight map/manual verification checklist.
+- [x] Update `AUDT-0001` findings after each slice completes.
 
 ## Validation
 
