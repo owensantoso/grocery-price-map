@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0002-03
 title: Profile and rate-limit write constraints
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:25:41 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 03:01:42 JST +0900"
 parent_plan: PLAN-0002
 task_refs:
   - AUDT-0001#FINDING-005
@@ -16,7 +16,8 @@ depends_on: []
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-profile-and-rate-limit-write-constraints.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -24,6 +25,7 @@ linked_paths:
   - src/app/actions.ts
   - supabase/migrations/202603220003_action_rate_limits.sql
   - supabase/migrations/202603230002_profiles_self_update.sql
+  - supabase/migrations/202604290002_profile_rate_limit_constraints.sql
   - docs/BACKEND_SCHEMA.md
 repo_state:
   based_on_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
@@ -88,6 +90,27 @@ For rate limiting:
 5. Verify with a documented concurrent-call check when practical, or record the exact manual SQL/test still needed.
 6. Update migrations/docs and audit finding statuses.
 
+## Constraints Implemented
+
+Profile self-update:
+
+- Kept the existing settings action and `public.profiles` update path.
+- Added `validate_profile_self_update` as a `before update` trigger on `public.profiles`.
+- The trigger allows self-update of `public_name` while rejecting self-update changes to `id`, `email`, `display_name`, and `created_at`.
+
+Rate limiting:
+
+- Replaced the TypeScript count-then-insert sequence with `public.consume_action_rate_limit(action_name, max_events, window_seconds)`.
+- The function takes a transaction-level advisory lock per authenticated user/action, counts matching events in the active window, inserts the event only when below the configured limit, and returns whether the request was accepted.
+- Existing action names, thresholds, windows, and user-facing error copy are unchanged.
+
+## Verification Notes
+
+- Normal single-request rate-limit behavior is preserved by keeping the same action names, limits, and window durations.
+- Settings still update only `public_name` through `updateAccountSettingsAction`.
+- `supabase db lint` validates the migration syntax and schema rules locally.
+- `supabase migration up` is still blocked in this environment by local migration-history drift recorded in `IMPL-0002-01`; apply on a repaired/clean local or staging database before production rollout.
+
 ## Handoff Notes
 
 - Do not bundle threshold tuning with race-condition work.
@@ -112,7 +135,7 @@ Attach evidence for:
 
 ## Done Checklist
 
-- [ ] Profile self-update scope matches the username-only settings surface or accepted risk is documented.
-- [ ] Rate-limit race is fixed atomically or accepted with reason and revisit trigger.
-- [ ] Existing settings and write actions still pass verification.
-- [ ] `AUDT-0001#FINDING-005` and `AUDT-0001#FINDING-006` updated.
+- [x] Profile self-update scope matches the username-only settings surface or accepted risk is documented.
+- [x] Rate-limit race is fixed atomically or accepted with reason and revisit trigger.
+- [x] Existing settings and write actions still pass verification.
+- [x] `AUDT-0001#FINDING-005` and `AUDT-0001#FINDING-006` updated.

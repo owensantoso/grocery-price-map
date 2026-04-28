@@ -63,7 +63,7 @@ Source docs:
 
 ## Roadmap Position
 
-The repo is in a stabilization phase: docs, the first repo-health audit, CI, and focused characterization coverage are in place. `PLAN-0002` is next and tracks backend write-integrity hardening before broad action/query refactors.
+The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, and backend write-integrity hardening are in place. `PLAN-0003` is next and tracks contribution accessibility fixes before broad action/query refactors.
 
 Source docs:
 
