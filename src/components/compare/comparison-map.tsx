@@ -12,6 +12,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
+import { InvalidateMapSize } from "@/components/map/invalidate-map-size";
 import { formatCurrency } from "@/lib/format";
 import type { CompareEntry } from "@/lib/models";
 
@@ -78,41 +79,6 @@ function FitBounds({ entries }: { entries: CompareEntry[] }) {
     map.fitBounds(bounds, { padding: [48, 48] });
     hasFittedRef.current = true;
   }, [entries, map]);
-
-  return null;
-}
-
-function InvalidateMapSize() {
-  const map = useMap();
-
-  useEffect(() => {
-    const refresh = () => {
-      window.setTimeout(() => {
-        try {
-          const container = map.getContainer?.();
-          const maybeMap = map as typeof map & { _loaded?: boolean };
-
-          if (!maybeMap._loaded || !container || !container.isConnected) {
-            return;
-          }
-
-          map.invalidateSize();
-        } catch {
-          // Leaflet can briefly tear down internals during mount/unmount cycles.
-        }
-      }, 0);
-    };
-
-    refresh();
-    window.setTimeout(refresh, 250);
-    window.addEventListener("resize", refresh);
-    window.addEventListener("orientationchange", refresh);
-
-    return () => {
-      window.removeEventListener("resize", refresh);
-      window.removeEventListener("orientationchange", refresh);
-    };
-  }, [map]);
 
   return null;
 }

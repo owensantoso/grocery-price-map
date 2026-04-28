@@ -4,13 +4,14 @@ title: Map Manual Verification
 domain: repo-health
 status: active
 created_at: "2026-04-29 03:31:10 JST +0900"
-updated_at: "2026-04-29 03:31:10 JST +0900"
+updated_at: "2026-04-29 08:33:41 JST +0900"
 owner:
 areas:
   - maps
   - accessibility
 related_plans:
   - docs/repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md
+  - docs/repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/PLAN-0006-objective-hardening-before-product-decisions.md
 related_sessions:
   - docs/repo-health/session-logs/2026-04-29-form-focus-styling-and-map-verification.md
 ---
@@ -36,8 +37,9 @@ Code check on 2026-04-29:
 - `src/components/compare/comparison-map.tsx` uses `useDebugFlag()` and shows map debug output with entry counts, selected store ID, container size, tile loads, tile errors, and a load note.
 - `src/components/stores/store-directory-map.tsx` does not use `useDebugFlag()`.
 - `src/components/map/store-location-picker.tsx` does not use `useDebugFlag()`.
+- `src/components/map/invalidate-map-size.tsx` provides shared resize/orientation invalidation for the compare map, store directory map, and store location picker.
 
-Use `/?debug=1` for the compare map when diagnosing sizing, tile loading, or selected-store state. Do not expect debug panels on `/stores`.
+Use `/?debug=1` for the compare map when diagnosing sizing, tile loading, or selected-store state. Do not expect debug panels on `/stores`; resize/orientation invalidation still runs there through the shared helper.
 
 ## Compare Map: `/`
 
