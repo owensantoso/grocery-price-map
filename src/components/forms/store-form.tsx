@@ -19,6 +19,28 @@ const initialState: ActionState = {
   status: "idle",
 };
 
+function parseCoordinateInput(value: string) {
+  if (value.trim() === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function formatCoordinate(value: number) {
+  return String(value);
+}
+
+function isCompleteCoordinateInput(value: string) {
+  return !["", "-", "+", ".", "-.", "+."].includes(value.trim());
+}
+
 export function StoreForm({
   disabled,
   initialName = "",
@@ -33,6 +55,10 @@ export function StoreForm({
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null }>({
     latitude: null,
     longitude: null,
+  });
+  const [coordinateInputs, setCoordinateInputs] = useState({
+    latitude: "",
+    longitude: "",
   });
 
   const linkLabel = storeKind === "physical" ? "Google Maps link" : "Store website";
@@ -76,6 +102,10 @@ export function StoreForm({
                 setLocation({
                   latitude: null,
                   longitude: null,
+                });
+                setCoordinateInputs({
+                  latitude: "",
+                  longitude: "",
                 });
               }
             }}
@@ -136,25 +166,107 @@ export function StoreForm({
           />
         </label>
       </div>
-      <input name="latitude" type="hidden" value={location.latitude ?? ""} />
-      <input name="longitude" type="hidden" value={location.longitude ?? ""} />
       {storeKind === "physical" ? (
         <div className="stack-sm">
+          <div className="form-grid">
+            <label className="form-field">
+              <span>Latitude</span>
+              <input
+                aria-describedby={
+                  state.fieldErrors?.latitude?.[0] ? "store-latitude-error" : undefined
+                }
+                aria-invalid={state.fieldErrors?.latitude?.[0] ? true : undefined}
+                className="input"
+                disabled={disabled}
+                inputMode="decimal"
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  const nextCoordinate = isCompleteCoordinateInput(nextValue)
+                    ? parseCoordinateInput(nextValue)
+                    : null;
+
+                  setCoordinateInputs((current) => ({
+                    ...current,
+                    latitude: nextValue,
+                  }));
+                  setLocation((current) => ({
+                    latitude: nextCoordinate,
+                    longitude: current.longitude,
+                  }));
+                }}
+                placeholder="35.6895"
+                required
+                type="text"
+                value={coordinateInputs.latitude}
+              />
+              <input name="latitude" type="hidden" value={location.latitude ?? ""} />
+              {state.fieldErrors?.latitude?.[0] ? (
+                <span className="field-error" id="store-latitude-error">
+                  {state.fieldErrors.latitude[0]}
+                </span>
+              ) : null}
+            </label>
+            <label className="form-field">
+              <span>Longitude</span>
+              <input
+                aria-describedby={
+                  state.fieldErrors?.longitude?.[0] ? "store-longitude-error" : undefined
+                }
+                aria-invalid={state.fieldErrors?.longitude?.[0] ? true : undefined}
+                className="input"
+                disabled={disabled}
+                inputMode="decimal"
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  const nextCoordinate = isCompleteCoordinateInput(nextValue)
+                    ? parseCoordinateInput(nextValue)
+                    : null;
+
+                  setCoordinateInputs((current) => ({
+                    ...current,
+                    longitude: nextValue,
+                  }));
+                  setLocation((current) => ({
+                    latitude: current.latitude,
+                    longitude: nextCoordinate,
+                  }));
+                }}
+                placeholder="139.6917"
+                required
+                type="text"
+                value={coordinateInputs.longitude}
+              />
+              <input name="longitude" type="hidden" value={location.longitude ?? ""} />
+              {state.fieldErrors?.longitude?.[0] ? (
+                <span className="field-error" id="store-longitude-error">
+                  {state.fieldErrors.longitude[0]}
+                </span>
+              ) : null}
+            </label>
+          </div>
           <DynamicLocationPicker
             latitude={location.latitude}
             longitude={location.longitude}
-            onChange={setLocation}
+            onChange={(nextLocation) => {
+              setLocation(nextLocation);
+              setCoordinateInputs({
+                latitude: formatCoordinate(nextLocation.latitude),
+                longitude: formatCoordinate(nextLocation.longitude),
+              });
+            }}
           />
           <p className="field-help">
             {location.latitude !== null && location.longitude !== null
               ? `Pinned at ${location.latitude}, ${location.longitude}`
-              : "No pin yet. Click anywhere on the map to place the store."}
+              : "No coordinates yet. Enter latitude and longitude, or click anywhere on the map to place the store."}
           </p>
-          {state.fieldErrors?.latitude?.[0] ? (
-            <span className="field-error">{state.fieldErrors.latitude[0]}</span>
-          ) : null}
         </div>
-      ) : null}
+      ) : (
+        <>
+          <input name="latitude" type="hidden" value="" />
+          <input name="longitude" type="hidden" value="" />
+        </>
+      )}
       <SubmitButton block>Add store</SubmitButton>
     </form>
   );

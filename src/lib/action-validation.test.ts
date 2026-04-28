@@ -19,7 +19,7 @@ describe("server action validation schemas", () => {
 
     if (!parsed.success) {
       expect(parsed.error.flatten().fieldErrors.latitude).toContain(
-        "Physical stores need a map pin.",
+        "Physical stores need latitude and longitude.",
       );
     }
   });
@@ -38,6 +38,31 @@ describe("server action validation schemas", () => {
     });
 
     expect(parsed.success).toBe(true);
+  });
+
+  it("validates physical store coordinate ranges", () => {
+    const parsed = storeSchema.safeParse({
+      addressText: "Nishi-Eifuku",
+      chainName: "",
+      latitude: 91,
+      longitude: 181,
+      name: "Corner Market",
+      notes: "",
+      returnTo: "",
+      storeKind: "physical",
+      storeUrl: "https://example.com/store",
+    });
+
+    expect(parsed.success).toBe(false);
+
+    if (!parsed.success) {
+      expect(parsed.error.flatten().fieldErrors.latitude).toContain(
+        "Latitude must be between -90 and 90.",
+      );
+      expect(parsed.error.flatten().fieldErrors.longitude).toContain(
+        "Longitude must be between -180 and 180.",
+      );
+    }
   });
 
   it("rejects incomplete price logs before Supabase writes run", () => {

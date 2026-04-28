@@ -1,7 +1,8 @@
 "use client";
 
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
+import { useEffect } from "react";
 
 type StoreLocationPickerProps = {
   latitude: number | null;
@@ -35,6 +36,18 @@ function ClickCapture({
   return null;
 }
 
+function SyncMapCenter({ position }: { position: [number, number] | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (position) {
+      map.setView(position, map.getZoom());
+    }
+  }, [map, position]);
+
+  return null;
+}
+
 export function StoreLocationPicker({
   latitude,
   longitude,
@@ -52,6 +65,7 @@ export function StoreLocationPicker({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <ClickCapture onChange={onChange} />
+        <SyncMapCenter position={position} />
         {position ? (
           <Marker
             draggable

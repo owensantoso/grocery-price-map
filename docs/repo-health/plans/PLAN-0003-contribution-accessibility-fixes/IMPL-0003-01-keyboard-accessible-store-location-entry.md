@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0003-01
 title: Keyboard accessible store location entry
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:29:33 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 03:09:48 JST +0900"
 parent_plan: PLAN-0003
 task_refs:
   - AUDT-0001#FINDING-003
@@ -15,14 +15,18 @@ depends_on: []
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-keyboard-accessible-store-location-entry.md
 related_issues: []
 related_prs: []
 linked_paths:
   - docs/repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md
   - src/components/forms/store-form.tsx
+  - src/components/forms/store-form.test.tsx
   - src/components/map/store-location-picker.tsx
   - src/app/actions.ts
+  - src/lib/action-validation.ts
+  - src/lib/action-validation.test.ts
 repo_state:
   based_on_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
@@ -83,6 +87,17 @@ Do not add geocoding or address search in this slice; that is a separate product
 4. Add focused tests if practical; otherwise document manual keyboard verification.
 5. Update `AUDT-0001#FINDING-003`.
 
+## Implementation Notes
+
+- Physical store mode now exposes labeled latitude and longitude number inputs before the map picker.
+- Latitude is constrained to `[-90, 90]`; longitude is constrained to `[-180, 180]`.
+- Numeric input changes update the submitted coordinate state and the map marker.
+- Pointer map clicks and marker drags still update the same coordinate state, so the visible inputs and submitted values stay in sync.
+- Online store mode clears coordinates and submits empty hidden coordinate fields.
+- Server validation now enforces coordinate ranges in `storeSchema`.
+- Component tests cover keyboard coordinate entry, map-picker synchronization, and online-mode coordinate clearing.
+- Schema tests cover physical coordinate range validation.
+
 ## Handoff Notes
 
 - Document the chosen coordinate input UX in the session log.
@@ -105,7 +120,7 @@ Manual:
 
 ## Done Checklist
 
-- [ ] Physical store location can be supplied without pointer input.
-- [ ] Existing map picker still works.
-- [ ] Server validation remains consistent.
-- [ ] `AUDT-0001#FINDING-003` updated.
+- [x] Physical store location can be supplied without pointer input.
+- [x] Existing map picker still works.
+- [x] Server validation remains consistent.
+- [x] `AUDT-0001#FINDING-003` updated.
