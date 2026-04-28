@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 00:33:00 JST +0900"
+updated_at: "2026-04-29 02:17:24 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -63,7 +63,7 @@ Source docs:
 
 ## Roadmap Position
 
-The repo is in a stabilization phase: docs and the first repo-health audit are in place, focused coverage is next, and `PLAN-0002` now tracks backend write-integrity hardening before broad action/query refactors.
+The repo is in a stabilization phase: docs, the first repo-health audit, CI, and focused characterization coverage are in place. `PLAN-0002` is next and tracks backend write-integrity hardening before broad action/query refactors.
 
 Source docs:
 
@@ -81,15 +81,15 @@ Source docs:
 
 - `src/app/actions.ts` and `src/lib/queries.ts` are the main gravity wells. Refactor them only with clear verification.
 - `AUDT-0001#FINDING-001` is the sharpest backend risk: direct authenticated writes can bypass some server-action-calculated price-log integrity.
-- Existing docs were written during an audit and some are still uncommitted; do not overwrite them casually.
+- Existing docs were written during an audit and should be treated as source-of-truth working memory, not scratch text.
 - `npm` may not be available on PATH in Codex desktop shells. Use the bundled Node path shown in `AGENTS.md` if needed.
 - The database schema still has some legacy unit breadth while product flows intentionally expose only `count`, `g`, and `ml`.
 
 ## Verification Baseline
 
-Recent verification on 2026-04-28 passed:
+Recent verification on 2026-04-29 passed:
 
-- `vitest run`: 3 files, 6 tests passed.
+- `vitest run`: 6 files, 15 tests passed.
 - `eslint .`: passed.
 - `next build`: passed with 13 app routes generated.
 

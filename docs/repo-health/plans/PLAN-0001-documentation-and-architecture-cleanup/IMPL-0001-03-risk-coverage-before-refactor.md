@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0001-03
 title: Risk coverage before refactor
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-28 22:51:03 JST +0900"
-updated_at: "2026-04-29 01:40:51 JST +0900"
+updated_at: "2026-04-29 02:17:24 JST +0900"
 parent_plan: PLAN-0001
 task_refs:
   - AUDT-0001#FINDING-002
@@ -20,16 +20,21 @@ depends_on:
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-risk-coverage-before-refactor.md
 related_issues: []
 related_prs: []
 linked_paths:
   - docs/repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md
   - src/app/actions.ts
   - src/lib/queries.ts
+  - src/lib/action-validation.ts
+  - src/lib/action-validation.test.ts
+  - src/lib/queries.test.ts
   - src/components/forms/price-log-form.tsx
   - src/components/forms/autocomplete-field.tsx
   - src/components/logs/log-vote-controls.tsx
+  - src/components/logs/log-vote-controls.test.tsx
   - src/lib/pricing.test.ts
   - src/lib/demo-data.test.ts
   - src/lib/measurements.test.ts
@@ -78,6 +83,15 @@ Out of scope:
 6. Keep fixtures small and representative.
 7. Document any behavior that cannot be tested locally yet.
 
+## Coverage Added
+
+- Extracted server-action validation schemas to `src/lib/action-validation.ts` so write-side behavior can be tested without mocking Supabase writes.
+- Added action-validation tests for physical-store coordinate requirements, online-store coordinate omission, invalid price-log fields, and comment trimming/empty rejection.
+- Exported focused pure query helpers from `src/lib/queries.ts` for vote summaries, compare entries, feed entries, comment entries, and feed sorting.
+- Added query tests for vote summaries, latest-log-per-store compare behavior, normalized-price ordering, feed sorting, and viewer editability.
+- Added a React Testing Library slice for `LogVoteControls` covering optimistic vote updates and rollback after action failure.
+- Live Supabase integration remains out of scope. `PLAN-0002` should keep DB/RLS verification debt visible where local Supabase is unavailable.
+
 ## Verification
 
 ```bash
@@ -87,8 +101,8 @@ PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/n
 
 ## Done Checklist
 
-- [ ] Tests cover at least one risky read-side behavior and one risky write-side behavior, or explain why write-side coverage is deferred.
-- [ ] Demo/live parity or live read-model semantics are covered before `queries.ts` splitting in `IMPL-0005-01`.
-- [ ] At least one high-risk frontend behavior is covered or explicitly deferred.
-- [ ] No broad refactor is mixed into test setup.
-- [ ] Verification complete.
+- [x] Tests cover at least one risky read-side behavior and one risky write-side behavior, or explain why write-side coverage is deferred.
+- [x] Demo/live parity or live read-model semantics are covered before `queries.ts` splitting in `IMPL-0005-01`.
+- [x] At least one high-risk frontend behavior is covered or explicitly deferred.
+- [x] No broad refactor is mixed into test setup.
+- [x] Verification complete.

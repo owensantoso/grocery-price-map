@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 02:02:23 JST +0900"
+updated_at: "2026-04-29 02:21:11 JST +0900"
 ---
 
 # Docs Registry
@@ -14,7 +14,7 @@ updated_at: "2026-04-29 02:02:23 JST +0900"
 | AUDT-0001 | repo-health-audit | MVP stabilization risk audit | completed | `repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md` |
 | IMPL-0001-01 | implementation-brief | Docs consolidation audit | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-01-docs-consolidation-audit.md` |
 | IMPL-0001-02 | implementation-brief | Refactor verification gate decision | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-02-refactor-verification-gate-decision.md` |
-| IMPL-0001-03 | implementation-brief | Risk coverage before refactor | draft | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-03-risk-coverage-before-refactor.md` |
+| IMPL-0001-03 | implementation-brief | Risk coverage before refactor | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-03-risk-coverage-before-refactor.md` |
 | IMPL-0002-01 | implementation-brief | Price log write integrity boundary | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-01-price-log-write-integrity-boundary.md` |
 | IMPL-0002-02 | implementation-brief | Photo mutation compensation | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-02-photo-mutation-compensation.md` |
 | IMPL-0002-03 | implementation-brief | Profile and rate-limit write constraints | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-03-profile-and-rate-limit-write-constraints.md` |
