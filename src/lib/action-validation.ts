@@ -29,8 +29,16 @@ export const storeSchema = z
   .object({
     addressText: z.string().trim().min(1, "Address or descriptor is required."),
     chainName: z.string().trim().optional(),
-    latitude: z.coerce.number().nullable(),
-    longitude: z.coerce.number().nullable(),
+    latitude: z.coerce
+      .number()
+      .min(-90, "Latitude must be between -90 and 90.")
+      .max(90, "Latitude must be between -90 and 90.")
+      .nullable(),
+    longitude: z.coerce
+      .number()
+      .min(-180, "Longitude must be between -180 and 180.")
+      .max(180, "Longitude must be between -180 and 180.")
+      .nullable(),
     name: z.string().trim().min(1, "Store name is required."),
     notes: z.string().trim().optional(),
     returnTo: z.string().trim().optional(),
@@ -44,7 +52,7 @@ export const storeSchema = z
     ) {
       context.addIssue({
         code: "custom",
-        message: "Physical stores need a map pin.",
+        message: "Physical stores need latitude and longitude.",
         path: ["latitude"],
       });
     }

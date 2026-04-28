@@ -19,6 +19,24 @@ const initialState: ActionState = {
   status: "idle",
 };
 
+function parseCoordinateInput(value: string) {
+  if (value.trim() === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function formatCoordinate(value: number | null) {
+  return value === null ? "" : String(value);
+}
+
 export function StoreForm({
   disabled,
   initialName = "",
@@ -136,10 +154,72 @@ export function StoreForm({
           />
         </label>
       </div>
-      <input name="latitude" type="hidden" value={location.latitude ?? ""} />
-      <input name="longitude" type="hidden" value={location.longitude ?? ""} />
       {storeKind === "physical" ? (
         <div className="stack-sm">
+          <div className="form-grid">
+            <label className="form-field">
+              <span>Latitude</span>
+              <input
+                aria-describedby={
+                  state.fieldErrors?.latitude?.[0] ? "store-latitude-error" : undefined
+                }
+                aria-invalid={state.fieldErrors?.latitude?.[0] ? true : undefined}
+                className="input"
+                disabled={disabled}
+                inputMode="decimal"
+                max={90}
+                min={-90}
+                name="latitude"
+                onChange={(event) => {
+                  setLocation((current) => ({
+                    latitude: parseCoordinateInput(event.target.value),
+                    longitude: current.longitude,
+                  }));
+                }}
+                placeholder="35.6895"
+                required
+                step="0.000001"
+                type="number"
+                value={formatCoordinate(location.latitude)}
+              />
+              {state.fieldErrors?.latitude?.[0] ? (
+                <span className="field-error" id="store-latitude-error">
+                  {state.fieldErrors.latitude[0]}
+                </span>
+              ) : null}
+            </label>
+            <label className="form-field">
+              <span>Longitude</span>
+              <input
+                aria-describedby={
+                  state.fieldErrors?.longitude?.[0] ? "store-longitude-error" : undefined
+                }
+                aria-invalid={state.fieldErrors?.longitude?.[0] ? true : undefined}
+                className="input"
+                disabled={disabled}
+                inputMode="decimal"
+                max={180}
+                min={-180}
+                name="longitude"
+                onChange={(event) => {
+                  setLocation((current) => ({
+                    latitude: current.latitude,
+                    longitude: parseCoordinateInput(event.target.value),
+                  }));
+                }}
+                placeholder="139.6917"
+                required
+                step="0.000001"
+                type="number"
+                value={formatCoordinate(location.longitude)}
+              />
+              {state.fieldErrors?.longitude?.[0] ? (
+                <span className="field-error" id="store-longitude-error">
+                  {state.fieldErrors.longitude[0]}
+                </span>
+              ) : null}
+            </label>
+          </div>
           <DynamicLocationPicker
             latitude={location.latitude}
             longitude={location.longitude}
@@ -148,13 +228,15 @@ export function StoreForm({
           <p className="field-help">
             {location.latitude !== null && location.longitude !== null
               ? `Pinned at ${location.latitude}, ${location.longitude}`
-              : "No pin yet. Click anywhere on the map to place the store."}
+              : "No coordinates yet. Enter latitude and longitude, or click anywhere on the map to place the store."}
           </p>
-          {state.fieldErrors?.latitude?.[0] ? (
-            <span className="field-error">{state.fieldErrors.latitude[0]}</span>
-          ) : null}
         </div>
-      ) : null}
+      ) : (
+        <>
+          <input name="latitude" type="hidden" value="" />
+          <input name="longitude" type="hidden" value="" />
+        </>
+      )}
       <SubmitButton block>Add store</SubmitButton>
     </form>
   );

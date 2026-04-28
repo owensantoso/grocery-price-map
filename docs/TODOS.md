@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 03:05:02 JST +0900"
+updated_at: "2026-04-29 03:12:41 JST +0900"
 ---
 
 # Docs Todos
@@ -19,10 +19,6 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0003-01 | 77 | Physical store location can be supplied without pointer input. |
-| open | IMPL-0003-01 | 79 | Existing map picker still works. |
-| open | IMPL-0003-01 | 80 | Server validation remains consistent. |
-| open | IMPL-0003-01 | 81 | `AUDT-0001#FINDING-003` updated. |
 | open | IMPL-0003-02 | 81 | Autocomplete active option semantics improved. |
 | open | IMPL-0003-02 | 83 | Comment and log vote controls have accessible names/state. |
 | open | IMPL-0003-02 | 84 | Keyboard/component verification added or documented. |
@@ -31,7 +27,6 @@ No structured `TODO-*` items found.
 | open | IMPL-0003-03 | 78 | Map verification checklist exists. |
 | open | IMPL-0003-03 | 79 | Manual checks documented. |
 | open | IMPL-0003-03 | 80 | `AUDT-0001#FINDING-014` and `AUDT-0001#FINDING-019` updated. |
-| open | PLAN-0003 | 40 | `IMPL-0003-01` - add keyboard-accessible physical store location entry. |
 | open | PLAN-0003 | 42 | `IMPL-0003-02` - improve autocomplete and comment vote semantics. |
 | open | PLAN-0003 | 43 | `IMPL-0003-03` - add focus-visible styling and a lightweight map/manual verification checklist. |
 | open | PLAN-0003 | 44 | Update `AUDT-0001` findings after each slice completes. |

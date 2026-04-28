@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0003
 title: Contribution accessibility fixes
 domain: repo-health
-status: draft
+status: in_progress
 created_at: "2026-04-29 00:29:22 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 03:09:48 JST +0900"
 owner: 
 sequence:
   roadmap: "3"
@@ -17,7 +17,8 @@ sequence:
 areas: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-keyboard-accessible-store-location-entry.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -72,7 +73,7 @@ Recommended order:
 
 ## Implementation Tasks
 
-- [ ] `IMPL-0003-01` - add keyboard-accessible physical store location entry.
+- [x] `IMPL-0003-01` - add keyboard-accessible physical store location entry.
 - [ ] `IMPL-0003-02` - improve autocomplete and comment vote semantics.
 - [ ] `IMPL-0003-03` - add focus-visible styling and a lightweight map/manual verification checklist.
 - [ ] Update `AUDT-0001` findings after each slice completes.
