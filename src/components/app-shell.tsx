@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AccountMenu } from "@/components/navigation/account-menu";
 import { HeaderSearch } from "@/components/navigation/header-search";
 import { PrimaryNav } from "@/components/navigation/primary-nav";
@@ -24,7 +25,9 @@ export function AppShell({ children, configured, items, stores, viewer }: AppShe
                 Store-specific prices, normalized and kept as history.
               </span>
             </div>
-            <HeaderSearch items={items} stores={stores} />
+            <Suspense fallback={null}>
+              <HeaderSearch items={items} stores={stores} />
+            </Suspense>
             <div className="header-top-actions">
               <AccountMenu
                 configured={configured}

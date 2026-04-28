@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 01:44:37 JST +0900"
+updated_at: "2026-04-29 02:02:23 JST +0900"
 ---
 
 # Docs Todos
@@ -19,16 +19,11 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0001-02 | 80 | Verification gate decision is recorded. |
-| open | IMPL-0001-02 | 82 | CI/local-only/coverage tradeoff is explicit. |
-| open | IMPL-0001-02 | 83 | Audit profile updated if commands change. |
-| open | IMPL-0001-02 | 84 | `AUDT-0001#FINDING-015` updated. |
 | open | IMPL-0001-03 | 49 | Tests cover at least one risky read-side behavior and one risky write-side behavior, or explain why write-side coverage is deferred. |
 | open | IMPL-0001-03 | 51 | Demo/live parity or live read-model semantics are covered before `queries.ts` splitting in `IMPL-0005-01`. |
 | open | IMPL-0001-03 | 52 | At least one high-risk frontend behavior is covered or explicitly deferred. |
 | open | IMPL-0001-03 | 53 | No broad refactor is mixed into test setup. |
 | open | IMPL-0001-03 | 54 | Verification complete. |
-| open | PLAN-0001 | 47 | `IMPL-0001-02` - decide and document the lightweight verification gate before major refactors. |
 | open | PLAN-0001 | 48 | `IMPL-0001-03` - add or improve focused tests around the flows most likely to regress during cleanup. |
 | open | PLAN-0001 | 49 | Record a session log when each brief completes. |
 | open | PLAN-0001 | 50 | Update `docs/orientation/CURRENT_STATE.md` after the plan materially changes the repo. |
