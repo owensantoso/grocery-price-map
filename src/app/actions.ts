@@ -5,7 +5,13 @@ import { headers } from "next/headers";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { z } from "zod";
+import {
+  accountSettingsSchema,
+  commentSchema,
+  itemSchema,
+  priceLogSchema,
+  storeSchema,
+} from "@/lib/action-validation";
 import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
 import {
   dataUrlToBuffer,
@@ -223,25 +229,6 @@ async function requireAuthedClient() {
   return { supabase, user };
 }
 
-const itemSchema = z.object({
-  category: z.string().trim().optional(),
-  comparisonBasisAmount: z.coerce.number().positive(),
-  comparisonUnit: z.enum(["count", "g", "ml"]),
-  name: z.string().trim().min(1, "Name is required."),
-  returnTo: z.string().trim().optional(),
-});
-
-const accountSettingsSchema = z.object({
-  publicName: z
-    .string()
-    .trim()
-    .min(3, "Username must be at least 3 characters.")
-    .max(32, "Username must be 32 characters or fewer.")
-    .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i, {
-      message: "Username can use letters, numbers, and hyphens only.",
-    }),
-});
-
 export async function createItemAction(
   _previousState: ActionState,
   formData: FormData,
@@ -368,31 +355,6 @@ export async function updateAccountSettingsAction(
   }
 }
 
-const storeSchema = z
-  .object({
-    addressText: z.string().trim().min(1, "Address or descriptor is required."),
-    chainName: z.string().trim().optional(),
-    latitude: z.coerce.number().nullable(),
-    longitude: z.coerce.number().nullable(),
-    name: z.string().trim().min(1, "Store name is required."),
-    notes: z.string().trim().optional(),
-    returnTo: z.string().trim().optional(),
-    storeKind: z.enum(["physical", "online"]),
-    storeUrl: z.string().trim().url("Store link must be a valid URL."),
-  })
-  .superRefine((value, context) => {
-    if (
-      value.storeKind === "physical" &&
-      (value.latitude === null || value.longitude === null)
-    ) {
-      context.addIssue({
-        code: "custom",
-        message: "Physical stores need a map pin.",
-        path: ["latitude"],
-      });
-    }
-  });
-
 export async function createStoreAction(
   _previousState: ActionState,
   formData: FormData,
@@ -467,20 +429,6 @@ export async function createStoreAction(
     return toActionState(error);
   }
 }
-
-const priceLogSchema = z.object({
-  itemId: z.string().min(1),
-  listingUrl: z
-    .union([z.string().trim().url("Item listing URL must be a valid URL."), z.literal("")])
-    .optional(),
-  notes: z.string().trim().optional(),
-  observedAt: z.string().trim().min(1, "Observed date is required."),
-  packageAmount: z.coerce.number().positive(),
-  photoDataUrl: z.string().trim().optional(),
-  priceTaxExcludedYen: z.coerce.number().positive(),
-  storeId: z.string().min(1),
-  totalPriceYen: z.coerce.number().positive(),
-});
 
 export async function createPriceLogAction(
   _previousState: ActionState,
@@ -800,10 +748,6 @@ export async function voteOnPriceLogAction(
     };
   }
 }
-
-const commentSchema = z.object({
-  body: z.string().trim().min(1, "Comment cannot be empty."),
-});
 
 export async function createPriceLogCommentAction(
   logId: string,

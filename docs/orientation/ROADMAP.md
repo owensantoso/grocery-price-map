@@ -4,7 +4,7 @@ title: Roadmap
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 01:40:51 JST +0900"
+updated_at: "2026-04-29 02:17:24 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -34,7 +34,7 @@ Ordered roadmap for moving this repo from fast-built MVP to a cleaner, more revi
 |---|---|---|
 | MVP foundation | Complete | Core product is built and passes tests, lint, and production build. |
 | Documentation system | Complete | First-read docs, audit guides, and the first repo-health audit are in place. |
-| Stabilization | Next | Decide verification gates and add focused tests around risky flows before refactoring large modules. |
+| Stabilization | Complete | Verification gates and focused characterization tests are in place before refactoring large modules. |
 | Backend integrity | Next | Audit found write-side integrity risks that should be hardened before wider public usage. |
 | Contribution accessibility | Next | Audit found a keyboard-blocking store creation path and smaller semantic control gaps. |
 | Read scale diagnostics | Next | Audit found read-scale risks that need evidence before broad query refactors. |
@@ -63,8 +63,8 @@ The key principle is:
 | 1 | Install AGENT-DOCS growing scaffold | Complete | Gives future sessions a common read path and planning system. |
 | 2 | Consolidate docs and resolve docs/code drift | Complete | `IMPL-0001-01` established the first-read path and session receipt. |
 | 3 | Create repo-health audit plan | Complete | `AUDT-0001` records the largest stabilization risks. |
-| 4 | Decide verification gate | Next | `IMPL-0001-02` decides CI/local-only/coverage expectations before implementation proceeds. |
-| 5 | Add focused tests for risky behavior | Next | `IMPL-0001-03` protects behavior before backend hardening and architecture movement. |
+| 4 | Decide verification gate | Complete | `IMPL-0001-02` added the CI/local verification gate before implementation proceeds. |
+| 5 | Add focused tests for risky behavior | Complete | `IMPL-0001-03` protects behavior before backend hardening and architecture movement. |
 | 6 | Harden backend write integrity | Next | `PLAN-0002` routes the highest-risk audit findings around price-log integrity, photos, profile updates, and rate limits. |
 | 7 | Fix contribution accessibility blockers | Next | `PLAN-0003` routes keyboard store entry and semantic control issues. |
 | 8 | Diagnose read-scale risks | Next | `PLAN-0004` routes feed-scale, store index, and log-detail duplication evidence. |

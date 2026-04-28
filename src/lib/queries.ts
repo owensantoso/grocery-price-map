@@ -99,7 +99,7 @@ type AccountSettingsSnapshot = {
   viewer: Viewer | null;
 };
 
-type PriceLogWithRelations = {
+export type PriceLogWithRelations = {
   created_at: string;
   id: string;
   item_id: string;
@@ -180,7 +180,7 @@ function sortLogsByRecency(left: PriceLogWithRelations, right: PriceLogWithRelat
   return right.observed_at.localeCompare(left.observed_at);
 }
 
-function createEmptyVoteSummary(): VoteSummary {
+export function createEmptyVoteSummary(): VoteSummary {
   return {
     downvotes: 0,
     score: 0,
@@ -189,7 +189,7 @@ function createEmptyVoteSummary(): VoteSummary {
   };
 }
 
-function summarizeVotes(
+export function summarizeVotes(
   voteRows: PriceLogVoteRecord[],
   viewerId: string | null,
 ): Map<string, VoteSummary> {
@@ -217,7 +217,7 @@ function summarizeVotes(
   return summaries;
 }
 
-function summarizeCommentVotes(
+export function summarizeCommentVotes(
   voteRows: PriceLogCommentVoteRecord[],
   viewerId: string | null,
 ): Map<string, VoteSummary> {
@@ -245,7 +245,7 @@ function summarizeCommentVotes(
   return summaries;
 }
 
-function buildCompareEntries(
+export function buildCompareEntries(
   logs: PriceLogWithRelations[],
   selectedItem: ItemRecord,
   voteSummaries: Map<string, VoteSummary>,
@@ -283,7 +283,7 @@ function buildCompareEntries(
   });
 }
 
-function buildLogFeedEntries(
+export function buildLogFeedEntries(
   logs: PriceLogWithRelations[],
   voteSummaries: Map<string, VoteSummary>,
   viewerId: string | null,
@@ -347,7 +347,7 @@ function compareFeedEntries(left: PriceLogListEntry, right: PriceLogListEntry, s
   }
 }
 
-function sortFeedEntries(entries: PriceLogListEntry[], sort: PriceLogSort) {
+export function sortFeedEntries(entries: PriceLogListEntry[], sort: PriceLogSort) {
   return [...entries].sort((left, right) => compareFeedEntries(left, right, sort));
 }
 
@@ -401,7 +401,7 @@ async function getVoteRowsForComments(
   return (data ?? []) as PriceLogCommentVoteRecord[];
 }
 
-function buildCommentEntries(
+export function buildCommentEntries(
   comments: PriceLogCommentRow[],
   authorLabels: Map<string, string>,
   voteSummaries: Map<string, VoteSummary>,

@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0001
 title: Documentation and refactor readiness
 domain: repo-health
-status: in_progress
+status: completed
 created_at: "2026-04-28 22:50:49 JST +0900"
-updated_at: "2026-04-29 01:55:00 JST +0900"
+updated_at: "2026-04-29 02:17:24 JST +0900"
 owner: 
 sequence:
   roadmap: "1"
@@ -19,6 +19,7 @@ related_adrs: []
 related_sessions:
   - docs/repo-health/session-logs/2026-04-28-docs-consolidation-audit.md
   - docs/repo-health/session-logs/2026-04-29-verification-gate-ci.md
+  - docs/repo-health/session-logs/2026-04-29-risk-coverage-before-refactor.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -80,9 +81,9 @@ Do not start broad `actions.ts` or `queries.ts` cleanup in this plan. That work 
 
 - [x] `IMPL-0001-01` - consolidate AGENT-DOCS navigation, remove placeholders, and reconcile old docs with the new orientation path.
 - [x] `IMPL-0001-02` - decide and document the lightweight verification gate before major refactors.
-- [ ] `IMPL-0001-03` - add or improve focused tests around the flows most likely to regress during cleanup.
-- [ ] Record a session log when each brief completes.
-- [ ] Update `docs/orientation/CURRENT_STATE.md` after the plan materially changes the repo.
+- [x] `IMPL-0001-03` - add or improve focused tests around the flows most likely to regress during cleanup.
+- [x] Record a session log when each brief completes.
+- [x] Update `docs/orientation/CURRENT_STATE.md` after the plan materially changes the repo.
 
 ## Validation
 
