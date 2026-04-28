@@ -48,6 +48,9 @@ npm run dev
 
 If env vars are missing, the app still renders in demo mode with seeded Tokyo grocery data.
 
+Demo mode is for local development and tests only. Production builds fail when
+`NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` is missing.
+
 ## Supabase setup
 
 1. Create a Supabase project.
@@ -64,6 +67,8 @@ If env vars are missing, the app still renders in demo mode with seeded Tokyo gr
 - [supabase/migrations/202603230001_profile_usernames.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603230001_profile_usernames.sql)
 - [supabase/migrations/202603230002_profiles_self_update.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603230002_profiles_self_update.sql)
 - [supabase/migrations/202603250001_price_log_owner_delete.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603250001_price_log_owner_delete.sql)
+- [supabase/migrations/202604290001_price_log_integrity.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202604290001_price_log_integrity.sql)
+- [supabase/migrations/202604290002_profile_rate_limit_constraints.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202604290002_profile_rate_limit_constraints.sql)
 
 The migration creates:
 
@@ -75,12 +80,27 @@ The migration creates:
 - tax-excluded pricing and optional item listing URLs on price logs
 - a trigger to mirror new auth users into `profiles`
 - comments, votes, public-read access, photo storage, rate limiting, and profile usernames
+- trigger-backed price-log integrity checks and bounded profile updates
 - RLS policies for shared reads and owner-owned writes
+
+For staging/live-like migration verification, use
+[docs/repo-health/operations/db-migration-checklist.md](/Users/macintoso/Documents/VSCode/grocery-price-map/docs/repo-health/operations/db-migration-checklist.md).
+
+## Production readiness
+
+Before deploying outside local/demo development:
+
+- Configure real Supabase public env vars.
+- Verify OAuth redirect URLs include `/auth/callback` for the deployed origin.
+- Apply and verify database migrations with the operations checklist.
+- Follow [docs/repo-health/operations/deploy-rollback-runbook.md](/Users/macintoso/Documents/VSCode/grocery-price-map/docs/repo-health/operations/deploy-rollback-runbook.md).
 
 ## Verification
 
 ```bash
 npm test
 npm run lint
-npm run build
+NEXT_PUBLIC_SUPABASE_URL=https://example.supabase.co \
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=example-anon-key \
+  npm run build
 ```

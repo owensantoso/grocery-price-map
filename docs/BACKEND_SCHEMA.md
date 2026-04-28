@@ -232,6 +232,8 @@ Stores and items remain effectively append-first objects rather than fully user-
 - `202603230001_profile_usernames.sql`
 - `202603230002_profiles_self_update.sql`
 - `202603250001_price_log_owner_delete.sql`
+- `202604290001_price_log_integrity.sql`
+- `202604290002_profile_rate_limit_constraints.sql`
 
 ## Important backend behaviors already encoded
 
@@ -240,6 +242,8 @@ Stores and items remain effectively append-first objects rather than fully user-
 - photo upload support
 - per-user action throttling
 - public profile identity layer
+- trigger-backed price-log integrity checks
+- bounded profile self-updates
 
 ## Known schema limitations
 
@@ -248,3 +252,7 @@ Stores and items remain effectively append-first objects rather than fully user-
 - no role/permission model beyond user ownership and public read
 - no chain-level aggregation tables
 - no image derivatives table or CDN metadata layer
+
+## Migration Verification
+
+Before staging or production rollout, use `docs/repo-health/operations/db-migration-checklist.md` to verify migration order, price-log trigger bypass rejection, profile update constraints, rate-limit RPC behavior, public reads, and photo storage behavior against a disposable or staging Supabase target.
