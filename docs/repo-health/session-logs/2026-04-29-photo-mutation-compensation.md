@@ -42,9 +42,16 @@ Reduce orphaned-photo and missing-photo-row failure modes while preserving curre
 
 Supabase Storage and Postgres are still not atomic together. If a best-effort cleanup remove fails, the app logs bucket/path/reason/log id where available so the orphan can be cleaned manually.
 
+## Evidence
+
+- Compensated failure path: unit coverage verifies newly uploaded paths are removed for `create_insert_failed`.
+- Cleanup failure path: unit coverage verifies both returned Supabase errors and thrown/rejected cleanup calls are logged without throwing.
+- Normal no-photo path: unit coverage verifies no storage remove runs when the path is null.
+- Normal app path: `next build` verifies the create/update/delete server actions compile after the ordering change.
+
 ## Verification
 
-- `vitest run`: 7 files / 20 tests passed locally.
+- `vitest run`: 7 files / 22 tests passed locally.
 - `eslint .`: passed locally.
 - `next build`: passed locally.
 - `scripts/docs-meta check`: passed locally.

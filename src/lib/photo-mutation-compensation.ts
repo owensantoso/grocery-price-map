@@ -29,7 +29,23 @@ export async function removePriceLogPhotoBestEffort(input: {
     return { removed: false };
   }
 
-  const { error } = await remove(path);
+  let result: PhotoRemoveResult;
+
+  try {
+    result = await remove(path);
+  } catch (error) {
+    logFailure({
+      bucket: PRICE_LOG_PHOTO_BUCKET,
+      error: error instanceof Error ? error.message : "Unknown photo cleanup error",
+      logId: logId ?? null,
+      path,
+      reason,
+    });
+
+    return { removed: false };
+  }
+
+  const { error } = result;
 
   if (error) {
     logFailure({

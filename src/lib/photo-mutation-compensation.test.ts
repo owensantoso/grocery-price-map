@@ -42,6 +42,51 @@ describe("photo mutation compensation", () => {
     });
   });
 
+  it("logs thrown cleanup failures without throwing", async () => {
+    const logFailure = vi.fn();
+    const remove = vi.fn().mockRejectedValue(new Error("network dropped"));
+
+    await expect(
+      removePriceLogPhotoBestEffort({
+        logFailure,
+        logId: "log-1",
+        path: "user-1/orphaned-photo.webp",
+        reason: "update_replaced",
+        remove,
+      }),
+    ).resolves.toEqual({ removed: false });
+
+    expect(logFailure).toHaveBeenCalledWith({
+      bucket: PRICE_LOG_PHOTO_BUCKET,
+      error: "network dropped",
+      logId: "log-1",
+      path: "user-1/orphaned-photo.webp",
+      reason: "update_replaced",
+    });
+  });
+
+  it("returns false for unknown thrown cleanup failures", async () => {
+    const logFailure = vi.fn();
+    const remove = vi.fn().mockRejectedValue("storage failed");
+
+    await expect(
+      removePriceLogPhotoBestEffort({
+        logFailure,
+        path: "user-1/orphaned-photo.webp",
+        reason: "delete_succeeded",
+        remove,
+      }),
+    ).resolves.toEqual({ removed: false });
+
+    expect(logFailure).toHaveBeenCalledWith({
+      bucket: PRICE_LOG_PHOTO_BUCKET,
+      error: "Unknown photo cleanup error",
+      logId: null,
+      path: "user-1/orphaned-photo.webp",
+      reason: "delete_succeeded",
+    });
+  });
+
   it("does nothing when there is no photo path", async () => {
     const remove = vi.fn();
 

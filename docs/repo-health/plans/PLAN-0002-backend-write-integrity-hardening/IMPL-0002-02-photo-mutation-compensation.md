@@ -103,7 +103,14 @@ Implementation contract:
 
 ## Verification Notes
 
-The branch verifies the full app/test/build gate locally. Automated unit coverage exists for the best-effort cleanup seam in `src/lib/photo-mutation-compensation.test.ts`, including successful cleanup, cleanup failure logging without throwing, and no-op behavior when there is no path.
+The branch verifies the full app/test/build gate locally. Automated unit coverage exists for the best-effort cleanup seam in `src/lib/photo-mutation-compensation.test.ts`.
+
+Attached evidence:
+
+- Compensated failure path: `removePriceLogPhotoBestEffort` removes `user-1/new-photo.webp` for `create_insert_failed`.
+- Compensated cleanup failure path: returned Supabase errors and thrown/rejected cleanup calls are logged and return `{ removed: false }` without throwing.
+- Normal no-photo path: cleanup with `path: null` returns `{ removed: false }` and does not call storage remove.
+- Normal app paths: `next build` confirms the create/update/delete server actions compile after the ordering change.
 
 Manual checks before production rollout:
 
