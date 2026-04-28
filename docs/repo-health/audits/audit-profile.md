@@ -25,7 +25,7 @@ Keep reusable audit method in `docs/repo-health/audits/guides/`. Keep repo-speci
 - Tests: `src/**/*.test.ts`, `vitest.config.ts`, `vitest.setup.ts`, `tests/`
 - Schemas/migrations: `supabase/migrations/`, `src/lib/database.types.ts`
 - Persistence/sync: `src/lib/supabase/`, `src/lib/queries.ts`, `src/app/actions.ts`
-- CI: none committed yet
+- CI: `.github/workflows/ci.yml` runs install, tests, lint, and production build on pull requests and pushes to `main`; it does not require secrets.
 - Release/deploy: `next.config.ts`, `package.json`
 - Dependency manifests: `package.json`, `package-lock.json`
 
@@ -53,6 +53,15 @@ Test/build commands:
 PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH ./node_modules/.bin/vitest run
 PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH ./node_modules/.bin/eslint .
 PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH ./node_modules/.bin/next build
+```
+
+CI command equivalents:
+
+```bash
+npm ci
+npm test
+npm run lint
+npm run build
 ```
 
 ## Audit-Kind Notes

@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0001-02
 title: Refactor verification gate decision
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:32:25 JST +0900"
-updated_at: "2026-04-29 01:40:51 JST +0900"
+updated_at: "2026-04-29 01:55:00 JST +0900"
 parent_plan: PLAN-0001
 task_refs:
   - AUDT-0001#FINDING-015
@@ -16,10 +16,12 @@ depends_on:
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-verification-gate-ci.md
 related_issues: []
 related_prs: []
 linked_paths:
+  - .github/workflows/ci.yml
   - docs/repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md
   - package.json
   - vitest.config.ts
@@ -71,6 +73,17 @@ Prefer the smallest reversible gate that reduces accidental regressions:
 
 Do not mix deployment, preview environments, or production secrets into this slice.
 
+## Decision
+
+Selected gate: minimal GitHub Actions CI.
+
+- `.github/workflows/ci.yml` runs `npm ci`, `npm test`, `npm run lint`, and `npm run build`.
+- The workflow runs on pull requests and pushes to `main`.
+- No deployment, preview environment, production secrets, or strict coverage threshold is part of this gate.
+- Coverage visibility remains intentionally deferred/advisory until a later task chooses a concrete coverage workflow.
+- Local verification remains the same bundled-Node command set documented in `docs/repo-health/audits/audit-profile.md`.
+- The first remote Actions run has not been observed from this local implementation session; confirm it after the workflow is pushed or merged.
+
 Refactor gate contract:
 
 - `IMPL-0001-03` and later implementation plans must not continue until this brief records one of these outcomes:
@@ -109,7 +122,7 @@ Attach evidence that the selected gate runs locally or that the no-CI risk has a
 
 ## Done Checklist
 
-- [ ] Verification gate decision is recorded.
-- [ ] CI/local-only/coverage tradeoff is explicit.
-- [ ] Audit profile updated if commands change.
-- [ ] `AUDT-0001#FINDING-015` updated.
+- [x] Verification gate decision is recorded.
+- [x] CI/local-only/coverage tradeoff is explicit.
+- [x] Audit profile updated if commands change.
+- [x] `AUDT-0001#FINDING-015` updated.
