@@ -108,10 +108,15 @@ export async function updateAccountSettingsAction(
 
   try {
     const { supabase, user } = await requireAuthedClient();
+    await consumeRateLimit({
+      ...RATE_LIMIT_RULES.profileUpdate,
+      supabase,
+      userId: user.id,
+    });
     const normalizedPublicName = parsed.data.publicName.trim();
 
     const { data: conflict } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("id")
       .ilike("public_name", normalizedPublicName)
       .neq("id", user.id)

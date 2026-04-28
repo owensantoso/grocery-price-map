@@ -6,6 +6,12 @@ function hasAtMostDecimalPlaces(value: number, places: number) {
   return Number.isInteger(Math.round(value * factor * 1_000_000) / 1_000_000);
 }
 
+export const PUBLIC_TEXT_LIMITS = {
+  commentBody: 1_000,
+  priceLogNotes: 2_000,
+  storeNotes: 2_000,
+} as const;
+
 export const itemSchema = z.object({
   category: z.string().trim().optional(),
   comparisonBasisAmount: z.coerce.number().positive(),
@@ -40,7 +46,14 @@ export const storeSchema = z
       .max(180, "Longitude must be between -180 and 180.")
       .nullable(),
     name: z.string().trim().min(1, "Store name is required."),
-    notes: z.string().trim().optional(),
+    notes: z
+      .string()
+      .trim()
+      .max(
+        PUBLIC_TEXT_LIMITS.storeNotes,
+        `Store notes must be ${PUBLIC_TEXT_LIMITS.storeNotes} characters or fewer.`,
+      )
+      .optional(),
     returnTo: z.string().trim().optional(),
     storeKind: z.enum(["physical", "online"]),
     storeUrl: z.string().trim().url("Store link must be a valid URL."),
@@ -63,7 +76,14 @@ export const priceLogSchema = z.object({
   listingUrl: z
     .union([z.string().trim().url("Item listing URL must be a valid URL."), z.literal("")])
     .optional(),
-  notes: z.string().trim().optional(),
+  notes: z
+    .string()
+    .trim()
+    .max(
+      PUBLIC_TEXT_LIMITS.priceLogNotes,
+      `Price log notes must be ${PUBLIC_TEXT_LIMITS.priceLogNotes} characters or fewer.`,
+    )
+    .optional(),
   observedAt: z.string().trim().min(1, "Observed date is required."),
   packageAmount: z.coerce
     .number()
@@ -78,5 +98,12 @@ export const priceLogSchema = z.object({
 });
 
 export const commentSchema = z.object({
-  body: z.string().trim().min(1, "Comment cannot be empty."),
+  body: z
+    .string()
+    .trim()
+    .min(1, "Comment cannot be empty.")
+    .max(
+      PUBLIC_TEXT_LIMITS.commentBody,
+      `Comment must be ${PUBLIC_TEXT_LIMITS.commentBody} characters or fewer.`,
+    ),
 });

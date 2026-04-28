@@ -20,6 +20,7 @@ export const RATE_LIMIT_RULES = {
   logCreate: { action: "log-create", limit: 30, windowMs: 3_600_000 },
   logEdit: { action: "log-edit", limit: 60, windowMs: 3_600_000 },
   logVote: { action: "log-vote", limit: 60, windowMs: 60_000 },
+  profileUpdate: { action: "profile-update", limit: 10, windowMs: 3_600_000 },
   storeCreate: { action: "store-create", limit: 12, windowMs: 3_600_000 },
 } as const;
 

@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0006-03
 title: Profile privacy and abuse limits
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 05:25:00 JST +0900"
-updated_at: "2026-04-29 05:25:00 JST +0900"
+updated_at: "2026-04-29 08:17:18 JST +0900"
 parent_plan: PLAN-0006
 task_refs:
   - AUDT-0002#FINDING-006
@@ -28,8 +28,11 @@ related_prs: []
 linked_paths:
   - src/app/actions.ts
   - src/lib/action-validation.ts
+  - src/lib/action-validation.test.ts
   - src/lib/action-helpers.ts
   - docs/BACKEND_SCHEMA.md
+  - docs/repo-health/audits/AUDT-0002-second-pass-risk-blind-spot-audit.md
+  - supabase/migrations/202604290003_profile_privacy_text_limits.sql
   - supabase/migrations/
 repo_state:
   based_on_commit: 81ec608aea076e5ca7bde8eae8466d838c68033f
@@ -93,10 +96,19 @@ Manual verification:
 - Verify public pages still show public author names through public read models.
 - Verify overly long public text is rejected before insert/update.
 
+## Implementation Notes
+
+- Direct private profile reads are owner-scoped by the `users can read their own profile` RLS policy.
+- Public labels continue through the `public_profiles` view, which exposes only `id` and `public_name`.
+- Account settings updates consume the `profile-update` rate-limit bucket before public-name conflict checks or writes.
+- Username conflict checks use `public_profiles`, not broad `profiles` reads, so they continue to work after private profile RLS is tightened.
+- DB text ceilings are named `price_log_comments_body_max_length`, `stores_notes_max_length`, and `price_logs_notes_max_length`.
+- The text ceiling constraints are `NOT VALID` to avoid failing migration on unknown legacy content. They enforce future inserts/updates; staging should inspect existing rows before optional manual validation.
+
 ## Done Checklist
 
-- [ ] Private profile rows are owner-readable only.
-- [ ] Public author display still works.
-- [ ] Profile update action is rate-limited.
-- [ ] Public text fields have matching app and DB length limits.
-- [ ] `AUDT-0002#FINDING-006`, `AUDT-0002#FINDING-010`, and `AUDT-0002#FINDING-011` are updated.
+- [x] Private profile rows are owner-readable only.
+- [x] Public author display still works.
+- [x] Profile update action is rate-limited.
+- [x] Public text fields have matching app and DB length limits.
+- [x] `AUDT-0002#FINDING-006`, `AUDT-0002#FINDING-010`, and `AUDT-0002#FINDING-011` are updated.
