@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState, type RefObject } from "react";
+import { useActionState, useEffect, useRef, useState, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { createPriceLogAction, type ActionState } from "@/app/actions";
 import { useDebugFlag } from "@/components/debug/use-debug-flag";
@@ -13,6 +13,11 @@ import { LogPhotoInput } from "@/components/forms/log-photo-input";
 import { SubmitButton } from "@/components/forms/submit-button";
 import { type ItemRecord, type PriceLogRecord, type StoreRecord } from "@/lib/models";
 import { getPhotoUrl } from "@/lib/photos";
+import {
+  parseStoredPriceLogDraft,
+  PRICE_LOG_DRAFT_STORAGE_KEY,
+  serializePriceLogDraft,
+} from "@/lib/price-log-draft";
 import { excludedFromIncluded, includedFromExcluded } from "@/lib/pricing";
 
 const initialState: ActionState = {
@@ -73,6 +78,7 @@ export function PriceLogForm({
     stores.find((store) => store.name.toLowerCase() === initialStoreName.trim().toLowerCase()) ??
     null;
   const [state, formAction] = useActionState(submitAction, initialState);
+  const enablesDraftPreservation = !initialLog;
   const [selectedItemId, setSelectedItemId] = useState(
     initialLog?.item_id ?? matchedInitialItem?.id ?? "",
   );
@@ -88,12 +94,21 @@ export function PriceLogForm({
       ? stringifyNumber(initialLog.package_amount)
       : "",
   );
+  const [listingUrl, setListingUrl] = useState(initialLog?.listing_url ?? "");
+  const [observedAt, setObservedAt] = useState(
+    initialLog?.observed_at ?? new Date().toISOString().slice(0, 10),
+  );
+  const [notes, setNotes] = useState(initialLog?.notes ?? "");
+  const [draftRestoreKey, setDraftRestoreKey] = useState(0);
+  const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const debugEnabled = useDebugFlag();
   const storeFieldRef = useRef<AutocompleteFieldHandle | null>(null);
   const itemFieldRef = useRef<AutocompleteFieldHandle | null>(null);
   const packageAmountRef = useRef<HTMLInputElement | null>(null);
   const priceFieldRef = useRef<HTMLInputElement | null>(null);
   const lastAutoFocusTarget = useRef<string | null>(null);
+  const didCheckStoredDraft = useRef(false);
+  const pendingSubmitDraft = useRef<string | null>(null);
 
   const selectedItem =
     items.find((item) => item.id === selectedItemId) ??
@@ -119,6 +134,65 @@ export function PriceLogForm({
 
   function handlePriceChange(nextValue: string) {
     setPriceValue(sanitizeCurrencyInput(nextValue));
+  }
+
+  function serializeCurrentDraft() {
+    return serializePriceLogDraft({
+      displayPrice: priceValue,
+      itemId: selectedItemId,
+      listingUrl,
+      notes,
+      observedAt,
+      packageAmount,
+      priceIncludesTax,
+      storeId: selectedStoreId,
+    });
+  }
+
+  function writeCurrentDraft() {
+    if (!enablesDraftPreservation) {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(
+        PRICE_LOG_DRAFT_STORAGE_KEY,
+        serializeCurrentDraft(),
+      );
+    } catch {
+      // Best-effort only: private browsing or storage quotas should not block navigation.
+    }
+  }
+
+  function clearStoredDraft() {
+    try {
+      window.sessionStorage.removeItem(PRICE_LOG_DRAFT_STORAGE_KEY);
+    } catch {
+      // Best-effort only.
+    }
+  }
+
+  function handleCreateMissingStore(query: string) {
+    writeCurrentDraft();
+    router.push(
+      `/stores?prefillName=${encodeURIComponent(query)}&returnTo=prices-new`,
+    );
+  }
+
+  function handleCreateMissingItem(query: string) {
+    writeCurrentDraft();
+    router.push(
+      `/items?prefillName=${encodeURIComponent(query)}&returnTo=prices-new`,
+    );
+  }
+
+  function handleSubmit() {
+    if (!enablesDraftPreservation) {
+      return;
+    }
+
+    pendingSubmitDraft.current = serializeCurrentDraft();
+    clearStoredDraft();
   }
 
   function focusField(
@@ -188,8 +262,69 @@ export function PriceLogForm({
           priceIncludesTax ? excludedFromIncluded(parsedPrice) : parsedPrice,
         );
 
+  useEffect(() => {
+    if (!enablesDraftPreservation || didCheckStoredDraft.current) {
+      return;
+    }
+
+    didCheckStoredDraft.current = true;
+
+    let draft = null;
+
+    try {
+      draft = parseStoredPriceLogDraft(
+        window.sessionStorage.getItem(PRICE_LOG_DRAFT_STORAGE_KEY),
+      );
+    } catch {
+      draft = null;
+    }
+
+    if (!draft) {
+      return;
+    }
+
+    const restoredItemId = items.some((item) => item.id === draft.itemId)
+      ? draft.itemId
+      : "";
+    const restoredStoreId = stores.some((store) => store.id === draft.storeId)
+      ? draft.storeId
+      : "";
+
+    setSelectedItemId((current) => current || restoredItemId);
+    setSelectedStoreId((current) => current || restoredStoreId);
+    setPackageAmount(draft.packageAmount);
+    setPriceValue(draft.displayPrice);
+    setPriceIncludesTax(draft.priceIncludesTax);
+    setListingUrl(draft.listingUrl);
+    setObservedAt(draft.observedAt || observedAt);
+    setNotes(draft.notes);
+    setDidRestoreDraft(true);
+    setDraftRestoreKey((key) => key + 1);
+  }, [enablesDraftPreservation, items, observedAt, stores]);
+
+  useEffect(() => {
+    if (
+      !enablesDraftPreservation ||
+      state.status !== "error" ||
+      !pendingSubmitDraft.current
+    ) {
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(
+        PRICE_LOG_DRAFT_STORAGE_KEY,
+        pendingSubmitDraft.current,
+      );
+    } catch {
+      // Best-effort only.
+    } finally {
+      pendingSubmitDraft.current = null;
+    }
+  }, [enablesDraftPreservation, state.status]);
+
   return (
-    <form action={formAction} className="panel panel-muted stack-md">
+    <form action={formAction} className="panel panel-muted stack-md" onSubmit={handleSubmit}>
       <div className="stack-xs">
         <h2 className="section-title">{title}</h2>
         <p className="muted">
@@ -198,6 +333,12 @@ export function PriceLogForm({
         </p>
       </div>
       {state.status === "error" ? <p className="form-error">{state.message}</p> : null}
+      {didRestoreDraft ? (
+        <p className="field-help field-help--warning">
+          Draft restored. Photos cannot be preserved after leaving this form; add
+          any photo again before submitting.
+        </p>
+      ) : null}
       <input name="totalPriceYen" type="hidden" value={totalPriceYen} />
       <input name="priceTaxExcludedYen" type="hidden" value={priceTaxExcludedYen} />
       <section className="form-section stack-md">
@@ -212,13 +353,10 @@ export function PriceLogForm({
           defaultOptionId={selectedStore?.id ?? undefined}
           disabled={disabled}
           error={state.fieldErrors?.storeId?.[0]}
+          key={`store-${draftRestoreKey}-${selectedStore?.id ?? "empty"}`}
           label="Store"
           name="storeId"
-          onCreateAction={(query) => {
-            router.push(
-              `/stores?prefillName=${encodeURIComponent(query)}&returnTo=prices-new`,
-            );
-          }}
+          onCreateAction={handleCreateMissingStore}
           onClear={() => setSelectedStoreId("")}
           onCommit={() => itemFieldRef.current?.focus()}
           onSelect={(option) => setSelectedStoreId(option?.id ?? "")}
@@ -232,13 +370,10 @@ export function PriceLogForm({
           defaultOptionId={selectedItem?.id ?? undefined}
           disabled={disabled}
           error={state.fieldErrors?.itemId?.[0]}
+          key={`item-${draftRestoreKey}-${selectedItem?.id ?? "empty"}`}
           label="Item"
           name="itemId"
-          onCreateAction={(query) => {
-            router.push(
-              `/items?prefillName=${encodeURIComponent(query)}&returnTo=prices-new`,
-            );
-          }}
+          onCreateAction={handleCreateMissingItem}
           onClear={() => {
             setSelectedItemId("");
             setPackageAmount("");
@@ -334,32 +469,35 @@ export function PriceLogForm({
           <span>Item listing URL (optional)</span>
           <input
             className="input"
-            defaultValue={initialLog?.listing_url ?? ""}
             disabled={disabled}
             name="listingUrl"
+            onChange={(event) => setListingUrl(event.target.value)}
             placeholder="Useful for online stores or recurring product pages"
             type="url"
+            value={listingUrl}
           />
         </label>
         <label className="form-field">
           <span>Observed date</span>
           <input
             className="input input-date"
-            defaultValue={initialLog?.observed_at ?? new Date().toISOString().slice(0, 10)}
             disabled={disabled}
             name="observedAt"
+            onChange={(event) => setObservedAt(event.target.value)}
             required
             type="date"
+            value={observedAt}
           />
         </label>
         <label className="form-field form-field--wide">
           <span>Notes</span>
           <textarea
             className="textarea"
-            defaultValue={initialLog?.notes ?? ""}
             disabled={disabled}
             name="notes"
+            onChange={(event) => setNotes(event.target.value)}
             placeholder="Quality notes, promo sticker, carton size, section of the store"
+            value={notes}
           />
         </label>
         </div>
