@@ -2,7 +2,7 @@
 type: generated-view
 title: Roadmap View
 status: generated
-updated_at: "2026-04-29 02:33:41 JST +0900"
+updated_at: "2026-04-29 02:42:12 JST +0900"
 ---
 
 # Roadmap View
@@ -14,7 +14,7 @@ Generated plan-order view. `PLAN-*` numbering and `sequence` frontmatter should 
 | Sequence | Plan | Plan Name | Title | Status | Domain | Lane | After | Before | Path |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | PLAN-0001 | PLAN-0001-documentation-and-architecture-cleanup | Documentation and refactor readiness | completed | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/PLAN-0001-documentation-and-architecture-cleanup.md` |
-| 2 | PLAN-0002 | PLAN-0002-backend-write-integrity-hardening | Backend write integrity hardening | draft | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md` |
+| 2 | PLAN-0002 | PLAN-0002-backend-write-integrity-hardening | Backend write integrity hardening | in_progress | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md` |
 | 3 | PLAN-0003 | PLAN-0003-contribution-accessibility-fixes | Contribution accessibility fixes | draft | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md` |
 | 4 | PLAN-0004 | PLAN-0004-read-scale-and-verification-gates | Read scale diagnostics | draft | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md` |
 | 5 | PLAN-0005 | PLAN-0005-architecture-cleanup | Architecture cleanup | draft | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0005-architecture-cleanup/PLAN-0005-architecture-cleanup.md` |

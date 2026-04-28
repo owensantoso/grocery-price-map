@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 02:33:41 JST +0900"
+updated_at: "2026-04-29 02:42:12 JST +0900"
 ---
 
 # Docs Registry
@@ -15,7 +15,7 @@ updated_at: "2026-04-29 02:33:41 JST +0900"
 | IMPL-0001-01 | implementation-brief | Docs consolidation audit | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-01-docs-consolidation-audit.md` |
 | IMPL-0001-02 | implementation-brief | Refactor verification gate decision | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-02-refactor-verification-gate-decision.md` |
 | IMPL-0001-03 | implementation-brief | Risk coverage before refactor | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-03-risk-coverage-before-refactor.md` |
-| IMPL-0002-01 | implementation-brief | Price log write integrity boundary | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-01-price-log-write-integrity-boundary.md` |
+| IMPL-0002-01 | implementation-brief | Price log write integrity boundary | completed | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-01-price-log-write-integrity-boundary.md` |
 | IMPL-0002-02 | implementation-brief | Photo mutation compensation | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-02-photo-mutation-compensation.md` |
 | IMPL-0002-03 | implementation-brief | Profile and rate-limit write constraints | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-03-profile-and-rate-limit-write-constraints.md` |
 | IMPL-0003-01 | implementation-brief | Keyboard accessible store location entry | draft | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-01-keyboard-accessible-store-location-entry.md` |
@@ -24,7 +24,7 @@ updated_at: "2026-04-29 02:33:41 JST +0900"
 | IMPL-0004-01 | implementation-brief | Feed scale and store index diagnostic | draft | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/IMPL-0004-01-feed-scale-and-store-index-diagnostic.md` |
 | IMPL-0005-01 | implementation-brief | Action and query module split | draft | `repo-health/plans/PLAN-0005-architecture-cleanup/IMPL-0005-01-action-and-query-module-split.md` |
 | PLAN-0001 | plan | Documentation and refactor readiness | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/PLAN-0001-documentation-and-architecture-cleanup.md` |
-| PLAN-0002 | plan | Backend write integrity hardening | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md` |
+| PLAN-0002 | plan | Backend write integrity hardening | in_progress | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md` |
 | PLAN-0003 | plan | Contribution accessibility fixes | draft | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md` |
 | PLAN-0004 | plan | Read scale diagnostics | draft | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md` |
 | PLAN-0005 | plan | Architecture cleanup | draft | `repo-health/plans/PLAN-0005-architecture-cleanup/PLAN-0005-architecture-cleanup.md` |

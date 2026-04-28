@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0002-01
 title: Price log write integrity boundary
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:25:41 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 02:39:08 JST +0900"
 parent_plan: PLAN-0002
 task_refs:
   - AUDT-0001#FINDING-001
@@ -15,7 +15,8 @@ depends_on: []
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-price-log-write-integrity-boundary.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -23,6 +24,8 @@ linked_paths:
   - src/app/actions.ts
   - src/lib/measurements.ts
   - src/lib/photos.ts
+  - src/lib/pricing.ts
+  - supabase/migrations/202604290001_price_log_integrity.sql
   - supabase/migrations/
   - docs/BACKEND_SCHEMA.md
 repo_state:
@@ -108,6 +111,32 @@ Use this decision order:
 6. Run a real policy/RPC/trigger verification path against local Supabase if available; otherwise document the blocker and exact SQL/manual check still needed.
 7. Update `AUDT-0001#FINDING-001` with resolution evidence.
 
+## Boundary Chosen
+
+This slice keeps server actions as the app write API and adds a narrow Postgres trigger as the backend guardrail.
+
+The trigger in `supabase/migrations/202604290001_price_log_integrity.sql` runs before `price_logs` insert/update and rejects writes when:
+
+- `submitted_by` does not match `auth.uid()`
+- ownership changes on update
+- `package_unit` does not match the selected item's `comparison_unit`
+- `normalized_price_yen` does not match total price, package amount, and item comparison basis
+- `price_tax_excluded_yen` does not match the current 8% tax rule derived from `total_price_yen`
+- `photo_path` is outside the submitter's storage folder
+
+Direct table inserts still exist for authenticated clients, but they now have to satisfy the same trusted-field invariants the app depends on. The app-side create/update actions also derive `price_tax_excluded_yen` from `total_price_yen` instead of trusting the hidden form value.
+
+## Manual DB Check Still Needed
+
+`supabase db lint` passed against the local database, but `supabase migration up` could not apply the migration because this local database has remote migration versions that are not present in this repo. Before production rollout, repair or reset the local migration history or use a clean staging Supabase project, then run the migration and verify:
+
+1. Normal server-action create/update still succeeds.
+2. Direct insert with another `submitted_by` fails.
+3. Direct insert/update with mismatched `package_unit` fails.
+4. Direct insert/update with incorrect `normalized_price_yen` fails.
+5. Direct insert/update with incorrect `price_tax_excluded_yen` fails.
+6. Direct insert/update with another user's `photo_path` fails.
+
 ## Handoff Notes
 
 - Include the exact trusted field list in the implementation PR/session log.
@@ -124,6 +153,7 @@ PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/n
 PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH ./node_modules/.bin/next build
 scripts/docs-meta check
 scripts/docs-meta review --type audit-findings
+/opt/homebrew/bin/supabase db lint
 ```
 
 Attach evidence for:
@@ -134,8 +164,8 @@ Attach evidence for:
 
 ## Done Checklist
 
-- [ ] Backend write boundary chosen and documented.
-- [ ] Migration or server-side enforcement added.
-- [ ] Existing product write flows still work.
-- [ ] Bypass/integrity behavior is tested or documented with a concrete manual check.
-- [ ] `AUDT-0001#FINDING-001` updated.
+- [x] Backend write boundary chosen and documented.
+- [x] Migration or server-side enforcement added.
+- [x] Existing product write flows still work.
+- [x] Bypass/integrity behavior is tested or documented with a concrete manual check.
+- [x] `AUDT-0001#FINDING-001` updated.

@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0002
 title: Backend write integrity hardening
 domain: repo-health
-status: draft
+status: in_progress
 created_at: "2026-04-29 00:25:41 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 02:39:08 JST +0900"
 owner: 
 sequence:
   roadmap: "2"
@@ -16,7 +16,8 @@ sequence:
 areas: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-price-log-write-integrity-boundary.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -24,6 +25,7 @@ linked_paths:
   - src/app/actions.ts
   - src/lib/photos.ts
   - src/lib/supabase/server.ts
+  - supabase/migrations/202604290001_price_log_integrity.sql
   - supabase/migrations/
   - docs/BACKEND_SCHEMA.md
 repo_state:
@@ -80,7 +82,7 @@ Do not start broad `actions.ts` module splitting while this plan is in flight un
 
 ## Implementation Tasks
 
-- [ ] `IMPL-0002-01` - define and enforce the price-log write integrity boundary.
+- [x] `IMPL-0002-01` - define and enforce the price-log write integrity boundary.
 - [ ] `IMPL-0002-02` - add safer photo mutation compensation around create/update/delete failure paths.
 - [ ] `IMPL-0002-03` - narrow profile update permissions and make rate limiting atomic or explicitly accepted as MVP risk.
 - [ ] Update `docs/BACKEND_SCHEMA.md` and relevant audit finding statuses after implementation.
