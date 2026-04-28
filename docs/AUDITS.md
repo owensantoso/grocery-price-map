@@ -2,7 +2,7 @@
 type: generated-view
 title: Repo Health Audits
 status: generated
-updated_at: "2026-04-29 04:49:17 JST +0900"
+updated_at: "2026-04-29 05:33:38 JST +0900"
 ---
 
 # Repo Health Audits
@@ -13,4 +13,5 @@ Generated index of repo-health audits. Audits are periodic receipts for docs, ar
 
 | ID | Date | Kind | Status | Title | Scope | Path |
 |---|---|---|---|---|---|---|
+| AUDT-0002 | 2026-04-29 | architecture | completed | Second-pass risk blind spot audit | production readiness and operations, privacy, abuse, and public user content, product/domain model correctness, browser and UI resilience, dependency, CI, and supply-chain hygiene, data lifecycle and governance | `repo-health/audits/AUDT-0002-second-pass-risk-blind-spot-audit.md` |
 | AUDT-0001 | 2026-04-29 | architecture | completed | MVP stabilization risk audit | write-side data integrity and authorization, read-side query/model assembly, pre-refactor test coverage, frontend form/map/accessibility risk | `repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md` |
