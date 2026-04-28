@@ -68,6 +68,28 @@ describe("server action validation schemas", () => {
     }
   });
 
+  it("rejects package amounts with more precision than the database stores", () => {
+    const parsed = priceLogSchema.safeParse({
+      itemId: "item-1",
+      listingUrl: "",
+      notes: "",
+      observedAt: "2026-04-29",
+      packageAmount: "1.005",
+      photoDataUrl: "",
+      priceTaxExcludedYen: "100",
+      storeId: "store-1",
+      totalPriceYen: "108",
+    });
+
+    expect(parsed.success).toBe(false);
+
+    if (!parsed.success) {
+      expect(parsed.error.flatten().fieldErrors.packageAmount).toContain(
+        "Package amount can use at most 2 decimal places.",
+      );
+    }
+  });
+
   it("trims comments and rejects empty bodies", () => {
     expect(commentSchema.safeParse({ body: "   " }).success).toBe(false);
     expect(commentSchema.parse({ body: "  Good price  " })).toEqual({

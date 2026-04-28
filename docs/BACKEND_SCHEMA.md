@@ -95,8 +95,15 @@ Important current fields:
 
 Notes:
 - the UI now captures one entered price plus a tax-included toggle
-- backend still stores both total and tax-excluded values
+- backend stores both total and tax-excluded values; the server action and DB trigger derive tax-excluded price from the stored total using the current 8% tax rule
 - normalized price is stored for compare/sorting
+- `202604290001_price_log_integrity.sql` adds a `before insert or update` trigger that rejects direct writes where:
+  - `submitted_by` does not match `auth.uid()`
+  - `submitted_by` changes on update
+  - `package_unit` does not match the item's `comparison_unit`
+  - `normalized_price_yen` does not match total price, package amount, and item basis
+  - `price_tax_excluded_yen` does not match the app tax rule
+  - `photo_path` is outside the submitter's storage folder
 
 ### `price_log_votes`
 

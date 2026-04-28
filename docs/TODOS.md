@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 02:33:41 JST +0900"
+updated_at: "2026-04-29 02:47:25 JST +0900"
 ---
 
 # Docs Todos
@@ -19,11 +19,6 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0002-01 | 104 | Backend write boundary chosen and documented. |
-| open | IMPL-0002-01 | 106 | Migration or server-side enforcement added. |
-| open | IMPL-0002-01 | 107 | Existing product write flows still work. |
-| open | IMPL-0002-01 | 108 | Bypass/integrity behavior is tested or documented with a concrete manual check. |
-| open | IMPL-0002-01 | 109 | `AUDT-0001#FINDING-001` updated. |
 | open | IMPL-0002-02 | 78 | Create/update/delete photo failure modes are explicitly handled. |
 | open | IMPL-0002-02 | 80 | Any accepted orphan/missing-photo risk is documented. |
 | open | IMPL-0002-02 | 81 | Tests or manual checks cover at least one failure path. |
@@ -32,7 +27,6 @@ No structured `TODO-*` items found.
 | open | IMPL-0002-03 | 84 | Rate-limit race is fixed atomically or accepted with reason and revisit trigger. |
 | open | IMPL-0002-03 | 85 | Existing settings and write actions still pass verification. |
 | open | IMPL-0002-03 | 86 | `AUDT-0001#FINDING-005` and `AUDT-0001#FINDING-006` updated. |
-| open | PLAN-0002 | 49 | `IMPL-0002-01` - define and enforce the price-log write integrity boundary. |
 | open | PLAN-0002 | 51 | `IMPL-0002-02` - add safer photo mutation compensation around create/update/delete failure paths. |
 | open | PLAN-0002 | 52 | `IMPL-0002-03` - narrow profile update permissions and make rate limiting atomic or explicitly accepted as MVP risk. |
 | open | PLAN-0002 | 53 | Update `docs/BACKEND_SCHEMA.md` and relevant audit finding statuses after implementation. |

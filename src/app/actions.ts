@@ -18,6 +18,7 @@ import {
   MAX_PHOTO_BYTES,
   PRICE_LOG_PHOTO_BUCKET,
 } from "@/lib/photos";
+import { excludedFromIncluded } from "@/lib/pricing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeExternalUrl } from "@/lib/urls";
 
@@ -477,6 +478,7 @@ export async function createPriceLogAction(
       packageUnit: item.comparison_unit as MeasurementUnit,
       totalPriceYen: parsed.data.totalPriceYen,
     });
+    const priceTaxExcludedYen = excludedFromIncluded(parsed.data.totalPriceYen);
     const photoPath = await uploadPhotoIfPresent({
       photoDataUrl: parsed.data.photoDataUrl || null,
       supabase,
@@ -496,7 +498,7 @@ export async function createPriceLogAction(
         package_amount: parsed.data.packageAmount,
         package_unit: item.comparison_unit,
         photo_path: photoPath,
-        price_tax_excluded_yen: parsed.data.priceTaxExcludedYen,
+        price_tax_excluded_yen: priceTaxExcludedYen,
         store_id: parsed.data.storeId,
         submitted_by: user.id,
         total_price_yen: parsed.data.totalPriceYen,
@@ -572,6 +574,7 @@ export async function updatePriceLogAction(
       packageUnit: item.comparison_unit as MeasurementUnit,
       totalPriceYen: parsed.data.totalPriceYen,
     });
+    const priceTaxExcludedYen = excludedFromIncluded(parsed.data.totalPriceYen);
 
     const { data: existing, error: existingError } = await supabase
       .from("price_logs")
@@ -607,7 +610,7 @@ export async function updatePriceLogAction(
         package_amount: parsed.data.packageAmount,
         package_unit: item.comparison_unit,
         photo_path: photoPath,
-        price_tax_excluded_yen: parsed.data.priceTaxExcludedYen,
+        price_tax_excluded_yen: priceTaxExcludedYen,
         store_id: parsed.data.storeId,
         total_price_yen: parsed.data.totalPriceYen,
       })

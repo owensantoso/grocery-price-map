@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+function hasAtMostDecimalPlaces(value: number, places: number) {
+  const factor = 10 ** places;
+
+  return Number.isInteger(Math.round(value * factor * 1_000_000) / 1_000_000);
+}
+
 export const itemSchema = z.object({
   category: z.string().trim().optional(),
   comparisonBasisAmount: z.coerce.number().positive(),
@@ -51,7 +57,12 @@ export const priceLogSchema = z.object({
     .optional(),
   notes: z.string().trim().optional(),
   observedAt: z.string().trim().min(1, "Observed date is required."),
-  packageAmount: z.coerce.number().positive(),
+  packageAmount: z.coerce
+    .number()
+    .positive()
+    .refine((value) => hasAtMostDecimalPlaces(value, 2), {
+      message: "Package amount can use at most 2 decimal places.",
+    }),
   photoDataUrl: z.string().trim().optional(),
   priceTaxExcludedYen: z.coerce.number().positive(),
   storeId: z.string().min(1),
