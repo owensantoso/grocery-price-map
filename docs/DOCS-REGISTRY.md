@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 04:49:17 JST +0900"
+updated_at: "2026-04-29 05:33:38 JST +0900"
 ---
 
 # Docs Registry
@@ -12,6 +12,7 @@ updated_at: "2026-04-29 04:49:17 JST +0900"
 | ID | Type | Title | Status | Path |
 |---|---|---|---|---|
 | AUDT-0001 | repo-health-audit | MVP stabilization risk audit | completed | `repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md` |
+| AUDT-0002 | repo-health-audit | Second-pass risk blind spot audit | completed | `repo-health/audits/AUDT-0002-second-pass-risk-blind-spot-audit.md` |
 | IMPL-0001-01 | implementation-brief | Docs consolidation audit | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-01-docs-consolidation-audit.md` |
 | IMPL-0001-02 | implementation-brief | Refactor verification gate decision | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-02-refactor-verification-gate-decision.md` |
 | IMPL-0001-03 | implementation-brief | Risk coverage before refactor | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/IMPL-0001-03-risk-coverage-before-refactor.md` |
@@ -23,8 +24,14 @@ updated_at: "2026-04-29 04:49:17 JST +0900"
 | IMPL-0003-03 | implementation-brief | Form focus styling and map verification | completed | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-03-form-focus-styling-and-map-verification.md` |
 | IMPL-0004-01 | implementation-brief | Feed scale and store index diagnostic | completed | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/IMPL-0004-01-feed-scale-and-store-index-diagnostic.md` |
 | IMPL-0005-01 | implementation-brief | Action and query module split | completed | `repo-health/plans/PLAN-0005-architecture-cleanup/IMPL-0005-01-action-and-query-module-split.md` |
+| IMPL-0006-01 | implementation-brief | Dependency advisories and update workflow | completed | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-01-dependency-advisories-and-update-workflow.md` |
+| IMPL-0006-02 | implementation-brief | Production readiness guardrails | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-02-production-readiness-guardrails.md` |
+| IMPL-0006-03 | implementation-brief | Profile privacy and abuse limits | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-03-profile-privacy-and-abuse-limits.md` |
+| IMPL-0006-04 | implementation-brief | Public photo warning and UI resilience | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-04-public-photo-warning-and-ui-resilience.md` |
+| IMPL-0006-05 | implementation-brief | Price log draft preservation | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-05-price-log-draft-preservation.md` |
 | PLAN-0001 | plan | Documentation and refactor readiness | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/PLAN-0001-documentation-and-architecture-cleanup.md` |
 | PLAN-0002 | plan | Backend write integrity hardening | completed | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md` |
 | PLAN-0003 | plan | Contribution accessibility fixes | completed | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md` |
 | PLAN-0004 | plan | Read scale diagnostics | completed | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md` |
 | PLAN-0005 | plan | Architecture cleanup | completed | `repo-health/plans/PLAN-0005-architecture-cleanup/PLAN-0005-architecture-cleanup.md` |
+| PLAN-0006 | plan | Objective hardening before product decisions | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/PLAN-0006-objective-hardening-before-product-decisions.md` |
