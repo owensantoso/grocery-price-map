@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { createDiagnosticContext, emitDiagnosticEvent } from "@/lib/diagnostics";
 import { PRICE_LOG_PHOTO_BUCKET } from "@/lib/photos";
 
 export type PhotoCleanupReason =
@@ -24,7 +26,7 @@ export async function removePriceLogPhotoBestEffort(input: {
   reason: PhotoCleanupReason;
   remove: (path: string) => Promise<PhotoRemoveResult>;
 }) {
-  const { logFailure = console.error, logId, path, reason, remove } = input;
+  const { logFailure = logPhotoCleanupFailure, logId, path, reason, remove } = input;
 
   if (!path) {
     return { removed: false };
@@ -63,4 +65,34 @@ export async function removePriceLogPhotoBestEffort(input: {
   }
 
   return { removed: true };
+}
+
+function logPhotoCleanupFailure(details: {
+  bucket: string;
+  error: string;
+  event: "price_log_photo_cleanup_failed";
+  logId: string | null;
+  path: string;
+  reason: PhotoCleanupReason;
+}) {
+  const context = createDiagnosticContext({
+    component: "price_log_photo",
+    operation: "cleanup",
+  });
+
+  emitDiagnosticEvent({
+    ...context,
+    attrs: {
+      bucket: details.bucket,
+      error_message: details.error,
+      logId: details.logId,
+      objectPathPresent: Boolean(details.path),
+      reason: details.reason,
+    },
+    event: details.event,
+    eventKind: "error",
+    level: "error",
+    outcome: "error",
+    spanId: `span-${randomUUID()}`,
+  });
 }

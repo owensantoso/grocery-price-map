@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0006-06
 title: Diagnostic tracing foundation
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 06:30:48 JST +0900"
-updated_at: "2026-04-29 06:30:48 JST +0900"
+updated_at: "2026-04-29 07:43:43 JST +0900"
 parent_plan: PLAN-0006
 task_refs:
   - AUDT-0002#FINDING-004
@@ -23,6 +23,8 @@ related_sessions: []
 related_issues: []
 related_prs: []
 linked_paths:
+  - src/lib/diagnostics.ts
+  - src/lib/diagnostics.test.ts
   - src/app/actions.ts
   - src/app/auth/callback/route.ts
   - src/lib/queries.ts
@@ -125,10 +127,10 @@ Manual verification:
 
 ## Done Checklist
 
-- [ ] Shared diagnostics helper exists with tests.
-- [ ] Auth callback logs use the shared event shape.
-- [ ] Price-log write flow emits correlated start/end/error events with timings.
-- [ ] Photo upload/delete/cleanup diagnostics use the shared event shape without double-classifying failures.
-- [ ] Key read snapshots have lightweight duration events or a documented reason to defer.
-- [ ] Docs explain where logs appear locally, in CI, and in deployed server logs.
-- [ ] Privacy/redaction rules are documented and covered by tests or review notes.
+- [x] Shared diagnostics helper exists with tests.
+- [x] Auth callback logs use the shared event shape.
+- [x] Price-log write flow emits correlated start/end/error events with timings.
+- [x] Photo upload/delete/cleanup diagnostics use the shared event shape without double-classifying failures.
+- [x] Key read snapshots have lightweight duration events or a documented reason to defer.
+- [x] Docs explain where logs appear locally, in CI, and in deployed server logs.
+- [x] Privacy/redaction rules are documented and covered by tests or review notes.
