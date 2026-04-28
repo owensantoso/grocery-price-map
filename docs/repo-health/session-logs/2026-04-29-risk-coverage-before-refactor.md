@@ -51,7 +51,7 @@ Add targeted tests for risky write-side validation, live read-model helpers, and
 
 ## Verification
 
-- `vitest run`: 6 files / 15 tests passed.
+- `vitest run`: 6 files / 16 tests passed.
 - `eslint .`: passed.
 - `next build`: passed.
 - `scripts/docs-meta check`: passed.

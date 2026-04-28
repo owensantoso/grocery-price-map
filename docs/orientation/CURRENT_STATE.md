@@ -89,7 +89,7 @@ Source docs:
 
 Recent verification on 2026-04-29 passed:
 
-- `vitest run`: 6 files, 15 tests passed.
+- `vitest run`: 6 files, 16 tests passed.
 - `eslint .`: passed.
 - `next build`: passed with 13 app routes generated.
 

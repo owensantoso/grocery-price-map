@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 02:29:59 JST +0900"
+updated_at: "2026-04-29 02:33:41 JST +0900"
 ---
 
 # Docs Registry
@@ -23,7 +23,7 @@ updated_at: "2026-04-29 02:29:59 JST +0900"
 | IMPL-0003-03 | implementation-brief | Form focus styling and map verification | draft | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-03-form-focus-styling-and-map-verification.md` |
 | IMPL-0004-01 | implementation-brief | Feed scale and store index diagnostic | draft | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/IMPL-0004-01-feed-scale-and-store-index-diagnostic.md` |
 | IMPL-0005-01 | implementation-brief | Action and query module split | draft | `repo-health/plans/PLAN-0005-architecture-cleanup/IMPL-0005-01-action-and-query-module-split.md` |
-| PLAN-0001 | plan | Documentation and refactor readiness | in_progress | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/PLAN-0001-documentation-and-architecture-cleanup.md` |
+| PLAN-0001 | plan | Documentation and refactor readiness | completed | `repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/PLAN-0001-documentation-and-architecture-cleanup.md` |
 | PLAN-0002 | plan | Backend write integrity hardening | draft | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md` |
 | PLAN-0003 | plan | Contribution accessibility fixes | draft | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md` |
 | PLAN-0004 | plan | Read scale diagnostics | draft | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md` |
