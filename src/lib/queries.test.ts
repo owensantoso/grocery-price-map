@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { ItemRecord, PriceLogVoteRecord, StoreRecord } from "./models";
 import {
+  buildCommentEntries,
   buildCompareEntries,
   buildLogFeedEntries,
   sortFeedEntries,
+  summarizeCommentVotes,
   summarizeVotes,
   type PriceLogWithRelations,
 } from "./queries";
@@ -177,5 +179,86 @@ describe("query read-model helpers", () => {
       "less-upvoted-newer",
       "more-upvoted-older",
     ]);
+  });
+
+  it("builds comment entries by score and records viewer comment votes", () => {
+    const voteSummaries = summarizeCommentVotes(
+      [
+        {
+          comment_id: "comment-older",
+          created_at: "2026-03-10T10:01:00.000Z",
+          user_id: "viewer",
+          value: 1,
+        },
+        {
+          comment_id: "comment-older",
+          created_at: "2026-03-10T10:02:00.000Z",
+          user_id: "other",
+          value: 1,
+        },
+        {
+          comment_id: "comment-newer",
+          created_at: "2026-03-10T10:03:00.000Z",
+          user_id: "other",
+          value: 1,
+        },
+      ],
+      "viewer",
+    );
+
+    const entries = buildCommentEntries(
+      [
+        {
+          author_id: "author-newer",
+          body: "Newer but lower score",
+          created_at: "2026-03-10T10:05:00.000Z",
+          id: "comment-newer",
+          log_id: "log-1",
+        },
+        {
+          author_id: "author-older",
+          body: "Older and higher score",
+          created_at: "2026-03-10T10:04:00.000Z",
+          id: "comment-older",
+          log_id: "log-1",
+        },
+        {
+          author_id: "author-unvoted",
+          body: "No votes",
+          created_at: "2026-03-10T10:06:00.000Z",
+          id: "comment-unvoted",
+          log_id: "log-1",
+        },
+      ],
+      new Map([
+        ["author-older", "Older Author"],
+        ["author-newer", "Newer Author"],
+      ]),
+      voteSummaries,
+    );
+
+    expect(entries.map((entry) => entry.comment.id)).toEqual([
+      "comment-older",
+      "comment-newer",
+      "comment-unvoted",
+    ]);
+    expect(entries[0]).toMatchObject({
+      authorLabel: "Older Author",
+      voteSummary: {
+        downvotes: 0,
+        score: 2,
+        upvotes: 2,
+        viewerVote: 1,
+      },
+    });
+    expect(entries[2]).toMatchObject({
+      authorLabel: "User",
+      voteSummary: {
+        downvotes: 0,
+        score: 0,
+        upvotes: 0,
+        viewerVote: 0,
+      },
+    });
   });
 });
