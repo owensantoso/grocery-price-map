@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 07:45:54 JST +0900"
+updated_at: "2026-04-29 08:26:36 JST +0900"
 ---
 
 # Docs Todos
@@ -19,11 +19,6 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0006-03 | 59 | Private profile rows are owner-readable only. |
-| open | IMPL-0006-03 | 61 | Public author display still works. |
-| open | IMPL-0006-03 | 62 | Profile update action is rate-limited. |
-| open | IMPL-0006-03 | 63 | Public text fields have matching app and DB length limits. |
-| open | IMPL-0006-03 | 64 | `AUDT-0002#FINDING-006`, `AUDT-0002#FINDING-010`, and `AUDT-0002#FINDING-011` are updated. |
 | open | IMPL-0006-04 | 51 | Public photo upload warning exists. |
 | open | IMPL-0006-04 | 53 | Non-compare map surfaces have resize/orientation hardening or a documented reason. |
 | open | IMPL-0006-04 | 54 | Mobile search closes from keyboard. |
@@ -33,7 +28,6 @@ No structured `TODO-*` items found.
 | open | IMPL-0006-05 | 56 | Draft is cleared after successful price-log submission. |
 | open | IMPL-0006-05 | 57 | File-input limitations are handled deliberately. |
 | open | IMPL-0006-05 | 58 | `AUDT-0002#FINDING-018` is updated. |
-| open | PLAN-0006 | 39 | `IMPL-0006-03` - restrict private profile reads, add profile-update rate limiting, and add bounded public text validation/constraints. |
 | open | PLAN-0006 | 40 | `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience. |
 | open | PLAN-0006 | 41 | `IMPL-0006-05` - preserve price-log draft state across missing item/store creation. |
 | open | PLAN-0006 | 43 | Update `AUDT-0002` finding statuses/routes as each brief completes. |

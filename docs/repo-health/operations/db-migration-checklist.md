@@ -24,6 +24,16 @@ Use this checklist for staging, live-like, and production Supabase migration ver
 - Profile update constraints:
   - Update only `public_name` from settings and confirm it succeeds.
   - Attempt to update protected profile fields as the same user and confirm the trigger rejects it.
+- Profile privacy and public labels:
+  - As user A, query `profiles` for user A's row and confirm it is readable.
+  - As user A, query `profiles` for user B's row and confirm no private profile row is returned.
+  - As a signed-out/public client, query `public_profiles` and confirm only `id` and `public_name` are returned.
+  - Confirm public feed, log detail, and comment author labels still render through `public_profiles`.
+- Public text limits:
+  - Attempt to insert or update a comment body longer than 1,000 characters and confirm `price_log_comments_body_max_length` rejects it.
+  - Attempt to insert or update store notes longer than 2,000 characters and confirm `stores_notes_max_length` rejects it.
+  - Attempt to insert or update price-log notes longer than 2,000 characters and confirm `price_logs_notes_max_length` rejects it.
+  - Inspect existing rows over those limits before manually validating the `NOT VALID` constraints.
 - Rate-limit RPC:
   - Confirm write actions still consume `public.consume_action_rate_limit`.
   - Confirm repeated calls over the action limit return the expected rate-limit failure.

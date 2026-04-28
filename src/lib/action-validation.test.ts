@@ -121,4 +121,60 @@ describe("server action validation schemas", () => {
       body: "Good price",
     });
   });
+
+  it("rejects comments longer than the public text limit", () => {
+    const parsed = commentSchema.safeParse({ body: "x".repeat(1_001) });
+
+    expect(parsed.success).toBe(false);
+
+    if (!parsed.success) {
+      expect(parsed.error.flatten().fieldErrors.body).toContain(
+        "Comment must be 1000 characters or fewer.",
+      );
+    }
+  });
+
+  it("rejects store notes longer than the public text limit", () => {
+    const parsed = storeSchema.safeParse({
+      addressText: "Nishi-Eifuku",
+      chainName: "",
+      latitude: null,
+      longitude: null,
+      name: "Online Market",
+      notes: "x".repeat(2_001),
+      returnTo: "",
+      storeKind: "online",
+      storeUrl: "https://example.com/store",
+    });
+
+    expect(parsed.success).toBe(false);
+
+    if (!parsed.success) {
+      expect(parsed.error.flatten().fieldErrors.notes).toContain(
+        "Store notes must be 2000 characters or fewer.",
+      );
+    }
+  });
+
+  it("rejects price log notes longer than the public text limit", () => {
+    const parsed = priceLogSchema.safeParse({
+      itemId: "item-1",
+      listingUrl: "",
+      notes: "x".repeat(2_001),
+      observedAt: "2026-04-29",
+      packageAmount: "1",
+      photoDataUrl: "",
+      priceTaxExcludedYen: "100",
+      storeId: "store-1",
+      totalPriceYen: "108",
+    });
+
+    expect(parsed.success).toBe(false);
+
+    if (!parsed.success) {
+      expect(parsed.error.flatten().fieldErrors.notes).toContain(
+        "Price log notes must be 2000 characters or fewer.",
+      );
+    }
+  });
 });
