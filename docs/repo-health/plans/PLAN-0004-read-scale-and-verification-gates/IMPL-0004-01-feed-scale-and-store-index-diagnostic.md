@@ -62,7 +62,7 @@ Out of scope:
 ## Implementation Assumptions
 
 - This is an evidence-gathering brief first, not an optimization brief.
-- Query behavior should not change until characterization coverage from `IMPL-0001-02` exists or the change is purely documentary.
+- Query behavior should not change until characterization coverage from `IMPL-0001-03` exists or the change is purely documentary.
 - A documented blocker is acceptable if local Supabase data or credentials are unavailable.
 
 ## Preferred Approach
@@ -81,14 +81,14 @@ Evidence bar:
 - Record the diagnostic artifact in `docs/repo-health/debugging/` using `DIAG-*` if real query timings, `EXPLAIN`, or run logs are captured; otherwise update this brief or the audit with a short evidence note.
 - For `FINDING-007`, state the current row limit behavior, representative row-count assumption, and the trigger for pagination/account-specific reads.
 - For `FINDING-008`, include the exact store-detail query shape and either `EXPLAIN` output, Supabase dashboard evidence, or the blocker preventing it.
-- For `FINDING-016`, explicitly update `IMPL-0001-03` or `AUDT-0001` if duplicate log-detail assembly should be handled during the query split.
+- For `FINDING-016`, explicitly update `IMPL-0005-01` or `AUDT-0001` if duplicate log-detail assembly should be handled during the query split.
 
 ## Execution Steps
 
 1. Document current query shapes and expected growth pressure.
 2. If a local Supabase dataset is available, run `EXPLAIN` for store-detail reads.
 3. Decide whether pagination/account-specific reads should be planned now or deferred.
-4. Decide whether log-detail duplicate assembly belongs in `IMPL-0001-03`; if yes, update that brief's scope or task refs in the same change.
+4. Decide whether log-detail duplicate assembly belongs in `IMPL-0005-01`; if yes, update that brief's scope or task refs in the same change.
 5. Update audit findings with evidence and routes.
 
 ## Handoff Notes

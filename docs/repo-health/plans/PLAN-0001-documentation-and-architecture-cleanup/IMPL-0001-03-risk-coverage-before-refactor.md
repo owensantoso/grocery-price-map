@@ -1,11 +1,11 @@
 ---
 type: implementation-brief
-id: IMPL-0001-02
+id: IMPL-0001-03
 title: Risk coverage before refactor
 domain: repo-health
 status: draft
 created_at: "2026-04-28 22:51:03 JST +0900"
-updated_at: "2026-04-29 00:33:00 JST +0900"
+updated_at: "2026-04-29 01:40:51 JST +0900"
 parent_plan: PLAN-0001
 task_refs:
   - AUDT-0001#FINDING-002
@@ -16,6 +16,7 @@ owner:
 areas: []
 depends_on:
   - IMPL-0001-01
+  - IMPL-0001-02
 parallel_with: []
 related_specs: []
 related_adrs: []
@@ -37,7 +38,7 @@ repo_state:
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
 ---
 
-# IMPL-0001-02 - Risk coverage before refactor
+# IMPL-0001-03 - Risk coverage before refactor
 
 ## Parent Plan
 
@@ -87,7 +88,7 @@ PATH=/Users/macintoso/.cache/codex-runtimes/codex-primary-runtime/dependencies/n
 ## Done Checklist
 
 - [ ] Tests cover at least one risky read-side behavior and one risky write-side behavior, or explain why write-side coverage is deferred.
-- [ ] Demo/live parity or live read-model semantics are covered before `queries.ts` splitting.
+- [ ] Demo/live parity or live read-model semantics are covered before `queries.ts` splitting in `IMPL-0005-01`.
 - [ ] At least one high-risk frontend behavior is covered or explicitly deferred.
 - [ ] No broad refactor is mixed into test setup.
 - [ ] Verification complete.

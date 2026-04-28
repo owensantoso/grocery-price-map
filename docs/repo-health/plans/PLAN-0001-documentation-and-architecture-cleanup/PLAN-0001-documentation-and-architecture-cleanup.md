@@ -1,11 +1,11 @@
 ---
 type: plan
 id: PLAN-0001
-title: Documentation and architecture cleanup
+title: Documentation and refactor readiness
 domain: repo-health
 status: in_progress
 created_at: "2026-04-28 22:50:49 JST +0900"
-updated_at: "2026-04-28 23:11:14 JST +0900"
+updated_at: "2026-04-29 01:40:51 JST +0900"
 owner: 
 sequence:
   roadmap: "1"
@@ -32,18 +32,18 @@ repo_state:
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
 ---
 
-# PLAN-0001 - Documentation and architecture cleanup
+# PLAN-0001 - Documentation and refactor readiness
 
 ## Goal
 
 Turn Grocery Price Map from a fast-built MVP into a documented, reviewable, steadily improvable codebase without restarting from scratch.
 
-This plan covers the first cleanup track:
+This plan covers the first cleanup-readiness track:
 
 - make docs/navigation reliable enough for future sessions
 - identify code hotspots with evidence
+- decide the verification gate before broad code movement
 - add focused tests before refactoring risky areas
-- split the largest action/query modules once behavior is protected
 - leave product expansion decisions unresolved until the user chooses them
 
 ## Architecture
@@ -57,15 +57,15 @@ Current architecture is coherent enough to preserve:
 - shared UI components under `src/components`
 - Supabase migrations as backend source of truth
 
-The cleanup should improve module boundaries without changing product behavior. If a task discovers a product ambiguity, record it in docs and pause that direction instead of hiding the decision inside refactor work.
+This plan should make future cleanup safer without changing product behavior. If a task discovers a product ambiguity, record it in docs and pause that direction instead of hiding the decision inside refactor work.
 
 ## Task Dependencies / Parallelization
 
 Sequential dependencies:
 
 1. `IMPL-0001-01` docs consolidation should happen first so future work has a clean read path.
-2. `IMPL-0001-02` risk coverage should happen before major module splitting.
-3. `IMPL-0001-03` action/query splitting should use the tests and audit notes from the first two briefs.
+2. `IMPL-0001-02` verification gate decision should happen before implementation work depends on process memory.
+3. `IMPL-0001-03` risk coverage should happen before backend hardening or architecture cleanup moves risky code.
 
 Potential parallel work after `IMPL-0001-01`:
 
@@ -73,13 +73,13 @@ Potential parallel work after `IMPL-0001-01`:
 - another can audit `src/lib/queries.ts`
 - another can inspect UI/component repetition
 
-Do not make overlapping edits to `actions.ts` and `queries.ts` in parallel unless the write scopes are explicitly disjoint.
+Do not start broad `actions.ts` or `queries.ts` cleanup in this plan. That work now lives in `PLAN-0005` so implementation numbering matches execution order.
 
 ## Implementation Tasks
 
 - [x] `IMPL-0001-01` - consolidate AGENT-DOCS navigation, remove placeholders, and reconcile old docs with the new orientation path.
-- [ ] `IMPL-0001-02` - add or improve focused tests around the flows most likely to regress during cleanup.
-- [ ] `IMPL-0001-03` - split action/query gravity wells into smaller modules while preserving behavior.
+- [ ] `IMPL-0001-02` - decide and document the lightweight verification gate before major refactors.
+- [ ] `IMPL-0001-03` - add or improve focused tests around the flows most likely to regress during cleanup.
 - [ ] Record a session log when each brief completes.
 - [ ] Update `docs/orientation/CURRENT_STATE.md` after the plan materially changes the repo.
 
@@ -100,6 +100,7 @@ scripts/docs-meta check-links
 - Root `AGENTS.md` and `docs/README.md` give a clear first-read path.
 - New orientation docs are truthful and free of scaffold placeholders.
 - Existing docs are either linked from the new structure or intentionally superseded.
+- The verification gate decision is recorded before implementation proceeds to later plans.
 - Risky user flows have focused test coverage before large refactors.
-- `actions.ts` and `queries.ts` are smaller or have an explicit follow-up plan if splitting is deferred.
+- Architecture cleanup is routed to later numbered plan `PLAN-0005`.
 - Verification commands pass or failures are documented with a reason and next action.

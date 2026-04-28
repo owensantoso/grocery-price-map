@@ -104,7 +104,7 @@ This keeps filenames readable while still supporting one-to-one, one-to-many, ma
 
 ## Roadmap order
 
-`PLAN-*` IDs are stable identity. Do not rename plan IDs or folders just to change execution order; commits, PRs, issues, and session logs may already point at them.
+`PLAN-*` IDs are stable identity after implementation history points at them. Before implementation starts, keep numeric IDs and execution order aligned; if order changes, move/renumber the docs rather than relying on hidden dependency interpretation.
 
 Use `sequence` frontmatter for order:
 

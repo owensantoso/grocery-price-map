@@ -74,6 +74,27 @@ Make the documentation system coherent enough that a future agent can understand
 
 ## Follow-ups
 
-- Continue with `IMPL-0001-02` before code refactors.
+- Continue with `IMPL-0001-02` and `IMPL-0001-03` before code refactors.
+
+## 2026-04-29 Ordering Correction
+
+What happened:
+- The first remedy docs used stable IDs plus dependency metadata, but plan/brief numbers did not fully match the intended implementation order.
+
+What led to it:
+- Future agents and the maintainer are likely to read `PLAN-*` and `IMPL-*` numbering as the execution sequence.
+
+Source:
+- Repo doc ambiguity.
+
+What changed:
+- Verification gate work moved into `IMPL-0001-02`.
+- Risk coverage moved to `IMPL-0001-03`.
+- Broad action/query module splitting moved to later `PLAN-0005` / `IMPL-0005-01`.
+
+Verification:
+- `scripts/docs-meta update`
+- `scripts/docs-meta check`
+- `scripts/docs-meta review --type audit-findings`
 - Keep using `scripts/docs-meta check` and `scripts/docs-meta check-links` after docs changes.
 - Consider improving `scripts/docs-meta check-links` output in a future tooling task so a no-broken-links result does not print `No links found.`

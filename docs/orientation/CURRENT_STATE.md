@@ -73,7 +73,8 @@ Source docs:
 - Active cleanup plan: `docs/repo-health/plans/PLAN-0001-documentation-and-architecture-cleanup/PLAN-0001-documentation-and-architecture-cleanup.md`
 - Backend integrity plan: `docs/repo-health/plans/PLAN-0002-backend-write-integrity-hardening/PLAN-0002-backend-write-integrity-hardening.md`
 - Contribution accessibility plan: `docs/repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md`
-- Read-scale and verification plan: `docs/repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md`
+- Read-scale diagnostic plan: `docs/repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md`
+- Architecture cleanup plan: `docs/repo-health/plans/PLAN-0005-architecture-cleanup/PLAN-0005-architecture-cleanup.md`
 - Audit guides/profile: `docs/repo-health/audits/`
 
 ## Key Gotchas

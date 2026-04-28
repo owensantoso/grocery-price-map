@@ -1,22 +1,21 @@
 ---
 type: implementation-brief
-id: IMPL-0001-03
+id: IMPL-0005-01
 title: Action and query module split
 domain: repo-health
 status: draft
 created_at: "2026-04-28 22:51:03 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
-parent_plan: PLAN-0001
+updated_at: "2026-04-29 01:40:51 JST +0900"
+parent_plan: PLAN-0005
 task_refs:
   - AUDT-0001#FINDING-016
+  - AUDT-0001#FINDING-017
 owner: 
 areas: []
 depends_on:
-  - IMPL-0001-01
-  - IMPL-0001-02
+  - IMPL-0001-03
   - IMPL-0002-01
   - IMPL-0004-01
-  - IMPL-0004-02
 parallel_with: []
 related_specs: []
 related_adrs: []
@@ -34,11 +33,11 @@ repo_state:
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
 ---
 
-# IMPL-0001-03 - Action and query module split
+# IMPL-0005-01 - Action and query module split
 
 ## Parent Plan
 
-- PLAN-0001
+- PLAN-0005
 
 ## Task Goal
 
@@ -64,7 +63,7 @@ Out of scope:
 
 ## Execution Steps
 
-1. Read tests and docs from `IMPL-0001-02`, backend-boundary notes from `IMPL-0002-01`, and read/verification decisions from `IMPL-0004-01` and `IMPL-0004-02`.
+1. Read tests and docs from `IMPL-0001-03`, backend-boundary notes from `IMPL-0002-01`, and read-scale decisions from `IMPL-0004-01`.
 2. Map current exported functions and route/component imports.
 3. Choose the smallest split that lowers cognitive load.
 4. Move one domain at a time and run tests after each meaningful move.

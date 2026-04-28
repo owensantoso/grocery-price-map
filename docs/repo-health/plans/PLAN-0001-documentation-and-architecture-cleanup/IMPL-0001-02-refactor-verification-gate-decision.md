@@ -1,19 +1,19 @@
 ---
 type: implementation-brief
-id: IMPL-0004-02
+id: IMPL-0001-02
 title: Refactor verification gate decision
 domain: repo-health
 status: draft
 created_at: "2026-04-29 00:32:25 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
-parent_plan: PLAN-0004
+updated_at: "2026-04-29 01:40:51 JST +0900"
+parent_plan: PLAN-0001
 task_refs:
   - AUDT-0001#FINDING-015
 owner:
 areas: []
-depends_on: []
-parallel_with:
-  - IMPL-0004-01
+depends_on:
+  - IMPL-0001-01
+parallel_with: []
 related_specs: []
 related_adrs: []
 related_sessions: []
@@ -29,11 +29,11 @@ repo_state:
   last_reviewed_commit: e7f59d0c770f05d4e7720ef54e4865c6eb245081
 ---
 
-# IMPL-0004-02 - Refactor Verification Gate Decision
+# IMPL-0001-02 - Refactor Verification Gate Decision
 
 ## Parent Plan
 
-- PLAN-0004
+- PLAN-0001
 
 ## Task Goal
 
@@ -73,7 +73,7 @@ Do not mix deployment, preview environments, or production secrets into this sli
 
 Refactor gate contract:
 
-- `IMPL-0001-03` must not continue until this brief records one of these outcomes:
+- `IMPL-0001-03` and later implementation plans must not continue until this brief records one of these outcomes:
   - CI exists and runs test/lint/build without secrets.
   - local-only verification is accepted in `AUDT-0001` with owner, reason, commands, and revisit trigger.
   - advisory coverage is documented and paired with either CI or accepted local-only risk.
@@ -87,7 +87,7 @@ Refactor gate contract:
    - add a local verification checklist and explicitly accept no-CI risk for now
    - add coverage reporting only as advisory output
 3. Keep the decision small and reversible.
-4. Update `IMPL-0001-03` if the chosen gate changes its prerequisite wording.
+4. Update downstream briefs if the chosen gate changes prerequisite wording.
 5. Update audit profile and `AUDT-0001#FINDING-015`.
 
 ## Handoff Notes

@@ -4,7 +4,7 @@ title: Roadmap
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 00:33:00 JST +0900"
+updated_at: "2026-04-29 01:40:51 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -34,11 +34,11 @@ Ordered roadmap for moving this repo from fast-built MVP to a cleaner, more revi
 |---|---|---|
 | MVP foundation | Complete | Core product is built and passes tests, lint, and production build. |
 | Documentation system | Complete | First-read docs, audit guides, and the first repo-health audit are in place. |
-| Stabilization | Next | Add focused tests around risky flows before refactoring large modules. |
+| Stabilization | Next | Decide verification gates and add focused tests around risky flows before refactoring large modules. |
 | Backend integrity | Next | Audit found write-side integrity risks that should be hardened before wider public usage. |
 | Contribution accessibility | Next | Audit found a keyboard-blocking store creation path and smaller semantic control gaps. |
-| Read scale and verification gates | Next | Audit found read-scale and local-only verification risks that need evidence/decision before broad refactors. |
-| Architecture cleanup | Next | Split concentrated action/query modules once behavior is pinned down. |
+| Read scale diagnostics | Next | Audit found read-scale risks that need evidence before broad query refactors. |
+| Architecture cleanup | Later | Split concentrated action/query modules once behavior is pinned down. |
 | Product governance | Later | Admin/moderation requires product decisions before implementation. |
 | Expansion | Deferred | OCR, barcode, chain analytics, alerts, reputation, and advanced geo are intentionally out of current scope. |
 
@@ -63,12 +63,13 @@ The key principle is:
 | 1 | Install AGENT-DOCS growing scaffold | Complete | Gives future sessions a common read path and planning system. |
 | 2 | Consolidate docs and resolve docs/code drift | Complete | `IMPL-0001-01` established the first-read path and session receipt. |
 | 3 | Create repo-health audit plan | Complete | `AUDT-0001` records the largest stabilization risks. |
-| 4 | Add focused tests for risky behavior | Next | `IMPL-0001-02` protects behavior before architecture movement. |
-| 5 | Harden backend write integrity | Next | `PLAN-0002` routes the highest-risk audit findings around price-log integrity, photos, profile updates, and rate limits. |
-| 6 | Fix contribution accessibility blockers | Next | `PLAN-0003` routes keyboard store entry and semantic control issues. |
-| 7 | Decide read-scale and verification gates | Next | `PLAN-0004` routes feed-scale, store index, log-detail duplication, and CI/coverage decisions. |
-| 8 | Split server actions by domain | Next | Reduces the largest write-side gravity well after coverage/integrity work. |
-| 9 | Split query snapshots/mappers by domain | Next | Reduces the largest read-side gravity well after coverage work. |
+| 4 | Decide verification gate | Next | `IMPL-0001-02` decides CI/local-only/coverage expectations before implementation proceeds. |
+| 5 | Add focused tests for risky behavior | Next | `IMPL-0001-03` protects behavior before backend hardening and architecture movement. |
+| 6 | Harden backend write integrity | Next | `PLAN-0002` routes the highest-risk audit findings around price-log integrity, photos, profile updates, and rate limits. |
+| 7 | Fix contribution accessibility blockers | Next | `PLAN-0003` routes keyboard store entry and semantic control issues. |
+| 8 | Diagnose read-scale risks | Next | `PLAN-0004` routes feed-scale, store index, and log-detail duplication evidence. |
+| 9 | Split server actions by domain | Later | `PLAN-0005` reduces the largest write-side gravity well after coverage/integrity work. |
+| 10 | Split query snapshots/mappers by domain | Later | `PLAN-0005` reduces the largest read-side gravity well after coverage/read-scale evidence. |
 
 ## 3. Side Branches And Polish Tracks
 
@@ -92,7 +93,7 @@ The key principle is:
 ## 5. How To Use This Roadmap
 
 - Start with `docs/orientation/CURRENT_STATE.md` for what already exists.
-- Use this roadmap for ordering and rationale.
+- Use this roadmap and the numeric `PLAN-*` / `IMPL-*` order for execution. If a later-numbered brief must run earlier, renumber or move it instead of relying on hidden dependency interpretation.
 - Use `docs/repo-health/plans/` for cleanup plans and implementation briefs.
 - Use `docs/product/plans/` for user-facing product feature plans.
 - Use `docs/DEFERRED.md` to avoid accidentally expanding scope.

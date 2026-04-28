@@ -71,7 +71,7 @@ Target direction:
 
 Recommended order:
 
-1. Finish `IMPL-0001-02` characterization coverage first if practical, then run `IMPL-0002-01` before `IMPL-0001-03` splits `actions.ts`.
+1. Finish `IMPL-0001-03` characterization coverage first if practical, then run `IMPL-0002-01` before `IMPL-0005-01` splits `actions.ts`.
 2. `IMPL-0002-01` defines and implements the price-log integrity boundary. It is the highest-risk item and may affect later tests/migrations.
 3. `IMPL-0002-02` improves photo mutation compensation after the price-log row shape is clear.
 4. `IMPL-0002-03` can run separately if it only touches profile/rate-limit migrations and helper code, but avoid parallel Supabase migration edits unless file ownership is explicit.

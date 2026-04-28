@@ -2622,7 +2622,7 @@ def roadmap_markdown(docs: list[Doc]) -> str:
         "",
         GENERATED_HEADER,
         "",
-        "Generated plan-order view. `PLAN-*` IDs are stable identity; `sequence` frontmatter owns execution order.",
+        "Generated plan-order view. `PLAN-*` numbering and `sequence` frontmatter should agree; if execution order changes before implementation, move/renumber the docs instead of relying on hidden dependencies.",
         "",
         "| Sequence | Plan | Plan Name | Title | Status | Domain | Lane | After | Before | Path |",
         "|---|---|---|---|---|---|---|---|---|---|",
