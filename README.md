@@ -1,6 +1,9 @@
 # Grocery Price Map
 
 A Next.js + Supabase app for logging grocery prices at exact store locations, preserving full history, and comparing the latest normalized price by item.
+<img width="1226" height="908" alt="image" src="https://github.com/user-attachments/assets/47774ee3-98b0-443d-bc5b-1d886e4d4fef" />
+<img width="1259" height="903" alt="image" src="https://github.com/user-attachments/assets/187c8f6f-a5bd-4d38-927c-a100a9d702e5" />
+
 
 ## What is implemented
 
