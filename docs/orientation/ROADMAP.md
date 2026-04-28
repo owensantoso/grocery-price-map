@@ -4,7 +4,7 @@ title: Roadmap
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 03:31:10 JST +0900"
+updated_at: "2026-04-29 03:58:20 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -37,8 +37,8 @@ Ordered roadmap for moving this repo from fast-built MVP to a cleaner, more revi
 | Stabilization | Complete | Verification gates and focused characterization tests are in place before refactoring large modules. |
 | Backend integrity | Complete | Write-side integrity risks are hardened before wider public usage. |
 | Contribution accessibility | Complete | Keyboard store entry, semantic control gaps, focus styling, and map manual verification are in place. |
-| Read scale diagnostics | Next | Audit found read-scale risks that need evidence before broad query refactors. |
-| Architecture cleanup | Later | Split concentrated action/query modules once behavior is pinned down. |
+| Read scale diagnostics | Complete | Read-scale risks have evidence, deferral triggers, or routing before broad cleanup. |
+| Architecture cleanup | Complete | First helper/read-model split is in place while stable public action/query entry points remain. |
 | Product governance | Later | Admin/moderation requires product decisions before implementation. |
 | Expansion | Deferred | OCR, barcode, chain analytics, alerts, reputation, and advanced geo are intentionally out of current scope. |
 
@@ -67,9 +67,9 @@ The key principle is:
 | 5 | Add focused tests for risky behavior | Complete | `IMPL-0001-03` protects behavior before backend hardening and architecture movement. |
 | 6 | Harden backend write integrity | Complete | `PLAN-0002` hardened price-log integrity, photos, profile updates, and rate limits. |
 | 7 | Fix contribution accessibility blockers | Complete | `PLAN-0003` added keyboard store entry, semantic control improvements, focus styling, and map verification guidance. |
-| 8 | Diagnose read-scale risks | Next | `PLAN-0004` routes feed-scale, store index, and log-detail duplication evidence. |
-| 9 | Split server actions by domain | Later | `PLAN-0005` reduces the largest write-side gravity well after coverage/integrity work. |
-| 10 | Split query snapshots/mappers by domain | Later | `PLAN-0005` reduces the largest read-side gravity well after coverage/read-scale evidence. |
+| 8 | Diagnose read-scale risks | Complete | `PLAN-0004` recorded feed-scale, store index, and log-detail duplication evidence. |
+| 9 | Split server action helpers | Complete | `PLAN-0005` moved shared action state/auth/rate-limit/cache/photo helpers out of the server-action entry point. |
+| 10 | Split query read models | Complete | `PLAN-0005` moved pure read-model assembly out of the read snapshot module and removed duplicate log-detail item assembly. |
 
 ## 3. Side Branches And Polish Tracks
 

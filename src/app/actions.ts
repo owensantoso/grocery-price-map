@@ -1,10 +1,8 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {
   accountSettingsSchema,
   commentSchema,
@@ -12,231 +10,29 @@ import {
   priceLogSchema,
   storeSchema,
 } from "@/lib/action-validation";
+import {
+  consumeRateLimit,
+  getConfiguredSiteUrl,
+  RATE_LIMIT_RULES,
+  requireAuthedClient,
+  rethrowIfRedirectError,
+  revalidatePriceLogCaches,
+  revalidateSharedItems,
+  revalidateSharedStores,
+  toActionState,
+  type ActionState,
+  type VoteActionState,
+} from "@/lib/action-helpers";
 import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
 import {
-  dataUrlToBuffer,
-  MAX_PHOTO_BYTES,
-  PRICE_LOG_PHOTO_BUCKET,
-} from "@/lib/photos";
-import {
-  removePriceLogPhotoBestEffort,
-  type PhotoCleanupReason,
-} from "@/lib/photo-mutation-compensation";
+  removePriceLogPhoto,
+  uploadPhotoIfPresent,
+} from "@/lib/price-log-photo-actions";
 import { excludedFromIncluded } from "@/lib/pricing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeExternalUrl } from "@/lib/urls";
 
-export type ActionState = {
-  fieldErrors?: Record<string, string[] | undefined>;
-  message: string;
-  status: "error" | "idle";
-};
-
-type VoteActionState = {
-  message: string;
-  status: "error" | "idle";
-};
-
-const RATE_LIMIT_RULES = {
-  commentCreate: { action: "comment-create", limit: 12, windowMs: 60_000 },
-  commentVote: { action: "comment-vote", limit: 60, windowMs: 60_000 },
-  itemCreate: { action: "item-create", limit: 12, windowMs: 3_600_000 },
-  logCreate: { action: "log-create", limit: 30, windowMs: 3_600_000 },
-  logEdit: { action: "log-edit", limit: 60, windowMs: 3_600_000 },
-  logVote: { action: "log-vote", limit: 60, windowMs: 60_000 },
-  storeCreate: { action: "store-create", limit: 12, windowMs: 3_600_000 },
-} as const;
-
-function formatRateLimitWindow(windowMs: number) {
-  const minutes = Math.round(windowMs / 60_000);
-
-  if (minutes < 60) {
-    return `${minutes} minute${minutes === 1 ? "" : "s"}`;
-  }
-
-  const hours = Math.round(minutes / 60);
-  return `${hours} hour${hours === 1 ? "" : "s"}`;
-}
-
-async function consumeRateLimit(input: {
-  action: string;
-  limit: number;
-  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
-  userId: string;
-  windowMs: number;
-}) {
-  const { action, limit, supabase, windowMs } = input;
-  const windowSeconds = Math.ceil(windowMs / 1_000);
-  const { data: accepted, error } = await supabase.rpc(
-    "consume_action_rate_limit",
-    {
-      action_name: action,
-      max_events: limit,
-      window_seconds: windowSeconds,
-    },
-  );
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!accepted) {
-    throw new Error(
-      `Rate limit reached for this action. Try again in ${formatRateLimitWindow(windowMs)}.`,
-    );
-  }
-}
-
-function getConfiguredSiteUrl(headerOrigin: string | null) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-
-  if (siteUrl) {
-    return siteUrl;
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("NEXT_PUBLIC_SITE_URL must be set in production.");
-  }
-
-  return headerOrigin ?? "http://localhost:3000";
-}
-
-async function uploadPhotoIfPresent(input: {
-  photoDataUrl?: string | null;
-  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
-  userId: string;
-}) {
-  const { photoDataUrl, supabase, userId } = input;
-
-  if (!photoDataUrl) {
-    return null;
-  }
-
-  const payloadLimit = Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000;
-
-  try {
-    // Guard against oversized payloads before base64 decode to keep memory use bounded.
-    if (photoDataUrl.length > payloadLimit) {
-      throw new Error(
-        "Photo payload is too large for upload. Try a tighter crop or a simpler image.",
-      );
-    }
-
-    const { buffer, contentType } = dataUrlToBuffer(photoDataUrl);
-    const extension = contentType === "image/webp" ? "webp" : "jpg";
-    const path = `${userId}/${randomUUID()}.${extension}`;
-
-    const { error } = await supabase.storage
-      .from(PRICE_LOG_PHOTO_BUCKET)
-      .upload(path, buffer, {
-        contentType,
-        upsert: false,
-      });
-
-    if (error) {
-      console.error("Photo storage upload failed", {
-        bodyPayloadLength: photoDataUrl.length,
-        bucket: PRICE_LOG_PHOTO_BUCKET,
-        contentType,
-        decodedBytes: buffer.byteLength,
-        error: error.message,
-        path,
-        userId,
-      });
-      throw new Error(`Photo upload failed: ${error.message}`);
-    }
-
-    return path;
-  } catch (error) {
-    console.error("Photo decode/upload failed", {
-      bodyPayloadLength: photoDataUrl.length,
-      message: error instanceof Error ? error.message : "Unknown photo error",
-      payloadLimit,
-      userId,
-    });
-    throw error instanceof Error
-      ? error
-      : new Error("Photo upload failed before it could be saved.");
-  }
-}
-
-async function removePriceLogPhoto(input: {
-  logId?: string;
-  path: string | null;
-  reason: PhotoCleanupReason;
-  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
-}) {
-  const { logId, path, reason, supabase } = input;
-
-  await removePriceLogPhotoBestEffort({
-    logFailure: (details) => console.error("Photo cleanup failed", details),
-    logId,
-    path,
-    reason,
-    remove: async (pathToRemove) =>
-      supabase.storage.from(PRICE_LOG_PHOTO_BUCKET).remove([pathToRemove]),
-  });
-}
-
-function toActionState(error: unknown, fieldErrors?: Record<string, string[] | undefined>) {
-  return {
-    fieldErrors,
-    message: error instanceof Error ? error.message : "Something went wrong.",
-    status: "error" as const,
-  };
-}
-
-function rethrowIfRedirectError(error: unknown) {
-  if (isRedirectError(error)) {
-    throw error;
-  }
-}
-
-function revalidateSharedItems() {
-  revalidateTag("items", "max");
-}
-
-function revalidateSharedStores() {
-  revalidateTag("stores", "max");
-}
-
-function revalidatePriceLogCaches(input?: {
-  itemId?: string | null;
-  logId?: string | null;
-  storeId?: string | null;
-}) {
-  revalidateTag("price-logs", "max");
-
-  if (input?.itemId) {
-    revalidateTag(`price-logs:item:${input.itemId}`, "max");
-  }
-
-  if (input?.storeId) {
-    revalidateTag(`price-logs:store:${input.storeId}`, "max");
-  }
-
-  if (input?.logId) {
-    revalidateTag(`price-log:${input.logId}`, "max");
-  }
-}
-
-async function requireAuthedClient() {
-  const supabase = await createSupabaseServerClient();
-
-  if (!supabase) {
-    throw new Error("Supabase is not configured. Add your env vars first.");
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("You need to sign in before making changes.");
-  }
-
-  return { supabase, user };
-}
+export type { ActionState } from "@/lib/action-helpers";
 
 export async function createItemAction(
   _previousState: ActionState,

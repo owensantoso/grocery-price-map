@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0005
 title: Architecture cleanup
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 01:40:51 JST +0900"
-updated_at: "2026-04-29 01:40:51 JST +0900"
+updated_at: "2026-04-29 03:58:20 JST +0900"
 owner: 
 sequence:
   roadmap: "5"
@@ -19,13 +19,17 @@ sequence:
 areas: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-action-query-module-split.md
 related_issues: []
 related_prs: []
 linked_paths:
   - docs/repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md
   - src/app/actions.ts
   - src/lib/queries.ts
+  - src/lib/action-helpers.ts
+  - src/lib/price-log-photo-actions.ts
+  - src/lib/query-read-models.ts
   - src/lib/models.ts
   - src/lib/supabase/server.ts
   - src/lib/supabase/public.ts
@@ -68,10 +72,10 @@ Do not make overlapping edits to `actions.ts` and `queries.ts` in parallel unles
 
 ## Implementation Tasks
 
-- [ ] `IMPL-0005-01` - split action/query gravity wells into smaller modules while preserving behavior.
-- [ ] Update architecture docs only if module boundaries actually change.
-- [ ] Update `AUDT-0001` findings after implementation.
-- [ ] Record a session log when the brief completes.
+- [x] `IMPL-0005-01` - split action/query gravity wells into smaller modules while preserving behavior.
+- [x] Update architecture docs only if module boundaries actually change.
+- [x] Update `AUDT-0001` findings after implementation.
+- [x] Record a session log when the brief completes.
 
 ## Validation
 

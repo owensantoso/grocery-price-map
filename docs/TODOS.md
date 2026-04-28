@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 03:47:14 JST +0900"
+updated_at: "2026-04-29 04:49:17 JST +0900"
 ---
 
 # Docs Todos
@@ -17,13 +17,4 @@ No structured `TODO-*` items found.
 
 ## Local Checkboxes
 
-| State | Source | Line | Task |
-|---|---|---:|---|
-| open | IMPL-0005-01 | 52 | Large modules are smaller or a blocked reason is documented. |
-| open | IMPL-0005-01 | 54 | Public route behavior is preserved. |
-| open | IMPL-0005-01 | 55 | Imports remain understandable. |
-| open | IMPL-0005-01 | 56 | Verification complete. |
-| open | PLAN-0005 | 34 | `IMPL-0005-01` - split action/query gravity wells into smaller modules while preserving behavior. |
-| open | PLAN-0005 | 36 | Update architecture docs only if module boundaries actually change. |
-| open | PLAN-0005 | 37 | Update `AUDT-0001` findings after implementation. |
-| open | PLAN-0005 | 38 | Record a session log when the brief completes. |
+No local checkbox todos found.
