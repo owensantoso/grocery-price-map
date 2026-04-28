@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 05:33:38 JST +0900"
+updated_at: "2026-04-29 05:45:09 JST +0900"
 ---
 
 # Docs Todos
@@ -19,12 +19,6 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0006-02 | 55 | Production missing-env fallback is blocked or fails loudly. |
-| open | IMPL-0006-02 | 57 | Local/demo fallback remains explicit and documented. |
-| open | IMPL-0006-02 | 58 | DB migration verification checklist exists. |
-| open | IMPL-0006-02 | 59 | Deploy/rollback runbook exists. |
-| open | IMPL-0006-02 | 60 | Auth/storage failure diagnostics are improved without provider lock-in. |
-| open | IMPL-0006-02 | 61 | `AUDT-0002#FINDING-001` through `AUDT-0002#FINDING-004` are updated. |
 | open | IMPL-0006-03 | 59 | Private profile rows are owner-readable only. |
 | open | IMPL-0006-03 | 61 | Public author display still works. |
 | open | IMPL-0006-03 | 62 | Profile update action is rate-limited. |
@@ -39,7 +33,6 @@ No structured `TODO-*` items found.
 | open | IMPL-0006-05 | 56 | Draft is cleared after successful price-log submission. |
 | open | IMPL-0006-05 | 57 | File-input limitations are handled deliberately. |
 | open | IMPL-0006-05 | 58 | `AUDT-0002#FINDING-018` is updated. |
-| open | PLAN-0006 | 37 | `IMPL-0006-02` - add production env gates, migration/deploy/rollback runbooks, and minimal diagnostic surfaces. |
 | open | PLAN-0006 | 38 | `IMPL-0006-03` - restrict private profile reads, add profile-update rate limiting, and add bounded public text validation/constraints. |
 | open | PLAN-0006 | 39 | `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience. |
 | open | PLAN-0006 | 40 | `IMPL-0006-05` - preserve price-log draft state across missing item/store creation. |

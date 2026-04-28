@@ -23,6 +23,7 @@ The repo now uses the AGENT-DOCS workflow in a growing-project shape: short orie
 | `product/plans/` | Planning conventions and product feature plans. |
 | `repo-health/plans/` | Documentation, testing, architecture-cleanup, and maintainability plans. |
 | `repo-health/audits/` | Reusable audit guides, local audit profile, and `AUDT-*` repo-health audit receipts. |
+| `repo-health/operations/` | Provider-neutral deploy, rollback, migration, and incident checklists. |
 | `decisions/adr/` | Durable architecture or product decisions when simple notes are not enough. |
 | `repo-health/session-logs/` | Timestamped receipts for meaningful planning, debugging, or implementation sessions. |
 | `repo-health/debugging/` | Diagnostic records and debugging guidance. |
@@ -55,6 +56,9 @@ These older source docs remain part of the active map. Prefer the orientation do
 
 - [AUDIT_GAPS.md](AUDIT_GAPS.md)
   Confirmed mismatches and audit findings.
+
+- [repo-health/operations/README.md](repo-health/operations/README.md)
+  Lightweight production readiness runbooks and checklists.
 
 - [AGENT_ENTRYPOINT.md](AGENT_ENTRYPOINT.md)
   Earlier agent entrypoint. The root [AGENTS.md](../AGENTS.md) is now the first read, but this file remains useful as an expanded rationale.

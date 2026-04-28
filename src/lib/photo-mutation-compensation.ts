@@ -14,6 +14,7 @@ export async function removePriceLogPhotoBestEffort(input: {
   logFailure?: (details: {
     bucket: string;
     error: string;
+    event: "price_log_photo_cleanup_failed";
     logId: string | null;
     path: string;
     reason: PhotoCleanupReason;
@@ -37,6 +38,7 @@ export async function removePriceLogPhotoBestEffort(input: {
     logFailure({
       bucket: PRICE_LOG_PHOTO_BUCKET,
       error: error instanceof Error ? error.message : "Unknown photo cleanup error",
+      event: "price_log_photo_cleanup_failed",
       logId: logId ?? null,
       path,
       reason,
@@ -51,6 +53,7 @@ export async function removePriceLogPhotoBestEffort(input: {
     logFailure({
       bucket: PRICE_LOG_PHOTO_BUCKET,
       error: error.message,
+      event: "price_log_photo_cleanup_failed",
       logId: logId ?? null,
       path,
       reason,

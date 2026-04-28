@@ -24,6 +24,7 @@ export async function uploadPhotoIfPresent(input: {
   }
 
   const payloadLimit = Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000;
+  let uploadFailureLogged = false;
 
   try {
     // Guard against oversized payloads before base64 decode to keep memory use bounded.
@@ -45,11 +46,13 @@ export async function uploadPhotoIfPresent(input: {
       });
 
     if (error) {
+      uploadFailureLogged = true;
       console.error("Photo storage upload failed", {
         bodyPayloadLength: photoDataUrl.length,
         bucket: PRICE_LOG_PHOTO_BUCKET,
         contentType,
         decodedBytes: buffer.byteLength,
+        event: "price_log_photo_upload_failed",
         error: error.message,
         path,
         userId,
@@ -59,12 +62,15 @@ export async function uploadPhotoIfPresent(input: {
 
     return path;
   } catch (error) {
-    console.error("Photo decode/upload failed", {
-      bodyPayloadLength: photoDataUrl.length,
-      message: error instanceof Error ? error.message : "Unknown photo error",
-      payloadLimit,
-      userId,
-    });
+    if (!uploadFailureLogged) {
+      console.error("Photo decode/upload failed", {
+        bodyPayloadLength: photoDataUrl.length,
+        event: "price_log_photo_prepare_failed",
+        message: error instanceof Error ? error.message : "Unknown photo error",
+        payloadLimit,
+        userId,
+      });
+    }
     throw error instanceof Error
       ? error
       : new Error("Photo upload failed before it could be saved.");

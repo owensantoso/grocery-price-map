@@ -36,7 +36,21 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Verify production Supabase env guard
+        run: |
+          set +e
+          npm run build > /tmp/missing-supabase-build.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "Expected production build to fail without Supabase env vars."
+            exit 1
+          fi
+          grep -q "Production Supabase configuration is missing" /tmp/missing-supabase-build.log
+
       - name: Build
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "ci-placeholder-anon-key"
+          NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"

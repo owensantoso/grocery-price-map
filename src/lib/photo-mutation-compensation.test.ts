@@ -36,6 +36,7 @@ describe("photo mutation compensation", () => {
     expect(logFailure).toHaveBeenCalledWith({
       bucket: PRICE_LOG_PHOTO_BUCKET,
       error: "storage is unavailable",
+      event: "price_log_photo_cleanup_failed",
       logId: "log-1",
       path: "user-1/orphaned-photo.webp",
       reason: "delete_succeeded",
@@ -59,6 +60,7 @@ describe("photo mutation compensation", () => {
     expect(logFailure).toHaveBeenCalledWith({
       bucket: PRICE_LOG_PHOTO_BUCKET,
       error: "network dropped",
+      event: "price_log_photo_cleanup_failed",
       logId: "log-1",
       path: "user-1/orphaned-photo.webp",
       reason: "update_replaced",
@@ -81,6 +83,7 @@ describe("photo mutation compensation", () => {
     expect(logFailure).toHaveBeenCalledWith({
       bucket: PRICE_LOG_PHOTO_BUCKET,
       error: "Unknown photo cleanup error",
+      event: "price_log_photo_cleanup_failed",
       logId: null,
       path: "user-1/orphaned-photo.webp",
       reason: "delete_succeeded",

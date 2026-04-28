@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 05:33:38 JST +0900"
+updated_at: "2026-04-29 05:45:09 JST +0900"
 ---
 
 # Docs Registry
@@ -25,7 +25,7 @@ updated_at: "2026-04-29 05:33:38 JST +0900"
 | IMPL-0004-01 | implementation-brief | Feed scale and store index diagnostic | completed | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/IMPL-0004-01-feed-scale-and-store-index-diagnostic.md` |
 | IMPL-0005-01 | implementation-brief | Action and query module split | completed | `repo-health/plans/PLAN-0005-architecture-cleanup/IMPL-0005-01-action-and-query-module-split.md` |
 | IMPL-0006-01 | implementation-brief | Dependency advisories and update workflow | completed | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-01-dependency-advisories-and-update-workflow.md` |
-| IMPL-0006-02 | implementation-brief | Production readiness guardrails | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-02-production-readiness-guardrails.md` |
+| IMPL-0006-02 | implementation-brief | Production readiness guardrails | completed | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-02-production-readiness-guardrails.md` |
 | IMPL-0006-03 | implementation-brief | Profile privacy and abuse limits | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-03-profile-privacy-and-abuse-limits.md` |
 | IMPL-0006-04 | implementation-brief | Public photo warning and UI resilience | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-04-public-photo-warning-and-ui-resilience.md` |
 | IMPL-0006-05 | implementation-brief | Price log draft preservation | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/IMPL-0006-05-price-log-draft-preservation.md` |

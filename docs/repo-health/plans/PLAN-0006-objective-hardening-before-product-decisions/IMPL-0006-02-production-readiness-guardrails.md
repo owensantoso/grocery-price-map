@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0006-02
 title: Production readiness guardrails
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 05:25:00 JST +0900"
-updated_at: "2026-04-29 05:25:00 JST +0900"
+updated_at: "2026-04-29 05:44:24 JST +0900"
 parent_plan: PLAN-0006
 task_refs:
   - AUDT-0002#FINDING-001
@@ -92,9 +92,9 @@ Manual verification:
 
 ## Done Checklist
 
-- [ ] Production missing-env fallback is blocked or fails loudly.
-- [ ] Local/demo fallback remains explicit and documented.
-- [ ] DB migration verification checklist exists.
-- [ ] Deploy/rollback runbook exists.
-- [ ] Auth/storage failure diagnostics are improved without provider lock-in.
-- [ ] `AUDT-0002#FINDING-001` through `AUDT-0002#FINDING-004` are updated.
+- [x] Production missing-env fallback is blocked or fails loudly.
+- [x] Local/demo fallback remains explicit and documented.
+- [x] DB migration verification checklist exists.
+- [x] Deploy/rollback runbook exists.
+- [x] Auth/storage failure diagnostics are improved without provider lock-in.
+- [x] `AUDT-0002#FINDING-001` through `AUDT-0002#FINDING-004` are updated.
