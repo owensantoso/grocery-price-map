@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0004
 title: Read scale diagnostics
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:32:25 JST +0900"
-updated_at: "2026-04-29 01:40:51 JST +0900"
+updated_at: "2026-04-29 03:43:51 JST +0900"
 owner: 
 sequence:
   roadmap: "4"
@@ -16,7 +16,8 @@ sequence:
 areas: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-feed-scale-and-store-index-diagnostic.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -60,8 +61,8 @@ Target direction:
 
 ## Implementation Tasks
 
-- [ ] `IMPL-0004-01` - diagnose feed scaling, store index needs, and log-detail duplicate work.
-- [ ] Update `AUDT-0001` finding statuses after the evidence/decision is captured.
+- [x] `IMPL-0004-01` - diagnose feed scaling, store index needs, and log-detail duplicate work.
+- [x] Update `AUDT-0001` finding statuses after the evidence/decision is captured.
 
 ## Validation
 

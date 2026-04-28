@@ -5,7 +5,7 @@ title: Action and query module split
 domain: repo-health
 status: draft
 created_at: "2026-04-28 22:51:03 JST +0900"
-updated_at: "2026-04-29 01:40:51 JST +0900"
+updated_at: "2026-04-29 03:43:51 JST +0900"
 parent_plan: PLAN-0005
 task_refs:
   - AUDT-0001#FINDING-016
@@ -19,7 +19,8 @@ depends_on:
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-feed-scale-and-store-index-diagnostic.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -68,6 +69,12 @@ Out of scope:
 3. Choose the smallest split that lowers cognitive load.
 4. Move one domain at a time and run tests after each meaningful move.
 5. Update architecture docs only if module boundaries actually changed.
+
+## Handoff From IMPL-0004-01
+
+`AUDT-0001#FINDING-016` remains in this brief. `getPriceLogDetail()` currently loads item logs and vote summaries for recent item logs and same-store history, then calls `getComparisonSnapshot(log.item_id)`, which repeats the same item-log and vote-summary work to build `latestAcrossStores`.
+
+During the query split, prefer extracting a detail/read-model helper that can reuse the already-loaded item logs and vote summaries for `latestAcrossStores`. If cache behavior or readability makes reuse larger than the problem, explicitly preserve the duplicate call and document that choice in this brief or the session log.
 
 ## Verification
 

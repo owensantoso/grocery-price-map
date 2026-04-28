@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 03:33:08 JST +0900"
+updated_at: "2026-04-29 03:47:14 JST +0900"
 ---
 
 # Docs Todos
@@ -19,16 +19,10 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0004-01 | 77 | Store index question has evidence or a documented blocker. |
-| open | IMPL-0004-01 | 79 | Feed/account read-scale risk has a route or accepted-risk rationale. |
-| open | IMPL-0004-01 | 80 | Log-detail duplicate work is routed or accepted. |
-| open | IMPL-0004-01 | 81 | Audit findings updated. |
-| open | PLAN-0004 | 27 | `IMPL-0004-01` - diagnose feed scaling, store index needs, and log-detail duplicate work. |
-| open | PLAN-0004 | 29 | Update `AUDT-0001` finding statuses after the evidence/decision is captured. |
-| open | IMPL-0005-01 | 46 | Large modules are smaller or a blocked reason is documented. |
-| open | IMPL-0005-01 | 48 | Public route behavior is preserved. |
-| open | IMPL-0005-01 | 49 | Imports remain understandable. |
-| open | IMPL-0005-01 | 50 | Verification complete. |
+| open | IMPL-0005-01 | 52 | Large modules are smaller or a blocked reason is documented. |
+| open | IMPL-0005-01 | 54 | Public route behavior is preserved. |
+| open | IMPL-0005-01 | 55 | Imports remain understandable. |
+| open | IMPL-0005-01 | 56 | Verification complete. |
 | open | PLAN-0005 | 34 | `IMPL-0005-01` - split action/query gravity wells into smaller modules while preserving behavior. |
 | open | PLAN-0005 | 36 | Update architecture docs only if module boundaries actually change. |
 | open | PLAN-0005 | 37 | Update `AUDT-0001` findings after implementation. |

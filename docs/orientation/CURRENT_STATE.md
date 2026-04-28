@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 03:31:10 JST +0900"
+updated_at: "2026-04-29 03:43:51 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -63,7 +63,7 @@ Source docs:
 
 ## Roadmap Position
 
-The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, backend write-integrity hardening, and contribution accessibility fixes are in place. `PLAN-0004` is next and tracks read-scale diagnostics before broad action/query refactors.
+The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, backend write-integrity hardening, contribution accessibility fixes, and read-scale diagnostics are in place. `PLAN-0005` is next and tracks broad action/query refactors.
 
 Source docs:
 
