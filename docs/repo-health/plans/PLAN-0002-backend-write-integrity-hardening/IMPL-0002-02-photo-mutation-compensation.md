@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0002-02
 title: Photo mutation compensation
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 00:25:41 JST +0900"
-updated_at: "2026-04-29 01:01:18 JST +0900"
+updated_at: "2026-04-29 02:51:58 JST +0900"
 parent_plan: PLAN-0002
 task_refs:
   - AUDT-0001#FINDING-004
@@ -16,12 +16,15 @@ depends_on:
 parallel_with: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-photo-mutation-compensation.md
 related_issues: []
 related_prs: []
 linked_paths:
   - docs/repo-health/audits/AUDT-0001-mvp-stabilization-risk-audit.md
   - src/app/actions.ts
+  - src/lib/photo-mutation-compensation.ts
+  - src/lib/photo-mutation-compensation.test.ts
   - src/lib/photos.ts
   - supabase/migrations/202603220001_comments_and_photos.sql
 repo_state:
@@ -89,6 +92,26 @@ Implementation contract:
 4. Keep console logging sanitized and useful.
 5. Update backend docs and audit finding resolution.
 
+## Ordering Implemented
+
+| Flow | Before | After | Remaining risk |
+|---|---|---|---|
+| Create with photo | Upload photo, insert row, leave uploaded photo orphaned if insert failed. | Upload photo, insert row, remove uploaded photo if insert fails. | Cleanup remove can fail; failure is logged with bucket, path, reason, and optional log id. |
+| Update with replacement photo | Upload new photo and remove old photo before the row update succeeds. | Upload new photo, update row to the new path, remove old photo only after update succeeds. If update fails, remove the new upload. | Cleanup remove can fail; the row remains pointed at the correct photo. |
+| Update without replacement photo | Keep existing photo path. | Keep existing photo path. | None added. |
+| Delete with photo | Remove photo first, then delete row. | Delete row first, then remove photo. | If cleanup fails, the row is gone and an orphaned storage object remains; failure is logged for manual cleanup. |
+
+## Verification Notes
+
+The branch verifies the full app/test/build gate locally. Automated unit coverage exists for the best-effort cleanup seam in `src/lib/photo-mutation-compensation.test.ts`, including successful cleanup, cleanup failure logging without throwing, and no-op behavior when there is no path.
+
+Manual checks before production rollout:
+
+1. Force create-log insert failure after a successful photo upload and confirm the uploaded object is removed.
+2. Force update-log DB failure after a successful replacement upload and confirm the new object is removed while the old row path remains unchanged.
+3. Force replacement update success and old-photo cleanup failure; confirm the row points at the new path and cleanup failure is logged.
+4. Force delete success and photo cleanup failure; confirm the row is deleted and cleanup failure is logged.
+
 ## Handoff Notes
 
 - Include a before/after table for create, update, and delete ordering.
@@ -107,7 +130,7 @@ Attach evidence for at least one compensated failure path and one normal create/
 
 ## Done Checklist
 
-- [ ] Create/update/delete photo failure modes are explicitly handled.
-- [ ] Any accepted orphan/missing-photo risk is documented.
-- [ ] Tests or manual checks cover at least one failure path.
-- [ ] `AUDT-0001#FINDING-004` updated.
+- [x] Create/update/delete photo failure modes are explicitly handled.
+- [x] Any accepted orphan/missing-photo risk is documented.
+- [x] Tests or manual checks cover at least one failure path.
+- [x] `AUDT-0001#FINDING-004` updated.
