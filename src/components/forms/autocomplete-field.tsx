@@ -66,6 +66,14 @@ function bindMediaQuery(
   return () => mediaQuery.removeListener(listener);
 }
 
+function getOptionElementId(listId: string, optionId: string) {
+  return `${listId}-option-${optionId}`;
+}
+
+function getCreateActionElementId(listId: string) {
+  return `${listId}-create`;
+}
+
 export const AutocompleteField = forwardRef<AutocompleteFieldHandle, AutocompleteFieldProps>(function AutocompleteField({
   autoFocus = false,
   createActionLabel,
@@ -137,6 +145,17 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
     Boolean(onCreateAction && createActionLabel) &&
     trimmedQuery.length > 0 &&
     !hasExactMatch;
+  const activeItemCount = filteredOptions.length + (showCreateAction ? 1 : 0);
+  const boundedHighlightedIndex = Math.min(
+    highlightedIndex,
+    Math.max(activeItemCount - 1, 0),
+  );
+  const activeDescendantId =
+    isOpen && activeItemCount > 0
+      ? boundedHighlightedIndex < filteredOptions.length
+        ? getOptionElementId(listId, filteredOptions[boundedHighlightedIndex]!.id)
+        : getCreateActionElementId(listId)
+      : undefined;
 
   function selectOption(option: AutocompleteOption, shouldCommit?: boolean) {
     setQuery(option.label);
@@ -188,6 +207,7 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
         <div className="autocomplete__input-wrap">
           <input
             aria-autocomplete="list"
+            aria-activedescendant={activeDescendantId}
             aria-controls={listId}
             aria-expanded={isOpen}
             aria-invalid={error ? "true" : "false"}
@@ -223,7 +243,7 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
                 setIsOpen(true);
                 setHighlightedIndex((currentIndex) =>
                   isOpen
-                    ? Math.min(currentIndex + 1, Math.max(filteredOptions.length - 1, 0))
+                    ? Math.min(currentIndex + 1, Math.max(activeItemCount - 1, 0))
                     : 0,
                 );
                 return;
@@ -235,7 +255,7 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
                 setHighlightedIndex((currentIndex) =>
                   isOpen
                     ? Math.max(currentIndex - 1, 0)
-                    : Math.max(filteredOptions.length - 1, 0),
+                    : Math.max(activeItemCount - 1, 0),
                 );
                 return;
               }
@@ -246,8 +266,17 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
               }
 
               if (event.key === "Enter") {
+                const isCreateActionActive =
+                  showCreateAction && boundedHighlightedIndex >= filteredOptions.length;
+
+                if (isCreateActionActive) {
+                  event.preventDefault();
+                  onCreateAction?.(trimmedQuery);
+                  return;
+                }
+
                 const optionToCommit =
-                  filteredOptions[highlightedIndex] ??
+                  filteredOptions[boundedHighlightedIndex] ??
                   options.find(
                     (option) => option.label.toLowerCase() === query.trim().toLowerCase(),
                   ) ??
@@ -288,12 +317,13 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
           >
             {filteredOptions.map((option, index) => (
               <button
-                aria-selected={option.id === selectedId || index === highlightedIndex}
+                aria-selected={option.id === selectedId}
                 className={`autocomplete__option ${
-                  option.id === selectedId || index === highlightedIndex
+                  option.id === selectedId || index === boundedHighlightedIndex
                     ? "is-selected"
                     : ""
                 }`}
+                id={getOptionElementId(listId, option.id)}
                 key={option.id}
                 onClick={() => {
                   selectOption(option, true);
@@ -319,11 +349,16 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
             ))}
             {showCreateAction ? (
               <button
-                className="autocomplete__option autocomplete__option--create"
+                aria-selected={boundedHighlightedIndex >= filteredOptions.length}
+                className={`autocomplete__option autocomplete__option--create ${
+                  boundedHighlightedIndex >= filteredOptions.length ? "is-selected" : ""
+                }`}
+                id={getCreateActionElementId(listId)}
                 onClick={() => onCreateAction?.(trimmedQuery)}
                 onMouseDown={(event) => {
                   event.preventDefault();
                 }}
+                role="option"
                 type="button"
               >
                 <span>
@@ -340,11 +375,14 @@ export const AutocompleteField = forwardRef<AutocompleteFieldHandle, Autocomplet
             role="listbox"
           >
             <button
-              className="autocomplete__option autocomplete__option--create"
+              aria-selected
+              className="autocomplete__option autocomplete__option--create is-selected"
+              id={getCreateActionElementId(listId)}
               onClick={() => onCreateAction?.(trimmedQuery)}
               onMouseDown={(event) => {
                 event.preventDefault();
               }}
+              role="option"
               type="button"
             >
               <span>

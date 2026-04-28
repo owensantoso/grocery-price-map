@@ -5,7 +5,7 @@ title: Contribution accessibility fixes
 domain: repo-health
 status: in_progress
 created_at: "2026-04-29 00:29:22 JST +0900"
-updated_at: "2026-04-29 03:09:48 JST +0900"
+updated_at: "2026-04-29 03:23:30 JST +0900"
 owner: 
 sequence:
   roadmap: "3"
@@ -19,6 +19,7 @@ related_specs: []
 related_adrs: []
 related_sessions:
   - docs/repo-health/session-logs/2026-04-29-keyboard-accessible-store-location-entry.md
+  - docs/repo-health/session-logs/2026-04-29-combobox-and-vote-control-semantics.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -74,7 +75,7 @@ Recommended order:
 ## Implementation Tasks
 
 - [x] `IMPL-0003-01` - add keyboard-accessible physical store location entry.
-- [ ] `IMPL-0003-02` - improve autocomplete and comment vote semantics.
+- [x] `IMPL-0003-02` - improve autocomplete and comment vote semantics.
 - [ ] `IMPL-0003-03` - add focus-visible styling and a lightweight map/manual verification checklist.
 - [ ] Update `AUDT-0001` findings after each slice completes.
 

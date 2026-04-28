@@ -105,7 +105,8 @@ export function LogVoteControls({
     <div className={`vote-stack ${compact ? "vote-stack--compact" : ""}`}>
       <div className="vote-controls" aria-label="Vote on this log">
         <button
-          aria-label="Upvote"
+          aria-label="Upvote price log"
+          aria-pressed={localSummary.viewerVote === 1}
           className={`vote-button ${localSummary.viewerVote === 1 ? "is-active" : ""}`}
           disabled={disabled}
           onClick={() => handleVote(1)}
@@ -115,7 +116,8 @@ export function LogVoteControls({
         </button>
         <span className="vote-score">{localSummary.score}</span>
         <button
-          aria-label="Downvote"
+          aria-label="Downvote price log"
+          aria-pressed={localSummary.viewerVote === -1}
           className={`vote-button ${localSummary.viewerVote === -1 ? "is-active" : ""}`}
           disabled={disabled}
           onClick={() => handleVote(-1)}
