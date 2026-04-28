@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 05:45:09 JST +0900"
+updated_at: "2026-04-29 06:31:35 JST +0900"
 ---
 
 # Docs Todos
@@ -33,8 +33,16 @@ No structured `TODO-*` items found.
 | open | IMPL-0006-05 | 56 | Draft is cleared after successful price-log submission. |
 | open | IMPL-0006-05 | 57 | File-input limitations are handled deliberately. |
 | open | IMPL-0006-05 | 58 | `AUDT-0002#FINDING-018` is updated. |
-| open | PLAN-0006 | 38 | `IMPL-0006-03` - restrict private profile reads, add profile-update rate limiting, and add bounded public text validation/constraints. |
-| open | PLAN-0006 | 39 | `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience. |
-| open | PLAN-0006 | 40 | `IMPL-0006-05` - preserve price-log draft state across missing item/store creation. |
-| open | PLAN-0006 | 41 | Update `AUDT-0002` finding statuses/routes as each brief completes. |
-| open | PLAN-0006 | 42 | Record a session log when the plan completes. |
+| open | IMPL-0006-06 | 90 | Shared diagnostics helper exists with tests. |
+| open | IMPL-0006-06 | 92 | Auth callback logs use the shared event shape. |
+| open | IMPL-0006-06 | 93 | Price-log write flow emits correlated start/end/error events with timings. |
+| open | IMPL-0006-06 | 94 | Photo upload/delete/cleanup diagnostics use the shared event shape without double-classifying failures. |
+| open | IMPL-0006-06 | 95 | Key read snapshots have lightweight duration events or a documented reason to defer. |
+| open | IMPL-0006-06 | 96 | Docs explain where logs appear locally, in CI, and in deployed server logs. |
+| open | IMPL-0006-06 | 97 | Privacy/redaction rules are documented and covered by tests or review notes. |
+| open | PLAN-0006 | 39 | `IMPL-0006-03` - restrict private profile reads, add profile-update rate limiting, and add bounded public text validation/constraints. |
+| open | PLAN-0006 | 40 | `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience. |
+| open | PLAN-0006 | 41 | `IMPL-0006-05` - preserve price-log draft state across missing item/store creation. |
+| open | PLAN-0006 | 42 | `IMPL-0006-06` - add a provider-neutral diagnostic tracing foundation. |
+| open | PLAN-0006 | 43 | Update `AUDT-0002` finding statuses/routes as each brief completes. |
+| open | PLAN-0006 | 44 | Record a session log when the plan completes. |
