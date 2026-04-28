@@ -18,6 +18,10 @@ import {
   MAX_PHOTO_BYTES,
   PRICE_LOG_PHOTO_BUCKET,
 } from "@/lib/photos";
+import {
+  removePriceLogPhotoBestEffort,
+  type PhotoCleanupReason,
+} from "@/lib/photo-mutation-compensation";
 import { excludedFromIncluded } from "@/lib/pricing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeExternalUrl } from "@/lib/urls";
@@ -106,15 +110,14 @@ function getConfiguredSiteUrl(headerOrigin: string | null) {
 }
 
 async function uploadPhotoIfPresent(input: {
-  existingPath?: string | null;
   photoDataUrl?: string | null;
   supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
   userId: string;
 }) {
-  const { existingPath, photoDataUrl, supabase, userId } = input;
+  const { photoDataUrl, supabase, userId } = input;
 
   if (!photoDataUrl) {
-    return existingPath ?? null;
+    return null;
   }
 
   const payloadLimit = Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000;
@@ -151,15 +154,10 @@ async function uploadPhotoIfPresent(input: {
       throw new Error(`Photo upload failed: ${error.message}`);
     }
 
-    if (existingPath) {
-      await supabase.storage.from(PRICE_LOG_PHOTO_BUCKET).remove([existingPath]);
-    }
-
     return path;
   } catch (error) {
     console.error("Photo decode/upload failed", {
       bodyPayloadLength: photoDataUrl.length,
-      existingPath: existingPath ?? null,
       message: error instanceof Error ? error.message : "Unknown photo error",
       payloadLimit,
       userId,
@@ -168,6 +166,24 @@ async function uploadPhotoIfPresent(input: {
       ? error
       : new Error("Photo upload failed before it could be saved.");
   }
+}
+
+async function removePriceLogPhoto(input: {
+  logId?: string;
+  path: string | null;
+  reason: PhotoCleanupReason;
+  supabase: NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
+}) {
+  const { logId, path, reason, supabase } = input;
+
+  await removePriceLogPhotoBestEffort({
+    logFailure: (details) => console.error("Photo cleanup failed", details),
+    logId,
+    path,
+    reason,
+    remove: async (pathToRemove) =>
+      supabase.storage.from(PRICE_LOG_PHOTO_BUCKET).remove([pathToRemove]),
+  });
 }
 
 function toActionState(error: unknown, fieldErrors?: Record<string, string[] | undefined>) {
@@ -507,6 +523,11 @@ export async function createPriceLogAction(
       .single();
 
     if (error || !insertedLog) {
+      await removePriceLogPhoto({
+        path: photoPath,
+        reason: "create_insert_failed",
+        supabase,
+      });
       throw new Error(error?.message ?? "Failed to create the price log.");
     }
 
@@ -590,12 +611,12 @@ export async function updatePriceLogAction(
       throw new Error("Only the original submitter can edit this log.");
     }
 
-    const photoPath = await uploadPhotoIfPresent({
-      existingPath: existing.photo_path,
+    const uploadedPhotoPath = await uploadPhotoIfPresent({
       photoDataUrl: parsed.data.photoDataUrl || null,
       supabase,
       userId: user.id,
     });
+    const photoPath = uploadedPhotoPath ?? existing.photo_path;
 
     const { error } = await supabase
       .from("price_logs")
@@ -618,7 +639,22 @@ export async function updatePriceLogAction(
       .eq("submitted_by", user.id);
 
     if (error) {
+      await removePriceLogPhoto({
+        logId,
+        path: uploadedPhotoPath,
+        reason: "update_failed",
+        supabase,
+      });
       throw new Error(error.message);
+    }
+
+    if (uploadedPhotoPath && existing.photo_path) {
+      await removePriceLogPhoto({
+        logId,
+        path: existing.photo_path,
+        reason: "update_replaced",
+        supabase,
+      });
     }
 
     revalidatePriceLogCaches({
@@ -656,21 +692,6 @@ export async function deletePriceLogAction(logId: string) {
       throw new Error("Only the original submitter can delete this log.");
     }
 
-    if (existing.photo_path) {
-      const { error: removePhotoError } = await supabase.storage
-        .from(PRICE_LOG_PHOTO_BUCKET)
-        .remove([existing.photo_path]);
-
-      if (removePhotoError) {
-        console.error("Photo remove failed during log delete", {
-          error: removePhotoError.message,
-          logId,
-          path: existing.photo_path,
-          userId: user.id,
-        });
-      }
-    }
-
     const { error: deleteError } = await supabase
       .from("price_logs")
       .delete()
@@ -680,6 +701,13 @@ export async function deletePriceLogAction(logId: string) {
     if (deleteError) {
       throw new Error(deleteError.message);
     }
+
+    await removePriceLogPhoto({
+      logId,
+      path: existing.photo_path,
+      reason: "delete_succeeded",
+      supabase,
+    });
 
     revalidatePriceLogCaches({
       itemId: existing.item_id,
