@@ -1,5 +1,11 @@
 import { randomUUID } from "node:crypto";
 import {
+  createDiagnosticContext,
+  emitDiagnosticEvent,
+  startDiagnosticSpan,
+  type DiagnosticContext,
+} from "@/lib/diagnostics";
+import {
   dataUrlToBuffer,
   MAX_PHOTO_BYTES,
   PRICE_LOG_PHOTO_BUCKET,
@@ -13,17 +19,31 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 type AuthedSupabase = NonNullable<Awaited<ReturnType<typeof createSupabaseServerClient>>>;
 
 export async function uploadPhotoIfPresent(input: {
+  diagnostics?: DiagnosticContext;
   photoDataUrl?: string | null;
   supabase: AuthedSupabase;
   userId: string;
 }) {
-  const { photoDataUrl, supabase, userId } = input;
+  const { diagnostics, photoDataUrl, supabase, userId } = input;
 
   if (!photoDataUrl) {
     return null;
   }
 
   const payloadLimit = Math.ceil((MAX_PHOTO_BYTES * 4) / 3) + 512_000;
+  const context =
+    diagnostics ??
+    createDiagnosticContext({
+      component: "price_log_photo",
+      operation: "upload",
+    });
+  const span = startDiagnosticSpan(context, {
+    attrs: {
+      inputSizeBytes: photoDataUrl.length,
+      payloadLimit,
+    },
+    event: "price_log_photo_upload",
+  });
   let uploadFailureLogged = false;
 
   try {
@@ -47,28 +67,35 @@ export async function uploadPhotoIfPresent(input: {
 
     if (error) {
       uploadFailureLogged = true;
-      console.error("Photo storage upload failed", {
-        bodyPayloadLength: photoDataUrl.length,
-        bucket: PRICE_LOG_PHOTO_BUCKET,
-        contentType,
-        decodedBytes: buffer.byteLength,
+      span.error(error, {
+        attrs: {
+          bucket: PRICE_LOG_PHOTO_BUCKET,
+          contentType,
+          decodedBytes: buffer.byteLength,
+          inputSizeBytes: photoDataUrl.length,
+          objectPathPresent: Boolean(path),
+        },
         event: "price_log_photo_upload_failed",
-        error: error.message,
-        path,
-        userId,
       });
       throw new Error(`Photo upload failed: ${error.message}`);
     }
 
+    span.end({
+      attrs: {
+        contentType,
+        decodedBytes: buffer.byteLength,
+        objectPathPresent: Boolean(path),
+      },
+    });
     return path;
   } catch (error) {
     if (!uploadFailureLogged) {
-      console.error("Photo decode/upload failed", {
-        bodyPayloadLength: photoDataUrl.length,
+      span.error(error, {
+        attrs: {
+          inputSizeBytes: photoDataUrl.length,
+          payloadLimit,
+        },
         event: "price_log_photo_prepare_failed",
-        message: error instanceof Error ? error.message : "Unknown photo error",
-        payloadLimit,
-        userId,
       });
     }
     throw error instanceof Error
@@ -78,15 +105,37 @@ export async function uploadPhotoIfPresent(input: {
 }
 
 export async function removePriceLogPhoto(input: {
+  diagnostics?: DiagnosticContext;
   logId?: string;
   path: string | null;
   reason: PhotoCleanupReason;
   supabase: AuthedSupabase;
 }) {
-  const { logId, path, reason, supabase } = input;
+  const { diagnostics, logId, path, reason, supabase } = input;
+  const context =
+    diagnostics ??
+    createDiagnosticContext({
+      component: "price_log_photo",
+      operation: "cleanup",
+    });
 
   await removePriceLogPhotoBestEffort({
-    logFailure: (details) => console.error("Photo cleanup failed", details),
+    logFailure: (details) =>
+      emitDiagnosticEvent({
+        ...context,
+        attrs: {
+          bucket: details.bucket,
+          error_message: details.error,
+          logId: details.logId,
+          objectPathPresent: Boolean(details.path),
+          reason: details.reason,
+        },
+        event: details.event,
+        eventKind: "error",
+        level: "error",
+        outcome: "error",
+        spanId: `span-${randomUUID()}`,
+      }),
     logId,
     path,
     reason,

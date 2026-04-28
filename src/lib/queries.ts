@@ -36,6 +36,7 @@ import {
   type PriceLogSort,
   type PriceLogWithRelations,
 } from "@/lib/query-read-models";
+import { createDiagnosticContext, startDiagnosticSpan } from "@/lib/diagnostics";
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -114,6 +115,35 @@ type AccountSettingsSnapshot = {
 };
 
 type PriceLogDetailRow = PriceLogWithRelations;
+
+async function withReadSnapshotDiagnostics<T>(
+  operation: string,
+  read: () => Promise<T>,
+): Promise<T> {
+  const context = createDiagnosticContext({
+    component: "read_snapshot",
+    operation,
+  });
+  const span = startDiagnosticSpan(context, {
+    emitStart: false,
+    event: `read_snapshot_${operation}`,
+  });
+
+  try {
+    const result = await read();
+    span.end();
+    return result;
+  } catch (error) {
+    if (!isNextDynamicServerUsageError(error)) {
+      span.error(error);
+    }
+    throw error;
+  }
+}
+
+function isNextDynamicServerUsageError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith("Dynamic server usage:");
+}
 
 function toViewer(user: User | null): Viewer | null {
   if (!user?.email) {
@@ -513,87 +543,91 @@ export async function getPriceEntrySnapshot(): Promise<{
 }
 
 export async function getPriceLogsSnapshot(sort: PriceLogSort = "recent"): Promise<PriceLogsSnapshot> {
-  const supabase = await createSupabaseServerClient();
+  return withReadSnapshotDiagnostics("price_logs", async () => {
+    const supabase = await createSupabaseServerClient();
 
-  if (!supabase) {
+    if (!supabase) {
+      return {
+        allLogs: sortFeedEntries(getDemoLogsFeed(null), sort),
+        isConfigured: false,
+        isDemo: true,
+        ownLogs: [],
+        viewer: null,
+      };
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const profile = user
+      ? (
+          await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle()
+        ).data
+      : null;
+    const viewer = toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null);
+
+    const logs = await getCachedAllPriceLogs();
+    const votes = await getVoteRowsForLogs(logs.map((log) => log.id));
+    const voteSummaries = summarizeVotes(votes, viewer?.id ?? null);
+    const allLogs = sortFeedEntries(
+      buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null),
+      sort,
+    );
+
     return {
-      allLogs: sortFeedEntries(getDemoLogsFeed(null), sort),
-      isConfigured: false,
-      isDemo: true,
-      ownLogs: [],
-      viewer: null,
+      allLogs,
+      isConfigured: true,
+      isDemo: false,
+      ownLogs: viewer ? allLogs.filter((entry) => entry.log.submitted_by === viewer.id) : [],
+      viewer: viewer ?? null,
     };
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const profile = user
-    ? (
-        await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle()
-      ).data
-    : null;
-  const viewer = toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null);
-
-  const logs = await getCachedAllPriceLogs();
-  const votes = await getVoteRowsForLogs(logs.map((log) => log.id));
-  const voteSummaries = summarizeVotes(votes, viewer?.id ?? null);
-  const allLogs = sortFeedEntries(
-    buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null),
-    sort,
-  );
-
-  return {
-    allLogs,
-    isConfigured: true,
-    isDemo: false,
-    ownLogs: viewer ? allLogs.filter((entry) => entry.log.submitted_by === viewer.id) : [],
-    viewer: viewer ?? null,
-  };
+  });
 }
 
 export async function getAccountSettingsSnapshot(): Promise<AccountSettingsSnapshot> {
-  const supabase = await createSupabaseServerClient();
+  return withReadSnapshotDiagnostics("account_settings", async () => {
+    const supabase = await createSupabaseServerClient();
 
-  if (!supabase) {
-    return {
-      isConfigured: false,
-      profile: null,
-      viewer: null,
-    };
-  }
+    if (!supabase) {
+      return {
+        isConfigured: false,
+        profile: null,
+        viewer: null,
+      };
+    }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user?.email) {
+    if (!user?.email) {
+      return {
+        isConfigured: true,
+        profile: null,
+        viewer: null,
+      };
+    }
+
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
     return {
       isConfigured: true,
-      profile: null,
-      viewer: null,
+      profile: (profile as ProfileRecord | null) ?? null,
+      viewer: toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null),
     };
-  }
-
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return {
-    isConfigured: true,
-    profile: (profile as ProfileRecord | null) ?? null,
-    viewer: toViewerWithProfile(user, (profile as ProfileRecord | null) ?? null),
-  };
+  });
 }
 
 export async function getEditablePriceLogSnapshot(logId: string): Promise<{
@@ -734,48 +768,50 @@ export async function getPriceLogDetail(logId: string): Promise<LogDetail | null
 }
 
 export async function getStoreDetail(storeId: string): Promise<StoreDetail | null> {
-  const supabase = await createSupabaseServerClient();
+  return withReadSnapshotDiagnostics("store_detail", async () => {
+    const supabase = await createSupabaseServerClient();
 
-  if (!supabase) {
-    return getDemoStoreDetail(storeId);
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const viewer = toViewer(user);
-
-  const [stores, items] = await Promise.all([getStores(), getItems()]);
-  const store = stores.find((candidate) => candidate.id === storeId) ?? null;
-
-  if (!store) {
-    return null;
-  }
-
-  const logs = await getCachedPriceLogsByStore(storeId);
-  const voteRows = await getVoteRowsForLogs(logs.map((log) => log.id));
-  const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
-  const recentLogs = buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null);
-  const itemMap = new Map(items.map((item) => [item.id, item]));
-  const photoGallery = recentLogs.flatMap((entry) => {
-    if (!entry.log.photo_path) {
-      return [];
+    if (!supabase) {
+      return getDemoStoreDetail(storeId);
     }
 
-    const item = itemMap.get(entry.log.item_id) ?? entry.item;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const viewer = toViewer(user);
 
-    return [
-      {
-        item,
-        log: entry.log,
-      },
-    ];
+    const [stores, items] = await Promise.all([getStores(), getItems()]);
+    const store = stores.find((candidate) => candidate.id === storeId) ?? null;
+
+    if (!store) {
+      return null;
+    }
+
+    const logs = await getCachedPriceLogsByStore(storeId);
+    const voteRows = await getVoteRowsForLogs(logs.map((log) => log.id));
+    const voteSummaries = summarizeVotes(voteRows, viewer?.id ?? null);
+    const recentLogs = buildLogFeedEntries(logs, voteSummaries, viewer?.id ?? null);
+    const itemMap = new Map(items.map((item) => [item.id, item]));
+    const photoGallery = recentLogs.flatMap((entry) => {
+      if (!entry.log.photo_path) {
+        return [];
+      }
+
+      const item = itemMap.get(entry.log.item_id) ?? entry.item;
+
+      return [
+        {
+          item,
+          log: entry.log,
+        },
+      ];
+    });
+
+    return {
+      photoGallery,
+      recentLogs,
+      store,
+      viewer,
+    };
   });
-
-  return {
-    photoGallery,
-    recentLogs,
-    store,
-    viewer,
-  };
 }

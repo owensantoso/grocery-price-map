@@ -23,6 +23,7 @@ import {
   type ActionState,
   type VoteActionState,
 } from "@/lib/action-helpers";
+import { createDiagnosticContext, startDiagnosticSpan } from "@/lib/diagnostics";
 import { normalizePriceForItem, type MeasurementUnit } from "@/lib/measurements";
 import {
   removePriceLogPhoto,
@@ -258,6 +259,20 @@ export async function createPriceLogAction(
     );
   }
 
+  const diagnostics = createDiagnosticContext({
+    component: "price_log_action",
+    operation: "create",
+  });
+  const span = startDiagnosticSpan(diagnostics, {
+    attrs: {
+      hasListingUrl: Boolean(parsed.data.listingUrl),
+      hasPhoto: Boolean(parsed.data.photoDataUrl),
+      itemId: parsed.data.itemId,
+      storeId: parsed.data.storeId,
+    },
+    event: "price_log_create",
+  });
+
   try {
     const { supabase, user } = await requireAuthedClient();
     await consumeRateLimit({
@@ -284,6 +299,12 @@ export async function createPriceLogAction(
     });
     const priceTaxExcludedYen = excludedFromIncluded(parsed.data.totalPriceYen);
     const photoPath = await uploadPhotoIfPresent({
+      diagnostics: createDiagnosticContext({
+        component: "price_log_photo",
+        operation: "upload",
+        parentSpanId: span.spanId,
+        traceId: span.traceId,
+      }),
       photoDataUrl: parsed.data.photoDataUrl || null,
       supabase,
       userId: user.id,
@@ -312,6 +333,12 @@ export async function createPriceLogAction(
 
     if (error || !insertedLog) {
       await removePriceLogPhoto({
+        diagnostics: createDiagnosticContext({
+          component: "price_log_photo",
+          operation: "cleanup",
+          parentSpanId: span.spanId,
+          traceId: span.traceId,
+        }),
         path: photoPath,
         reason: "create_insert_failed",
         supabase,
@@ -328,9 +355,16 @@ export async function createPriceLogAction(
     revalidatePath("/logs");
     revalidatePath("/prices/new");
     revalidatePath(`/logs/${insertedLog.id}`);
+    span.end({
+      attrs: {
+        insertedLogId: insertedLog.id,
+        photoAttached: Boolean(photoPath),
+      },
+    });
     redirect(`/logs/${insertedLog.id}`);
   } catch (error) {
     rethrowIfRedirectError(error);
+    span.error(error);
     return toActionState(error);
   }
 }
@@ -358,6 +392,21 @@ export async function updatePriceLogAction(
       parsed.error.flatten().fieldErrors,
     );
   }
+
+  const diagnostics = createDiagnosticContext({
+    component: "price_log_action",
+    operation: "update",
+  });
+  const span = startDiagnosticSpan(diagnostics, {
+    attrs: {
+      hasListingUrl: Boolean(parsed.data.listingUrl),
+      hasPhoto: Boolean(parsed.data.photoDataUrl),
+      itemId: parsed.data.itemId,
+      logId,
+      storeId: parsed.data.storeId,
+    },
+    event: "price_log_update",
+  });
 
   try {
     const { supabase, user } = await requireAuthedClient();
@@ -400,6 +449,12 @@ export async function updatePriceLogAction(
     }
 
     const uploadedPhotoPath = await uploadPhotoIfPresent({
+      diagnostics: createDiagnosticContext({
+        component: "price_log_photo",
+        operation: "upload",
+        parentSpanId: span.spanId,
+        traceId: span.traceId,
+      }),
       photoDataUrl: parsed.data.photoDataUrl || null,
       supabase,
       userId: user.id,
@@ -428,6 +483,12 @@ export async function updatePriceLogAction(
 
     if (error) {
       await removePriceLogPhoto({
+        diagnostics: createDiagnosticContext({
+          component: "price_log_photo",
+          operation: "cleanup",
+          parentSpanId: span.spanId,
+          traceId: span.traceId,
+        }),
         logId,
         path: uploadedPhotoPath,
         reason: "update_failed",
@@ -438,6 +499,12 @@ export async function updatePriceLogAction(
 
     if (uploadedPhotoPath && existing.photo_path) {
       await removePriceLogPhoto({
+        diagnostics: createDiagnosticContext({
+          component: "price_log_photo",
+          operation: "cleanup",
+          parentSpanId: span.spanId,
+          traceId: span.traceId,
+        }),
         logId,
         path: existing.photo_path,
         reason: "update_replaced",
@@ -455,14 +522,33 @@ export async function updatePriceLogAction(
     revalidatePath(`/logs/${logId}`);
     revalidatePath(`/logs/${logId}/edit`);
     revalidatePath("/prices/new");
+    span.end({
+      attrs: {
+        logId,
+        photoAttached: Boolean(photoPath),
+        photoReplaced: Boolean(uploadedPhotoPath && existing.photo_path),
+      },
+    });
     redirect(`/logs/${logId}`);
   } catch (error) {
     rethrowIfRedirectError(error);
+    span.error(error);
     return toActionState(error);
   }
 }
 
 export async function deletePriceLogAction(logId: string) {
+  const diagnostics = createDiagnosticContext({
+    component: "price_log_action",
+    operation: "delete",
+  });
+  const span = startDiagnosticSpan(diagnostics, {
+    attrs: {
+      logId,
+    },
+    event: "price_log_delete",
+  });
+
   try {
     const { supabase, user } = await requireAuthedClient();
 
@@ -491,6 +577,12 @@ export async function deletePriceLogAction(logId: string) {
     }
 
     await removePriceLogPhoto({
+      diagnostics: createDiagnosticContext({
+        component: "price_log_photo",
+        operation: "cleanup",
+        parentSpanId: span.spanId,
+        traceId: span.traceId,
+      }),
       logId,
       path: existing.photo_path,
       reason: "delete_succeeded",
@@ -507,9 +599,16 @@ export async function deletePriceLogAction(logId: string) {
     revalidatePath("/prices/new");
     revalidatePath(`/logs/${logId}`);
     revalidatePath(`/logs/${logId}/edit`);
+    span.end({
+      attrs: {
+        hadPhoto: Boolean(existing.photo_path),
+        logId,
+      },
+    });
     redirect("/logs");
   } catch (error) {
     rethrowIfRedirectError(error);
+    span.error(error);
     throw error instanceof Error ? error : new Error("Could not delete this log.");
   }
 }

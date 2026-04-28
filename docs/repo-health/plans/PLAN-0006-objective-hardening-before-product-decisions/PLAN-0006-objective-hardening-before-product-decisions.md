@@ -5,7 +5,7 @@ title: Objective hardening before product decisions
 domain: repo-health
 status: draft
 created_at: "2026-04-29 05:14:02 JST +0900"
-updated_at: "2026-04-29 05:44:24 JST +0900"
+updated_at: "2026-04-29 07:43:43 JST +0900"
 owner: 
 sequence:
   roadmap: "6"
@@ -80,7 +80,7 @@ Safe parallelization:
 - [ ] `IMPL-0006-03` - restrict private profile reads, add profile-update rate limiting, and add bounded public text validation/constraints.
 - [ ] `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience.
 - [ ] `IMPL-0006-05` - preserve price-log draft state across missing item/store creation.
-- [ ] `IMPL-0006-06` - add a provider-neutral diagnostic tracing foundation.
+- [x] `IMPL-0006-06` - add a provider-neutral diagnostic tracing foundation.
 - [ ] Update `AUDT-0002` finding statuses/routes as each brief completes.
 - [ ] Record a session log when the plan completes.
 

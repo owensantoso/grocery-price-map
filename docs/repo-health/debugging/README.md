@@ -17,6 +17,14 @@ Each note should include:
 
 These notes are operational history, not product specs. Keep implementation plans in `docs/<domain>/plans/`, architecture contracts in `docs/orientation/ARCHITECTURE.md`, and broader conceptual explainers in `docs/orientation/explainers/`.
 
+## Server Diagnostic Logs
+
+Server-side diagnostics use `src/lib/diagnostics.ts` and print structured JSON strings to the normal server console. During local development, watch the terminal running `npm run dev`. In CI, inspect the relevant GitHub Actions command log. In deployed Vercel environments, inspect the runtime/function logs for the route or server action.
+
+Use `trace_id` to group related events and `span_id` / `parent_span_id` to follow nested action/photo work. Use `duration_ms` on `*.finished` and `*.failed` events for timings. The default redaction contract is operational and sanitized: do not log raw user notes, emails, precise location, auth tokens, Supabase keys, full URLs with query strings, request bodies, photo data, or storage object paths.
+
+Local JSONL files are appropriate only for explicit diagnostic runs where the console output is too hard to preserve or compare. Keep raw JSONL artifacts out of git by default; commit only summaries or short sanitized excerpts in a `DIAG-*` record.
+
 ## Diagnostic Records
 
 Use `DIAG-*` diagnostic records when the question is:
