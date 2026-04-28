@@ -4,7 +4,7 @@ title: Architecture
 domain: architecture
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-28 22:48:08 JST +0900"
+updated_at: "2026-04-29 03:58:20 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -44,8 +44,8 @@ Grocery Price Map is a public-read, authenticated-write grocery price tracking a
 ## System Boundaries
 
 - Route entry points live under `src/app`.
-- Server actions in `src/app/actions.ts` own writes, validation, auth checks, rate limiting, uploads, redirects, and cache invalidation.
-- Query helpers in `src/lib/queries.ts` own read snapshots and Supabase row-to-view-model assembly.
+- Server actions in `src/app/actions.ts` remain the stable action entry point. Shared action state, auth, rate limiting, and cache invalidation helpers live in `src/lib/action-helpers.ts`; price-log photo upload/removal helpers live in `src/lib/price-log-photo-actions.ts`.
+- Query helpers in `src/lib/queries.ts` own read snapshots and Supabase access. Pure row-to-view-model assembly lives in `src/lib/query-read-models.ts`.
 - Shared domain/model helpers live under `src/lib`.
 - Reusable UI components live under `src/components`.
 - Database shape and RLS behavior live under `supabase/migrations`.
@@ -68,8 +68,8 @@ Grocery Price Map is a public-read, authenticated-write grocery price tracking a
 
 ## Current Pressure Points
 
-- `src/app/actions.ts` is large enough that future cleanup should split by domain after coverage exists.
-- `src/lib/queries.ts` is large enough that feed/detail/compare/store snapshots may deserve smaller modules.
+- `src/app/actions.ts` still contains the exported server actions, but shared helper logic has been moved out so domain action splitting can happen later if Next server-action constraints make it worthwhile.
+- `src/lib/queries.ts` still contains snapshot and Supabase access functions, but pure read-model assembly has been moved out; feed/detail/compare/store snapshot modules may still deserve a later split if they keep growing.
 - Map behavior can regress because it combines Leaflet lifecycle, browser APIs, responsive sizing, and React state.
 - Public-read plus authenticated-write plus photo storage means security assumptions need explicit docs and tests.
 
@@ -106,4 +106,3 @@ tests/                   Repository tooling smoke tests
 - Add or strengthen verification before splitting high-gravity modules.
 - Keep route components relatively small and data-loading boundaries explicit.
 - Prefer extracting existing repeated behavior over inventing broad new abstractions.
-

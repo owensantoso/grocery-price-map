@@ -53,7 +53,7 @@ Audits do not block unrelated implementation by default. Pause related implement
 
 ## Last Audit
 
-- Last completed audit:
-- Next suggested audit: architecture or test-coverage audit before `IMPL-0005-01`.
+- Last completed audit: `AUDT-0001` MVP stabilization risk audit.
+- Next suggested audit: architecture or test-coverage audit after the next meaningful feature/refactor milestone, or before production rollout.
 
 Update these pointers after completing a meaningful audit. `docs-meta health` can also flag when completed audits are missing or old.

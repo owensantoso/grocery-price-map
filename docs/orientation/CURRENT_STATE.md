@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 03:43:51 JST +0900"
+updated_at: "2026-04-29 03:58:20 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -63,7 +63,7 @@ Source docs:
 
 ## Roadmap Position
 
-The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, backend write-integrity hardening, contribution accessibility fixes, and read-scale diagnostics are in place. `PLAN-0005` is next and tracks broad action/query refactors.
+The repo is in a stabilization phase: docs, the first repo-health audit, CI, focused characterization coverage, backend write-integrity hardening, contribution accessibility fixes, read-scale diagnostics, and the first architecture cleanup split are in place. Further action/query splitting should be incremental and evidence-driven.
 
 Source docs:
 
@@ -79,7 +79,7 @@ Source docs:
 
 ## Key Gotchas
 
-- `src/app/actions.ts` and `src/lib/queries.ts` are the main gravity wells. Refactor them only with clear verification.
+- `src/app/actions.ts` and `src/lib/queries.ts` are smaller after the first architecture cleanup, but still act as stable public entry points. Refactor further only with clear verification.
 - `AUDT-0001#FINDING-001` is the sharpest backend risk: direct authenticated writes can bypass some server-action-calculated price-log integrity.
 - Existing docs were written during an audit and should be treated as source-of-truth working memory, not scratch text.
 - `npm` may not be available on PATH in Codex desktop shells. Use the bundled Node path shown in `AGENTS.md` if needed.
