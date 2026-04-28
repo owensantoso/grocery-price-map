@@ -15,6 +15,11 @@ The product currently behaves more like:
 
 It is not an OCR scanner, barcode system, or automated grocery data crawler.
 
+The product is also not geographically finalized yet.
+- the current UI presentation leans Tokyo/Japan in several places
+- the docs should not treat that as a settled long-term geographic boundary
+- broader geography is possible later, but would increase map, filtering, and localization scope
+
 ## Current user model
 
 Public visitors can:
@@ -32,12 +37,13 @@ Signed-in users can additionally:
 - comment on logs
 - vote on logs and comments
 - edit their own logs
+- delete their own logs in the product flow
 - update their username in settings
 
 ## Core entities in the product
 
 - Item
-  A canonical grocery item with a normalization basis, such as `100g`, `100ml`, or `1 count`.
+  A canonical grocery item with a normalization basis, currently restricted in product flows to `count`, `g`, or `ml`.
 
 - Store
   A specific physical or online store with its own link, descriptor, and optional map location.
@@ -157,6 +163,7 @@ Individual log pages support:
 - no barcode/OCR/image extraction
 - no chain-level aggregate compare
 - no distance/radius compare logic
+- no area-based geo filtering
 - no trust/reputation system beyond raw votes
 - no notifications or alerting
 - no formal role model beyond signed-in user ownership
@@ -168,3 +175,4 @@ Individual log pages support:
 - chain-level views are a likely future layer, but exact store pages remain the primary current surface
 - item modeling will probably become richer than the current flat list, likely with hierarchy, tags, or both
 - photos are likely to become more central to trust and may eventually become required for some or all submissions
+- wider geography is possible, but should not be assumed to imply full localization or advanced distance-aware compare behavior yet

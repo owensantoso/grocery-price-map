@@ -72,6 +72,7 @@ Not built yet:
 
 Not built yet:
 - radius filtering
+- area-based filtering
 - route-aware compare
 - “nearest cheapest” logic
 

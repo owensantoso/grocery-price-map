@@ -50,10 +50,17 @@ If env vars are missing, the app still renders in demo mode with seeded Tokyo gr
 1. Create a Supabase project.
 2. Enable Google auth in Supabase Auth.
 3. Add `http://localhost:3000/auth/callback` as an allowed redirect URL for local development.
-4. Run the SQL in:
+4. Run the SQL migrations in order:
 
 - [supabase/migrations/202603210001_init.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603210001_init.sql)
 - [supabase/migrations/202603210002_feedback_iteration.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603210002_feedback_iteration.sql)
+- [supabase/migrations/202603210003_logs_and_votes.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603210003_logs_and_votes.sql)
+- [supabase/migrations/202603220001_comments_and_photos.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603220001_comments_and_photos.sql)
+- [supabase/migrations/202603220002_public_read_access.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603220002_public_read_access.sql)
+- [supabase/migrations/202603220003_action_rate_limits.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603220003_action_rate_limits.sql)
+- [supabase/migrations/202603230001_profile_usernames.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603230001_profile_usernames.sql)
+- [supabase/migrations/202603230002_profiles_self_update.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603230002_profiles_self_update.sql)
+- [supabase/migrations/202603250001_price_log_owner_delete.sql](/Users/macintoso/Documents/VSCode/grocery-price-map/supabase/migrations/202603250001_price_log_owner_delete.sql)
 
 The migration creates:
 
@@ -64,7 +71,8 @@ The migration creates:
 - store links and store type support
 - tax-excluded pricing and optional item listing URLs on price logs
 - a trigger to mirror new auth users into `profiles`
-- RLS policies for shared reads and owner-only `price_logs` updates
+- comments, votes, public-read access, photo storage, rate limiting, and profile usernames
+- RLS policies for shared reads and owner-owned writes
 
 ## Verification
 

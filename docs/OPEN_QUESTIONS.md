@@ -89,3 +89,21 @@ Current behavior:
 Question:
 - should external links stay secondary forever
 - or should some contexts still prefer leaving the site directly
+
+## 9. What geographic scope should the product explicitly target first?
+
+Current direction:
+- the current UI has Tokyo/Japan flavor in branding and map defaults
+- the product should not yet be documented as permanently Tokyo-only
+- fully global operation would expand scope around localization, scale, and smarter geo features
+
+Question:
+- should the intended near-term scope be:
+  - Tokyo-first
+  - Japan-first
+  - globally available but English/Japanese-lightweight
+
+Related future pressure:
+- distance-based filtering
+- area-based filtering
+- more intelligent map/search behavior
