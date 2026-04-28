@@ -43,7 +43,7 @@ Server actions remain the app write API. Direct authenticated table writes still
 
 ## Verification
 
-- `vitest run`: passed locally.
+- `vitest run`: 6 files / 17 tests passed locally.
 - `eslint .`: passed locally.
 - `next build`: passed locally.
 - `scripts/docs-meta check`: passed locally.
