@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 03:17:59 JST +0900"
+updated_at: "2026-04-29 03:25:48 JST +0900"
 ---
 
 # Docs Registry
@@ -19,7 +19,7 @@ updated_at: "2026-04-29 03:17:59 JST +0900"
 | IMPL-0002-02 | implementation-brief | Photo mutation compensation | completed | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-02-photo-mutation-compensation.md` |
 | IMPL-0002-03 | implementation-brief | Profile and rate-limit write constraints | completed | `repo-health/plans/PLAN-0002-backend-write-integrity-hardening/IMPL-0002-03-profile-and-rate-limit-write-constraints.md` |
 | IMPL-0003-01 | implementation-brief | Keyboard accessible store location entry | completed | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-01-keyboard-accessible-store-location-entry.md` |
-| IMPL-0003-02 | implementation-brief | Combobox and vote control semantics | draft | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-02-combobox-and-vote-control-semantics.md` |
+| IMPL-0003-02 | implementation-brief | Combobox and vote control semantics | completed | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-02-combobox-and-vote-control-semantics.md` |
 | IMPL-0003-03 | implementation-brief | Form focus styling and map verification | draft | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/IMPL-0003-03-form-focus-styling-and-map-verification.md` |
 | IMPL-0004-01 | implementation-brief | Feed scale and store index diagnostic | draft | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/IMPL-0004-01-feed-scale-and-store-index-diagnostic.md` |
 | IMPL-0005-01 | implementation-brief | Action and query module split | draft | `repo-health/plans/PLAN-0005-architecture-cleanup/IMPL-0005-01-action-and-query-module-split.md` |

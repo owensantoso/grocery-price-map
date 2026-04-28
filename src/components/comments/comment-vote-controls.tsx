@@ -82,6 +82,8 @@ export function CommentVoteControls({
   return (
     <div className="comment-vote-controls">
       <button
+        aria-label="Upvote comment"
+        aria-pressed={localSummary.viewerVote === 1}
         className={`vote-button ${localSummary.viewerVote === 1 ? "is-active" : ""}`}
         disabled={disabled}
         onClick={() => {
@@ -101,6 +103,8 @@ export function CommentVoteControls({
       </button>
       <span className="vote-score vote-score--comment">{localSummary.score}</span>
       <button
+        aria-label="Downvote comment"
+        aria-pressed={localSummary.viewerVote === -1}
         className={`vote-button ${localSummary.viewerVote === -1 ? "is-active" : ""}`}
         disabled={disabled}
         onClick={() => {

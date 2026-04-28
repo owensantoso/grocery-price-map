@@ -26,10 +26,14 @@ describe("LogVoteControls", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Upvote" }));
+    const upvoteButton = screen.getByRole("button", { name: "Upvote price log" });
+    expect(upvoteButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent.click(upvoteButton);
 
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("3 up / 1 down")).toBeInTheDocument();
+    expect(upvoteButton).toHaveAttribute("aria-pressed", "true");
 
     await act(async () => {
       vi.advanceTimersByTime(140);
@@ -57,7 +61,7 @@ describe("LogVoteControls", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Downvote" }));
+    fireEvent.click(screen.getByRole("button", { name: "Downvote price log" }));
 
     expect(screen.getByText("0")).toBeInTheDocument();
 
