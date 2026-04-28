@@ -8,6 +8,7 @@ import {
   useMap,
 } from "react-leaflet";
 import { useEffect } from "react";
+import { InvalidateMapSize } from "@/components/map/invalidate-map-size";
 import type { StoreRecord } from "@/lib/models";
 
 type StoreDirectoryMapProps = {
@@ -51,6 +52,7 @@ export function StoreDirectoryMap({ stores }: StoreDirectoryMapProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <InvalidateMapSize />
         <FitBounds stores={physicalStores} />
         {physicalStores.map((store) => (
           <CircleMarker

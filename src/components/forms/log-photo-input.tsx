@@ -238,6 +238,9 @@ export function LogPhotoInput({ existingPhotoUrl }: LogPhotoInputProps) {
         Images are resized to max 400px wide and stored as compressed WebP to keep
         storage and bandwidth down.
       </p>
+      <p className="field-help field-help--warning">
+        Photos added to price logs are public and can appear on store pages.
+      </p>
       {originalFileSize !== null || compressedBytes !== null ? (
         <div className="photo-debug">
           {originalFileSize !== null ? (

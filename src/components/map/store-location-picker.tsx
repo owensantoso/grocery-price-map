@@ -3,6 +3,7 @@
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
+import { InvalidateMapSize } from "@/components/map/invalidate-map-size";
 
 type StoreLocationPickerProps = {
   latitude: number | null;
@@ -64,6 +65,7 @@ export function StoreLocationPicker({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <InvalidateMapSize />
         <ClickCapture onChange={onChange} />
         <SyncMapCenter position={position} />
         {position ? (

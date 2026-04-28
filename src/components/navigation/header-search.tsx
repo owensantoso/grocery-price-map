@@ -18,6 +18,7 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
   const autocompleteRef = useRef<AutocompleteFieldHandle | null>(null);
 
   const options: AutocompleteOption[] = [
@@ -46,8 +47,27 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
       }
     }
 
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setIsOpen((wasOpen) => {
+        if (wasOpen) {
+          window.requestAnimationFrame(() => toggleRef.current?.focus());
+        }
+
+        return false;
+      });
+    }
+
     document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, []);
 
   useEffect(() => {
@@ -84,6 +104,7 @@ export function HeaderSearch({ items, stores }: HeaderSearchProps) {
 
           setIsOpen(false);
         }}
+        ref={toggleRef}
         type="button"
       >
         <span aria-hidden="true" className="header-search__toggle-icon">

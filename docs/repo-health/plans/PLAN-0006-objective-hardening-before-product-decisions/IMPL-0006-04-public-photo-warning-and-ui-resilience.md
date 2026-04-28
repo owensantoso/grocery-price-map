@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0006-04
 title: Public photo warning and UI resilience
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 05:25:00 JST +0900"
-updated_at: "2026-04-29 05:25:00 JST +0900"
+updated_at: "2026-04-29 08:33:41 JST +0900"
 parent_plan: PLAN-0006
 task_refs:
   - AUDT-0002#FINDING-009
@@ -86,7 +86,14 @@ Manual verification:
 
 ## Done Checklist
 
-- [ ] Public photo upload warning exists.
-- [ ] Non-compare map surfaces have resize/orientation hardening or a documented reason.
-- [ ] Mobile search closes from keyboard.
-- [ ] `AUDT-0002#FINDING-009`, `AUDT-0002#FINDING-017`, and `AUDT-0002#FINDING-019` are updated.
+- [x] Public photo upload warning exists.
+- [x] Non-compare map surfaces have resize/orientation hardening or a documented reason.
+- [x] Mobile search closes from keyboard.
+- [x] `AUDT-0002#FINDING-009`, `AUDT-0002#FINDING-017`, and `AUDT-0002#FINDING-019` are updated.
+
+## Completion Notes
+
+- `LogPhotoInput` now warns contributors that price-log photos are public and can appear on store pages.
+- The compare map's existing resize/orientation invalidation behavior now lives in `src/components/map/invalidate-map-size.tsx` and is used by the store directory and store location picker maps.
+- Mobile header search now closes on Escape and returns focus to the Search toggle.
+- Focused component tests cover the public-photo warning, the shared map invalidation behavior, and keyboard close behavior. Leaflet viewport behavior still relies on the manual checklist in `docs/repo-health/debugging/map-manual-verification.md`.

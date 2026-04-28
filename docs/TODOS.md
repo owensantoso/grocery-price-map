@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 08:26:36 JST +0900"
+updated_at: "2026-04-29 08:34:25 JST +0900"
 ---
 
 # Docs Todos
@@ -19,16 +19,11 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0006-04 | 51 | Public photo upload warning exists. |
-| open | IMPL-0006-04 | 53 | Non-compare map surfaces have resize/orientation hardening or a documented reason. |
-| open | IMPL-0006-04 | 54 | Mobile search closes from keyboard. |
-| open | IMPL-0006-04 | 55 | `AUDT-0002#FINDING-009`, `AUDT-0002#FINDING-017`, and `AUDT-0002#FINDING-019` are updated. |
 | open | IMPL-0006-05 | 53 | Draft state survives missing item creation. |
 | open | IMPL-0006-05 | 55 | Draft state survives missing store creation. |
 | open | IMPL-0006-05 | 56 | Draft is cleared after successful price-log submission. |
 | open | IMPL-0006-05 | 57 | File-input limitations are handled deliberately. |
 | open | IMPL-0006-05 | 58 | `AUDT-0002#FINDING-018` is updated. |
-| open | PLAN-0006 | 40 | `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience. |
 | open | PLAN-0006 | 41 | `IMPL-0006-05` - preserve price-log draft state across missing item/store creation. |
 | open | PLAN-0006 | 43 | Update `AUDT-0002` finding statuses/routes as each brief completes. |
 | open | PLAN-0006 | 44 | Record a session log when the plan completes. |
