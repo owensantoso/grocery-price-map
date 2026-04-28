@@ -65,33 +65,25 @@ async function consumeRateLimit(input: {
   userId: string;
   windowMs: number;
 }) {
-  const { action, limit, supabase, userId, windowMs } = input;
-  const since = new Date(Date.now() - windowMs).toISOString();
+  const { action, limit, supabase, windowMs } = input;
+  const windowSeconds = Math.ceil(windowMs / 1_000);
+  const { data: accepted, error } = await supabase.rpc(
+    "consume_action_rate_limit",
+    {
+      action_name: action,
+      max_events: limit,
+      window_seconds: windowSeconds,
+    },
+  );
 
-  const { count, error: countError } = await supabase
-    .from("action_events")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("action", action)
-    .gte("created_at", since);
-
-  if (countError) {
-    throw new Error(countError.message);
+  if (error) {
+    throw new Error(error.message);
   }
 
-  if ((count ?? 0) >= limit) {
+  if (!accepted) {
     throw new Error(
       `Rate limit reached for this action. Try again in ${formatRateLimitWindow(windowMs)}.`,
     );
-  }
-
-  const { error: insertError } = await supabase.from("action_events").insert({
-    action,
-    user_id: userId,
-  });
-
-  if (insertError) {
-    throw new Error(insertError.message);
   }
 }
 

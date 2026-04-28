@@ -26,6 +26,7 @@ Important current fields:
 Notes:
 - public username now matters to the product
 - public surfaces should use `public_name`, not email
+- `202604290002_profile_rate_limit_constraints.sql` adds a self-update trigger that allows users to change `public_name` only; `id`, `email`, `display_name`, and `created_at` are rejected for self-update changes
 
 ### `stores`
 
@@ -155,6 +156,10 @@ Important current fields:
 - `user_id`
 - `action`
 - `created_at`
+
+Notes:
+- server actions consume rate limits through `public.consume_action_rate_limit(action_name, max_events, window_seconds)`
+- the function takes a transaction-level advisory lock per authenticated user/action, counts events in the window, inserts the new event only when under the limit, and returns whether the request was accepted
 
 ## Views
 

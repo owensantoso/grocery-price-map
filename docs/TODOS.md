@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 02:57:06 JST +0900"
+updated_at: "2026-04-29 03:05:02 JST +0900"
 ---
 
 # Docs Todos
@@ -19,13 +19,6 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0002-03 | 82 | Profile self-update scope matches the username-only settings surface or accepted risk is documented. |
-| open | IMPL-0002-03 | 84 | Rate-limit race is fixed atomically or accepted with reason and revisit trigger. |
-| open | IMPL-0002-03 | 85 | Existing settings and write actions still pass verification. |
-| open | IMPL-0002-03 | 86 | `AUDT-0001#FINDING-005` and `AUDT-0001#FINDING-006` updated. |
-| open | PLAN-0002 | 52 | `IMPL-0002-03` - narrow profile update permissions and make rate limiting atomic or explicitly accepted as MVP risk. |
-| open | PLAN-0002 | 53 | Update `docs/BACKEND_SCHEMA.md` and relevant audit finding statuses after implementation. |
-| open | PLAN-0002 | 54 | Add a session log for each completed brief. |
 | open | IMPL-0003-01 | 77 | Physical store location can be supplied without pointer input. |
 | open | IMPL-0003-01 | 79 | Existing map picker still works. |
 | open | IMPL-0003-01 | 80 | Server validation remains consistent. |

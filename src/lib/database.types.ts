@@ -253,7 +253,16 @@ export type Database = {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      consume_action_rate_limit: {
+        Args: {
+          action_name: string;
+          max_events: number;
+          window_seconds: number;
+        };
+        Returns: boolean;
+      };
+    };
     Enums: {
       measurement_unit: "count" | "piece" | "g" | "kg" | "ml" | "l";
       store_kind: "physical" | "online";
