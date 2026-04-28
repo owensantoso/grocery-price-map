@@ -65,6 +65,7 @@ Recommended execution order:
 2. `IMPL-0006-02` next, because production guardrails and runbooks determine how later DB and deploy fixes are verified.
 3. `IMPL-0006-03` after `IMPL-0006-02` or in parallel with non-overlapping work, because it includes DB policy and validation changes.
 4. `IMPL-0006-04` and `IMPL-0006-05` can run after the shared verification baseline is healthy; they touch UI/workflow surfaces only.
+5. `IMPL-0006-06` can run after `IMPL-0006-02`; prefer doing it before feature-heavy work if observability is the priority.
 
 Safe parallelization:
 
@@ -79,6 +80,7 @@ Safe parallelization:
 - [ ] `IMPL-0006-03` - restrict private profile reads, add profile-update rate limiting, and add bounded public text validation/constraints.
 - [ ] `IMPL-0006-04` - add public-photo warning text and map/search keyboard resilience.
 - [ ] `IMPL-0006-05` - preserve price-log draft state across missing item/store creation.
+- [ ] `IMPL-0006-06` - add a provider-neutral diagnostic tracing foundation.
 - [ ] Update `AUDT-0002` finding statuses/routes as each brief completes.
 - [ ] Record a session log when the plan completes.
 
