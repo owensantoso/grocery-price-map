@@ -33,8 +33,12 @@ function parseCoordinateInput(value: string) {
   return parsed;
 }
 
-function formatCoordinate(value: number | null) {
-  return value === null ? "" : String(value);
+function formatCoordinate(value: number) {
+  return String(value);
+}
+
+function isCompleteCoordinateInput(value: string) {
+  return !["", "-", "+", ".", "-.", "+."].includes(value.trim());
 }
 
 export function StoreForm({
@@ -51,6 +55,10 @@ export function StoreForm({
   const [location, setLocation] = useState<{ latitude: number | null; longitude: number | null }>({
     latitude: null,
     longitude: null,
+  });
+  const [coordinateInputs, setCoordinateInputs] = useState({
+    latitude: "",
+    longitude: "",
   });
 
   const linkLabel = storeKind === "physical" ? "Google Maps link" : "Store website";
@@ -94,6 +102,10 @@ export function StoreForm({
                 setLocation({
                   latitude: null,
                   longitude: null,
+                });
+                setCoordinateInputs({
+                  latitude: "",
+                  longitude: "",
                 });
               }
             }}
@@ -167,21 +179,27 @@ export function StoreForm({
                 className="input"
                 disabled={disabled}
                 inputMode="decimal"
-                max={90}
-                min={-90}
-                name="latitude"
                 onChange={(event) => {
+                  const nextValue = event.target.value;
+                  const nextCoordinate = isCompleteCoordinateInput(nextValue)
+                    ? parseCoordinateInput(nextValue)
+                    : null;
+
+                  setCoordinateInputs((current) => ({
+                    ...current,
+                    latitude: nextValue,
+                  }));
                   setLocation((current) => ({
-                    latitude: parseCoordinateInput(event.target.value),
+                    latitude: nextCoordinate,
                     longitude: current.longitude,
                   }));
                 }}
                 placeholder="35.6895"
                 required
-                step="0.000001"
-                type="number"
-                value={formatCoordinate(location.latitude)}
+                type="text"
+                value={coordinateInputs.latitude}
               />
+              <input name="latitude" type="hidden" value={location.latitude ?? ""} />
               {state.fieldErrors?.latitude?.[0] ? (
                 <span className="field-error" id="store-latitude-error">
                   {state.fieldErrors.latitude[0]}
@@ -198,21 +216,27 @@ export function StoreForm({
                 className="input"
                 disabled={disabled}
                 inputMode="decimal"
-                max={180}
-                min={-180}
-                name="longitude"
                 onChange={(event) => {
+                  const nextValue = event.target.value;
+                  const nextCoordinate = isCompleteCoordinateInput(nextValue)
+                    ? parseCoordinateInput(nextValue)
+                    : null;
+
+                  setCoordinateInputs((current) => ({
+                    ...current,
+                    longitude: nextValue,
+                  }));
                   setLocation((current) => ({
                     latitude: current.latitude,
-                    longitude: parseCoordinateInput(event.target.value),
+                    longitude: nextCoordinate,
                   }));
                 }}
                 placeholder="139.6917"
                 required
-                step="0.000001"
-                type="number"
-                value={formatCoordinate(location.longitude)}
+                type="text"
+                value={coordinateInputs.longitude}
               />
+              <input name="longitude" type="hidden" value={location.longitude ?? ""} />
               {state.fieldErrors?.longitude?.[0] ? (
                 <span className="field-error" id="store-longitude-error">
                   {state.fieldErrors.longitude[0]}
@@ -223,7 +247,13 @@ export function StoreForm({
           <DynamicLocationPicker
             latitude={location.latitude}
             longitude={location.longitude}
-            onChange={setLocation}
+            onChange={(nextLocation) => {
+              setLocation(nextLocation);
+              setCoordinateInputs({
+                latitude: formatCoordinate(nextLocation.latitude),
+                longitude: formatCoordinate(nextLocation.longitude),
+              });
+            }}
           />
           <p className="field-help">
             {location.latitude !== null && location.longitude !== null

@@ -42,7 +42,7 @@ Make physical store creation usable without mouse/touch map pinning.
 ## Verification
 
 - Focused tests for `StoreForm` and `storeSchema`: passed locally.
-- `vitest run`: 8 files / 26 tests passed locally.
+- `vitest run`: 8 files / 27 tests passed locally.
 - `eslint .`: passed locally.
 - `next build`: passed locally.
 - `scripts/docs-meta check`: passed locally.
