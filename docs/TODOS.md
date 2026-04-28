@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 08:34:25 JST +0900"
+updated_at: "2026-04-29 08:48:23 JST +0900"
 ---
 
 # Docs Todos
@@ -19,11 +19,4 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | IMPL-0006-05 | 53 | Draft state survives missing item creation. |
-| open | IMPL-0006-05 | 55 | Draft state survives missing store creation. |
-| open | IMPL-0006-05 | 56 | Draft is cleared after successful price-log submission. |
-| open | IMPL-0006-05 | 57 | File-input limitations are handled deliberately. |
-| open | IMPL-0006-05 | 58 | `AUDT-0002#FINDING-018` is updated. |
-| open | PLAN-0006 | 41 | `IMPL-0006-05` - preserve price-log draft state across missing item/store creation. |
-| open | PLAN-0006 | 43 | Update `AUDT-0002` finding statuses/routes as each brief completes. |
 | open | PLAN-0006 | 44 | Record a session log when the plan completes. |

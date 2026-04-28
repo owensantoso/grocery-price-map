@@ -3,9 +3,9 @@ type: implementation-brief
 id: IMPL-0006-05
 title: Price log draft preservation
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 05:25:00 JST +0900"
-updated_at: "2026-04-29 05:25:00 JST +0900"
+updated_at: "2026-04-29 08:47:30 JST +0900"
 parent_plan: PLAN-0006
 task_refs:
   - AUDT-0002#FINDING-018
@@ -23,6 +23,8 @@ related_issues: []
 related_prs: []
 linked_paths:
   - src/components/forms/price-log-form.tsx
+  - src/lib/price-log-draft.ts
+  - src/lib/price-log-draft.test.ts
   - src/app/actions.ts
   - src/app/prices/new/page.tsx
 repo_state:
@@ -66,6 +68,14 @@ Out of scope:
 5. Clear the draft on successful price-log creation and when the user intentionally resets/leaves the flow if such a control exists.
 6. Add tests for serialization/restore helpers and document any file-input limitation in the UI only if necessary.
 
+## Implementation Notes
+
+- New price-log forms use `sessionStorage` to preserve a versioned scalar-only draft before navigating to create a missing item or store.
+- Restoring a draft prefers the just-created item/store from `/prices/new?prefillItem=...` or `prefillStore=...`, then fills the opposite selected entity from the saved draft when the ID still exists.
+- Photo data URLs and file inputs are intentionally excluded from the draft payload. When a draft is restored, the form warns that any photo must be added again.
+- Edit forms with `initialLog` do not read or write the new-log draft.
+- On submit, the stored draft is cleared before navigation; if the server action returns an error instead of redirecting, the draft is restored from an in-memory pending copy.
+
 ## Verification
 
 ```bash
@@ -83,8 +93,8 @@ Manual verification:
 
 ## Done Checklist
 
-- [ ] Draft state survives missing item creation.
-- [ ] Draft state survives missing store creation.
-- [ ] Draft is cleared after successful price-log submission.
-- [ ] File-input limitations are handled deliberately.
-- [ ] `AUDT-0002#FINDING-018` is updated.
+- [x] Draft state survives missing item creation.
+- [x] Draft state survives missing store creation.
+- [x] Draft is cleared after successful price-log submission.
+- [x] File-input limitations are handled deliberately.
+- [x] `AUDT-0002#FINDING-018` is updated.
