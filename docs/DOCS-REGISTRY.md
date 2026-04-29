@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Registry
 status: generated
-updated_at: "2026-04-29 08:48:23 JST +0900"
+updated_at: "2026-04-29 21:30:48 JST +0900"
 ---
 
 # Docs Registry
@@ -35,4 +35,5 @@ updated_at: "2026-04-29 08:48:23 JST +0900"
 | PLAN-0003 | plan | Contribution accessibility fixes | completed | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md` |
 | PLAN-0004 | plan | Read scale diagnostics | completed | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md` |
 | PLAN-0005 | plan | Architecture cleanup | completed | `repo-health/plans/PLAN-0005-architecture-cleanup/PLAN-0005-architecture-cleanup.md` |
-| PLAN-0006 | plan | Objective hardening before product decisions | draft | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/PLAN-0006-objective-hardening-before-product-decisions.md` |
+| PLAN-0006 | plan | Objective hardening before product decisions | completed | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/PLAN-0006-objective-hardening-before-product-decisions.md` |
+| PLAN-0007 | plan | Domain model review and ontology hardening | ready | `product/plans/PLAN-0007-domain-model-review-and-ontology-hardening/PLAN-0007-domain-model-review-and-ontology-hardening.md` |

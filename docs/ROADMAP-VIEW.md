@@ -2,7 +2,7 @@
 type: generated-view
 title: Roadmap View
 status: generated
-updated_at: "2026-04-29 08:48:23 JST +0900"
+updated_at: "2026-04-29 21:30:48 JST +0900"
 ---
 
 # Roadmap View
@@ -18,4 +18,5 @@ Generated plan-order view. `PLAN-*` numbering and `sequence` frontmatter should 
 | 3 | PLAN-0003 | PLAN-0003-contribution-accessibility-fixes | Contribution accessibility fixes | completed | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0003-contribution-accessibility-fixes/PLAN-0003-contribution-accessibility-fixes.md` |
 | 4 | PLAN-0004 | PLAN-0004-read-scale-and-verification-gates | Read scale diagnostics | completed | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0004-read-scale-and-verification-gates/PLAN-0004-read-scale-and-verification-gates.md` |
 | 5 | PLAN-0005 | PLAN-0005-architecture-cleanup | Architecture cleanup | completed | repo-health | repo-health |  |  | `repo-health/plans/PLAN-0005-architecture-cleanup/PLAN-0005-architecture-cleanup.md` |
-| 6 | PLAN-0006 | PLAN-0006-objective-hardening-before-product-decisions | Objective hardening before product decisions | draft | repo-health | repo-health | PLAN-0005 |  | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/PLAN-0006-objective-hardening-before-product-decisions.md` |
+| 6 | PLAN-0006 | PLAN-0006-objective-hardening-before-product-decisions | Objective hardening before product decisions | completed | repo-health | repo-health | PLAN-0005 |  | `repo-health/plans/PLAN-0006-objective-hardening-before-product-decisions/PLAN-0006-objective-hardening-before-product-decisions.md` |
+| 7 | PLAN-0007 | PLAN-0007-domain-model-review-and-ontology-hardening | Domain model review and ontology hardening | ready | product | product | PLAN-0006 |  | `product/plans/PLAN-0007-domain-model-review-and-ontology-hardening/PLAN-0007-domain-model-review-and-ontology-hardening.md` |
