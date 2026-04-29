@@ -2,7 +2,7 @@
 type: generated-view
 title: Docs Todos
 status: generated
-updated_at: "2026-04-29 08:48:23 JST +0900"
+updated_at: "2026-04-29 21:30:48 JST +0900"
 ---
 
 # Docs Todos
@@ -19,4 +19,9 @@ No structured `TODO-*` items found.
 
 | State | Source | Line | Task |
 |---|---|---:|---|
-| open | PLAN-0006 | 44 | Record a session log when the plan completes. |
+| open | PLAN-0007 | 45 | Run a domain-model interview covering item hierarchy, store semantics, price-log mutability, unit normalization, photo trust, votes, and geography. |
+| open | PLAN-0007 | 47 | Create or update a durable domain glossary/context doc once terms are resolved. |
+| open | PLAN-0007 | 48 | Identify contradictions between `CURRENT_PRODUCT`, `DECISIONS`, `OPEN_QUESTIONS`, `BACKEND_SCHEMA`, migrations, and code. |
+| open | PLAN-0007 | 49 | Route unresolved product decisions to `OPEN_QUESTIONS.md` or a product spec rather than implementation. |
+| open | PLAN-0007 | 50 | Write ADRs only for hard-to-reverse decisions with real trade-offs. |
+| open | PLAN-0007 | 51 | Produce follow-up implementation briefs for any objective model hardening that becomes clear. |

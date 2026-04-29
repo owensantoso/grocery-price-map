@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { StoreForm } from "@/components/forms/store-form";
 import { SetupNotice } from "@/components/setup-notice";
-import { StoreDirectoryMap } from "@/components/stores/store-directory-map";
+import { StoreDirectoryMapLoader } from "@/components/stores/store-directory-map-loader";
 import { getStoresSnapshot } from "@/lib/queries";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -87,7 +87,7 @@ export default async function StoresPage({ searchParams }: StoresPageProps) {
               Physical stores appear on the map. Online-only stores stay in the list.
             </p>
           </div>
-          <StoreDirectoryMap stores={snapshot.stores} />
+          <StoreDirectoryMapLoader stores={snapshot.stores} />
         </section>
       </section>
     </div>

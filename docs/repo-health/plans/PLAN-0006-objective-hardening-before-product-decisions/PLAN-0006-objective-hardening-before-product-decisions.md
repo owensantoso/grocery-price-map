@@ -3,9 +3,9 @@ type: plan
 id: PLAN-0006
 title: Objective hardening before product decisions
 domain: repo-health
-status: draft
+status: completed
 created_at: "2026-04-29 05:14:02 JST +0900"
-updated_at: "2026-04-29 08:47:30 JST +0900"
+updated_at: "2026-04-29 21:29:32 JST +0900"
 owner: 
 sequence:
   roadmap: "6"
@@ -16,7 +16,8 @@ sequence:
 areas: []
 related_specs: []
 related_adrs: []
-related_sessions: []
+related_sessions:
+  - docs/repo-health/session-logs/2026-04-29-plan-0006-objective-hardening-closeout.md
 related_issues: []
 related_prs: []
 linked_paths:
@@ -84,7 +85,7 @@ Safe parallelization:
 - [x] `IMPL-0006-05` - preserve price-log draft state across missing item/store creation.
 - [x] `IMPL-0006-06` - add a provider-neutral diagnostic tracing foundation.
 - [x] Update `AUDT-0002` finding statuses/routes as each brief completes.
-- [ ] Record a session log when the plan completes.
+- [x] Record a session log when the plan completes.
 
 ## Validation
 
