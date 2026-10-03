@@ -48,7 +48,6 @@ function logFixture(
 
   return {
     created_at: "2026-03-10T10:00:00.000Z",
-    id: overrides.id,
     item_id: item.id,
     items: item,
     listing_url: null,
@@ -59,7 +58,6 @@ function logFixture(
     package_unit: "g",
     photo_path: null,
     price_tax_excluded_yen: 278,
-    store_id: overrides.store_id,
     stores: store,
     submitted_by: "user-owner",
     total_price_yen: 300,
