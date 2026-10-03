@@ -71,7 +71,7 @@ Out of scope:
 ## Implementation Notes
 
 - New price-log forms use `sessionStorage` to preserve a versioned scalar-only draft before navigating to create a missing item or store.
-- Restoring a draft prefers the just-created item/store from `/prices/new?prefillItem=...` or `prefillStore=...`, then fills the opposite selected entity from the saved draft when the ID still exists.
+- Restoring a draft prefers the just-created item/store from `/prices/new?prefillItem=...` or `prefillStoreId=...`, then fills the opposite selected entity from the saved draft when the ID still exists. New stores return their exact inserted ID; if that explicit ID is unavailable, the store selection stays empty rather than substituting a same-name or draft location. Legacy `prefillStore=...` name links remain supported.
 - Photo data URLs and file inputs are intentionally excluded from the draft payload. When a draft is restored, the form warns that any photo must be added again.
 - Edit forms with `initialLog` do not read or write the new-log draft.
 - On submit, the stored draft is cleared before navigation; if the server action returns an error instead of redirecting, the draft is restored from an in-memory pending copy.

@@ -30,6 +30,7 @@ type PriceLogFormProps = {
   initialLog?: PriceLogRecord | null;
   initialItemName?: string;
   initialStoreName?: string;
+  initialStoreId?: string;
   items: ItemRecord[];
   stores: StoreRecord[];
   submitAction?: (
@@ -64,6 +65,7 @@ export function PriceLogForm({
   initialLog,
   initialItemName = "",
   initialStoreName = "",
+  initialStoreId = "",
   items,
   stores,
   submitAction = createPriceLogAction,
@@ -75,8 +77,9 @@ export function PriceLogForm({
     items.find((item) => item.name.toLowerCase() === initialItemName.trim().toLowerCase()) ??
     null;
   const matchedInitialStore =
-    stores.find((store) => store.name.toLowerCase() === initialStoreName.trim().toLowerCase()) ??
-    null;
+    (initialStoreId
+      ? stores.find((store) => store.id === initialStoreId)
+      : stores.find((store) => store.name.toLowerCase() === initialStoreName.trim().toLowerCase())) ?? null;
   const [state, formAction] = useActionState(submitAction, initialState);
   const enablesDraftPreservation = !initialLog;
   const [selectedItemId, setSelectedItemId] = useState(
@@ -291,7 +294,7 @@ export function PriceLogForm({
       : "";
 
     setSelectedItemId((current) => current || restoredItemId);
-    setSelectedStoreId((current) => current || restoredStoreId);
+    setSelectedStoreId((current) => current || (initialStoreId ? "" : restoredStoreId));
     setPackageAmount(draft.packageAmount);
     setPriceValue(draft.displayPrice);
     setPriceIncludesTax(draft.priceIncludesTax);
@@ -300,7 +303,7 @@ export function PriceLogForm({
     setNotes(draft.notes);
     setDidRestoreDraft(true);
     setDraftRestoreKey((key) => key + 1);
-  }, [enablesDraftPreservation, items, observedAt, stores]);
+  }, [enablesDraftPreservation, initialStoreId, items, observedAt, stores]);
 
   useEffect(() => {
     if (
