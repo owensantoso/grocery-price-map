@@ -4,7 +4,7 @@ title: Current State
 domain: orientation
 status: active
 created_at: "2026-04-28 22:48:08 JST +0900"
-updated_at: "2026-04-29 03:58:20 JST +0900"
+updated_at: "2026-10-04 04:56:47 JST +0900"
 owner:
 areas: []
 related_specs: []
@@ -85,14 +85,17 @@ Source docs:
 - `npm` may not be available on PATH in Codex desktop shells. Use the bundled Node path shown in `AGENTS.md` if needed.
 - The database schema still has some legacy unit breadth while product flows intentionally expose only `count`, `g`, and `ml`.
 - Map surfaces have a manual verification checklist at `docs/repo-health/debugging/map-manual-verification.md`; `?debug=1` is wired only for the compare map.
+- Normalized prices use exact decimal hundredths and integer ratio rounding to match the existing database rule; preserve unit-conversion precision within that ratio. Evidence: [rounding session](../repo-health/session-logs/2026-10-04-price-normalization-rounding.md).
 
 ## Verification Baseline
 
-Recent verification on 2026-04-29 passed:
+Rounding-slice verification on 2026-10-04 passed:
 
-- `vitest run`: 10 files, 30 tests passed.
+- `vitest run`: 16 files, 57 tests passed.
 - `eslint .`: passed.
 - `next build`: passed with 13 app routes generated.
+
+The unchanged dependency audit still fails (six advisories), and standalone TypeScript checking reports two existing duplicate-property errors in a query test fixture. The linked rounding session records PostgreSQL parity checks and their Supabase/RLS limitations.
 
 For current commands, use:
 

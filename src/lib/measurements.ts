@@ -58,6 +58,13 @@ export function areUnitsCompatible(
   return getUnitFamily(sourceUnit) === getUnitFamily(targetUnit);
 }
 
+function getUnitFactor(unit: MeasurementUnit) {
+  const family = getUnitFamily(unit);
+  if (family === "weight") return WEIGHT_FACTORS[unit]!;
+  if (family === "volume") return VOLUME_FACTORS[unit]!;
+  return COUNT_FACTORS[unit]!;
+}
+
 export function convertUnitAmount(
   amount: number,
   sourceUnit: MeasurementUnit,
@@ -75,17 +82,24 @@ export function convertUnitAmount(
     return amount;
   }
 
-  const family = getUnitFamily(sourceUnit);
+  return (amount * getUnitFactor(sourceUnit)) / getUnitFactor(targetUnit);
+}
 
-  if (family === "weight") {
-    return (amount * WEIGHT_FACTORS[sourceUnit]!) / WEIGHT_FACTORS[targetUnit]!;
-  }
+function roundPositiveRatio(numerator: bigint, denominator: bigint) {
+  return (numerator * BigInt(2) + denominator) / (denominator * BigInt(2));
+}
 
-  if (family === "volume") {
-    return (amount * VOLUME_FACTORS[sourceUnit]!) / VOLUME_FACTORS[targetUnit]!;
-  }
+function storageHundredths(value: number) {
+  const [coefficient, exponent = "0"] = value.toString().split("e");
+  const [whole, fraction = ""] = coefficient.split(".");
+  const digits = BigInt(whole + fraction);
+  const shift = 2 + Number(exponent) - fraction.length;
 
-  return (amount * COUNT_FACTORS[sourceUnit]!) / COUNT_FACTORS[targetUnit]!;
+  // Match the positive numeric(10, 2) inputs stored by Postgres, without
+  // introducing binary floating-point rounding at a decimal halfway value.
+  return shift >= 0
+    ? digits * BigInt(10) ** BigInt(shift)
+    : roundPositiveRatio(digits, BigInt(10) ** BigInt(-shift));
 }
 
 export function normalizePriceForItem(input: {
@@ -106,13 +120,30 @@ export function normalizePriceForItem(input: {
     throw new Error("Comparison basis must be a positive number.");
   }
 
-  const normalizedPackageAmount = convertUnitAmount(
+  // Preserve the existing amount and compatibility validation. Keep conversion
+  // factors in the exact ratio below, rather than rounding a converted amount.
+  convertUnitAmount(
     packageAmount,
     packageUnit,
     comparisonUnit,
   );
 
-  return Number(
-    ((totalPriceYen / normalizedPackageAmount) * comparisonBasisAmount).toFixed(2),
+  const priceHundredths = storageHundredths(totalPriceYen);
+  const packageHundredths = storageHundredths(packageAmount);
+  const basisHundredths = storageHundredths(comparisonBasisAmount);
+
+  if (
+    priceHundredths === BigInt(0) ||
+    packageHundredths === BigInt(0) ||
+    basisHundredths === BigInt(0)
+  ) {
+    throw new Error("Pricing inputs must remain positive at 2 decimal places.");
+  }
+
+  const normalizedHundredths = roundPositiveRatio(
+    priceHundredths * basisHundredths * BigInt(getUnitFactor(comparisonUnit)),
+    packageHundredths * BigInt(getUnitFactor(packageUnit)),
   );
+
+  return Number(normalizedHundredths) / 100;
 }
