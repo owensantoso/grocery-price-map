@@ -8,6 +8,7 @@ type NewPricePageProps = {
   searchParams?: Promise<{
     prefillItem?: string;
     prefillStore?: string;
+    prefillStoreId?: string;
   }>;
 };
 
@@ -49,6 +50,7 @@ export default async function NewPricePage({ searchParams }: NewPricePageProps) 
             disabled={!configured}
             initialItemName={params.prefillItem ?? ""}
             initialStoreName={params.prefillStore ?? ""}
+            initialStoreId={params.prefillStoreId ?? ""}
             items={snapshot.items}
             stores={snapshot.stores}
           />

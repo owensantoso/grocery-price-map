@@ -208,7 +208,7 @@ export async function createStoreAction(
       throw new Error(`A store with this link already exists: ${duplicateStore.name}`);
     }
 
-    const { error } = await supabase.from("stores").insert({
+    const { data: createdStore, error } = await supabase.from("stores").insert({
       address_text: parsed.data.addressText,
       chain_name: parsed.data.chainName || null,
       created_by: user.id,
@@ -218,10 +218,14 @@ export async function createStoreAction(
       notes: parsed.data.notes || null,
       store_kind: parsed.data.storeKind,
       store_url: normalizedStoreUrl,
-    });
+    }).select("id").single();
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    if (!createdStore) {
+      throw new Error("The created store could not be returned. Refresh the store directory before trying again.");
     }
 
     revalidateSharedStores();
@@ -231,7 +235,7 @@ export async function createStoreAction(
     revalidatePath("/prices/new");
 
     if (parsed.data.returnTo === "prices-new") {
-      redirect(`/prices/new?prefillStore=${encodeURIComponent(parsed.data.name)}`);
+      redirect(`/prices/new?prefillStoreId=${encodeURIComponent(createdStore.id)}`);
     }
 
     redirect("/stores");

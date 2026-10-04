@@ -117,7 +117,7 @@ Current form supports:
 The form also supports:
 - create-new-store shortcut from the store autocomplete
 - create-new-item shortcut from the item autocomplete
-- returning from store/item creation back into add-log flow with prefilled value
+- returning from store/item creation back into add-log flow with prefilled value; store creation preserves the exact new store ID even when locations share a name
 
 ### 3. Browse logs
 
