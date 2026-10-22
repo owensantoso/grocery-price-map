@@ -290,6 +290,7 @@ export function PriceLogForm({
       ? draft.storeId
       : "";
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Rehydrate the draft from external sessionStorage after hydration.
     setSelectedItemId((current) => current || restoredItemId);
     setSelectedStoreId((current) => current || restoredStoreId);
     setPackageAmount(draft.packageAmount);
